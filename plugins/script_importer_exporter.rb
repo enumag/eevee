@@ -71,19 +71,19 @@ class ScriptImporterExporter < PluginBase
       # Create the scripts data structure
       scripts = []
       #for i in (0..digest.length-1)
-      digest.each_index do |i|
+      digest.each_index do |index|
         # Get the time starting the deflate
         deflate_start_time = Time.now
         
-        scripts[i] = []
-        scripts[i][0] = digest[i][0]
-        scripts[i][1] = digest[i][1]
-        scripts[i][2] = ""
-        if digest[i][2].upcase != "EMPTY"
+        scripts[index] = []
+        scripts[index][0] = digest[index][0]
+        scripts[index][1] = digest[index][1]
+        scripts[index][2] = ""
+        if digest[index][2].upcase != "EMPTY"
           begin
-            scriptname = $INPUT_DIR + "/" + digest[i][2]
+            scriptname = $INPUT_DIR + "/" + digest[index][2]
             File.open(scriptname, File::RDONLY) do |infile|
-              scripts[i][2] = infile.read
+              scripts[index][2] = infile.read
             end
           rescue Errno::ENOENT
             puts "ERROR:      No such file or directory - #{scriptname.gsub!('//','/')}.\n" +
@@ -93,13 +93,13 @@ class ScriptImporterExporter < PluginBase
           num_exported += 1
         end
         # Perform the deflate on the compressed script
-        scripts[i][2] = Zlib::Deflate.deflate(scripts[i][2])
+        scripts[index][2] = Zlib::Deflate.deflate(scripts[index][2])
         # Calculate the elapsed time for the deflate
         deflate_elapsed_time = Time.now - deflate_start_time
         # Build a log string
-        str =  "Imported #{digest[i][2].ljust($FILENAME_WIDTH)}(#{num_exported.to_s.rjust(3, '0')}/#{num_scripts.to_s.rjust(3, '0')})"
+        str =  "Imported #{digest[index][2].ljust($FILENAME_WIDTH)}(#{num_exported.to_s.rjust(3, '0')}/#{num_scripts.to_s.rjust(3, '0')})"
         str += "         #{deflate_elapsed_time} seconds" if deflate_elapsed_time > 0.0
-        puts_verbose str if digest[i][2].upcase != "EMPTY"
+        puts_verbose str if digest[index][2].upcase != "EMPTY"
       end
  
       # Dump the scripts data structure to the RM's Script file

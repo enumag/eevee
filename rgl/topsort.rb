@@ -18,7 +18,7 @@ module RGL
 
     include GraphIterator
 
-    def initialize (g)
+    def initialize(g)
       super(g)
       set_to_begin
     end

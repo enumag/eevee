@@ -21,7 +21,7 @@ class PluginBase
   end
 
 protected
-  def self.register( klass )
+  def self.register(klass)
     @@plugins << klass
   end
 
