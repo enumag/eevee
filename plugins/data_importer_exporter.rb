@@ -71,7 +71,7 @@ class DataImporterExporter < PluginBase
       # Load the data from yaml file
       start_time = Time.now
       File.open( $INPUT_DIR + files[i], "r+" ) do |yamlfile|
-        data = YAML::load( yamlfile )
+        data = YAML::unsafe_load( yamlfile )
       end
  
       # Calculate the time to load the .yaml file

@@ -112,7 +112,7 @@ class ScriptImporterExporter < PluginBase
       print_separator
       puts_verbose "The total import time:  #{elapsed_time} seconds."
       print_separator
-    elsif
+    else
       puts_verbose "No scripts to import."
     end
  
