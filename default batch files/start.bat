@@ -16,6 +16,6 @@ SET RMXP_PROJECT_ROOT="../Project1"
 SET OLD_DIR=%CD%
 CD "%PLUGIN_SYSTEM_ROOT%"
 
-RUBY "reexport_rmxp.rb" "%RMXP_PROJECT_ROOT%"
+RUBY "console.rb" "start" "%RMXP_PROJECT_ROOT%"
 
 CD %OLD_DIR%
