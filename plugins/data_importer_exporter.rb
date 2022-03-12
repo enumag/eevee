@@ -111,7 +111,7 @@ class DataImporterExporter < PluginBase
   end
 
   def on_exit
-	  # Set up the directory paths
+    # Set up the directory paths
     $INPUT_DIR  = $PROJECT_DIR + '/' + $DATA_DIR + '/'
     $OUTPUT_DIR = $PROJECT_DIR + '/' + $YAML_DIR   + '/'
  
@@ -168,13 +168,13 @@ class DataImporterExporter < PluginBase
  
       # Handle default values for the System data file
       if files[i] == "System.#{$DATA_TYPE}"
-		# Implement fix for RPG VXA - changed 'magic_number' to 'version_id'
-		if $DATA_TYPE == "rvdata2"
-			# Prevent the 'magic_number' field of System from always conflicting
-			data.version_id = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
-		else
-			# Prevent the 'magic_number' field of System from always conflicting
-			data.magic_number = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
+        # Implement fix for RPG VXA - changed 'magic_number' to 'version_id'
+        if $DATA_TYPE == "rvdata2"
+            # Prevent the 'magic_number' field of System from always conflicting
+            data.version_id = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
+        else
+            # Prevent the 'magic_number' field of System from always conflicting
+            data.magic_number = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
         end
         # Prevent the 'edit_map_id' field of System from conflicting
         data.edit_map_id = $DEFAULT_STARTUP_MAP unless $DEFAULT_STARTUP_MAP == -1
@@ -182,7 +182,7 @@ class DataImporterExporter < PluginBase
  
       # Dump the data to a YAML file
       File.open($OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml", File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |outfile|
-        YAML::dump({'root' => data}, outfile )
+        YAML::dump({'root' => data}, outfile)
       end
  
       # Calculate the time to dump the .yaml file

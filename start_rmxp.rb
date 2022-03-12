@@ -23,39 +23,10 @@ $RE_EXPORT = false
 require_relative 'rmxp/rgss'
 require_relative 'common'
 require_relative 'plugin_base'
+require_relative 'plugins/data_importer_exporter'
 
-begin
-    require 'listen'
-    require 'wdm'
-rescue LoadError
-    puts "Installing listen and wdm gems, make sure you have internet connectivity"
-    `gem install listen`
-    `gem install wdm`
-    puts "Installation Successful! Please restart the script!"
-    exit
-end
-
-#######################################
-#        LOCAL METHODS
-#######################################
-
-#=====================================================================
-# Method: get_plugin_order
-#---------------------------------------------------------------------
-# Returns the list of plugins to execute according the specified
-# constraints.
-#---------------------------------------------------------------------
-# event:  The symbol representing the event.  Valid values are
-#         :on_start and :on_shutdown
-#=====================================================================
-def get_plugin_order(event)
-	if event == :on_start
-	  return PluginBase::get_startup_plugin_order
-	else
-	  return PluginBase::get_shutdown_plugin_order
-	end
-end
-
+require 'listen'
+require 'wdm'
 
 #######################################
 #             SCRIPT
@@ -64,33 +35,8 @@ end
 # Make sure RMXP isn't already running
 exit if check_for_rmxp(true)
 
-# Get the list of plugins in the plugin directory
-plugins = Dir.entries( "plugins" )
-plugins = plugins.select { |filename| File.extname(filename) == ".rb" }
-
-# FIX: For TextMate's annoying habit of creating backup files automatically
-#      that still have the .rb extension.
-plugins = plugins.select { |filename| filename.index("._") != 0 }
-
-# Evaluate each plugin
-plugins.each do |plugin|
-  plugin_path = "plugins\\" + plugin
-  File.open( plugin_path, "r+" ) do |infile|
-    code = infile.read( File.size( plugin_path ) )
-    eval(code)
-  end
-end
-
-# Get the list of plugins in the startup order
-plugins = get_plugin_order( :on_start )
-
-# Create each plugin object
-plugins.collect! { |plugin| eval( plugin + ".new" ) }
-
-# Execute each plugin's on_start event
-plugins.each do |plugin|
-  plugin.on_start
-end
+plugin = DataImporterExporter.new
+plugin.on_start
 
 # Dump the sytem time at startup into a file to read later
 dump_startup_time
@@ -103,16 +49,7 @@ puts_verbose
 
 # P.S. too bored to refactor :(
 listener = Listen.to($PROJECT_DIR + $DATA_DIR) do |modified, added, removed|
-    # Get the list of plugins in the shutdown order
-    plugins = get_plugin_order( :on_exit )
-
-    # Create each plugin object
-    plugins.collect! {|plugin| eval( plugin + ".new" )}
-
-    # Execute each plugin's on_exit event
-    plugins.each do |plugin|
-        plugin.on_exit
-    end
+    plugin.on_exit
 end
 listener.start
 
@@ -120,16 +57,7 @@ listener.start
 command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" Game.rxproj'
 system(command)
 
-# Get the list of plugins in the shutdown order
-plugins = get_plugin_order( :on_exit )
-
-# Create each plugin object
-plugins.collect! {|plugin| eval( plugin + ".new" )}
-
-# Execute each plugin's on_exit event
-plugins.each do |plugin|
-  plugin.on_exit
-end
+plugin.on_exit
 
 # Delete the startup timestamp
 load_startup_time(true)
