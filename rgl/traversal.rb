@@ -91,8 +91,8 @@ module RGL
     # Attach a map to the visitor which records the distance of a visited
     # vertex to the start vertex.
     #
- 	# This is similar to BGLs
-	# distance_recorder[http://www.boost.org/libs/graph/doc/distance_recorder.html].
+    # This is similar to BGLs
+    # distance_recorder[http://www.boost.org/libs/graph/doc/distance_recorder.html].
     #
     # After the distance_map is attached, the visitor has a new method
     # distance_to_root, which answers the distance to the start vertex.

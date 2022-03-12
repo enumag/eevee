@@ -19,11 +19,7 @@ require_relative 'addons'
 require 'yaml'
 
 # Setup config filename
-case $DATA_TYPE
-when "rxdata"  ; config_filename = "RMXP Config.yaml"
-when "rvdata"  ; config_filename = "RMVX Config.yaml"
-when "rvdata2" ; config_filename = "RMVXA Config.yaml"
-end
+config_filename = "config.yaml"
 # Setup the config file path
 os_version = `ver`.strip
 if os_version.index( "Windows XP" )
@@ -39,10 +35,9 @@ File.open( $CONFIG_PATH, "r+" ) do |configfile|
 end
 
 # Initialize configuration parameters
-$DATA_DIR            = config['data_dir'] || config['rxdata_dir'] || config['rvdata_dir'] || config['rvdata2_dir']
+$DATA_DIR            = config['data_dir']
 $YAML_DIR            = config['yaml_dir']
-$SCRIPTS_DIR         = config['scripts_dir']
-$DATA_IGNORE_LIST    = config['data_ignore_list'] || config['rxdata_ignore_list'] || config['rvdata_ignore_list'] || config['rvdata2_ignore_list']
+$DATA_IGNORE_LIST    = config['data_ignore_list']
 $VERBOSE             = config['verbose']
 $MAGIC_NUMBER        = config['magic_number']
 $DEFAULT_STARTUP_MAP = config['edit_map_id']
@@ -63,17 +58,18 @@ $TIME_LOG_FILE = "timestamp.bin"
 # array is used to modify the script title in RMXP's script editor to construct
 # a filename for saving the script out to the filesystem.
 $INVALID_CHARS_FOR_FILENAME= [ 
-         [" - ", "_"], 
-			   [" ",   "_"],
-			   ["-", "_"],
-			   [":", "_"],
-			   ["/", "_"],
-			   ["\\", "_"],
-			   ["*", "_"],
-			   ["|", "_"],
-			   ["<", "_"],
-			   [">", "_"],
-			   ["?", "_"] ]
+    [" - ", "_"],
+    [" ",   "_"],
+    ["-", "_"],
+    [":", "_"],
+    ["/", "_"],
+    ["\\", "_"],
+    ["*", "_"],
+    ["|", "_"],
+    ["<", "_"],
+    [">", "_"],
+    ["?", "_"]
+]
 
 # Lengths of the columns in the script export digest
 $COLUMN1_WIDTH  = 12
@@ -194,50 +190,16 @@ end
 def check_for_rmxp( notify = false )
   if process_running?( "rpgxp.exe" )
     if notify
-	    puts "RPG Maker XP is already running!  Please close it and try again. :)"
+      puts "RPG Maker XP is already running!  Please close it and try again. :)"
       puts "Exiting..."
       pause_prompt
-	  end
-	  return true
+    end
+    return true
   else
     return false
   end
 end
 
-#----------------------------------------------------------------------------
-# check_for_rmvx: Checks if rpgvp.exe is running and, if so, exits.  Also
-# returns true if RMVX was running.
-#   notify: A boolean for whether to print a notification if RMVX is running.
-#----------------------------------------------------------------------------
-def check_for_rmvx( notify = false )
-  if process_running?( "rpgvx.exe" )
-    if notify
-	    puts "RPG Maker VX is already running!  Please close it and try again. :)"
-      puts "Exiting..."
-      pause_prompt
-	  end
-	  return true
-  else
-    return false
-  end
-end
-#----------------------------------------------------------------------------
-# check_for_rmvxa: Checks if rpgvp.exe is running and, if so, exits.  Also
-# returns true if rmvxa was running.
-#   notify: A boolean for whether to print a notification if rmvxa is running.
-#----------------------------------------------------------------------------
-def check_for_rmvxa( notify = false )
-  if process_running?( "rpgvxace.exe" )
-    if notify
-	    puts "RPG Maker VXA is already running!  Please close it and try again. :)"
-      puts "Exiting..."
-      pause_prompt
-	  end
-	  return true
-  else
-    return false
-  end
-end
 #----------------------------------------------------------------------------
 # generate_filename: Generates a filename given an RGSS script entry.
 #   script: An entry for a script in the loaded Scripts file. This

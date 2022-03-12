@@ -38,7 +38,7 @@ protected
   #=====================================================================
   def self.before( plugin_name, event )
     if event == :on_start
-	    add_startup_constraint( self.to_s, plugin_name )
+      add_startup_constraint( self.to_s, plugin_name )
     else
       add_shutdown_constraint( self.to_s, plugin_name )
     end
