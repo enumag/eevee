@@ -67,7 +67,12 @@ class DataImporterExporter < PluginBase
     # For each yaml file, load it and dump the objects to data file
     files.each_index do |i|
       data = nil 
- 
+
+      # Skip import if checksum matches
+      sha256 = Digest::SHA256.file $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
+      firstLine = File.open($INPUT_DIR + files[i], &:readline)
+      next if firstLine[19..64+18] == sha256.hexdigest
+
       # Load the data from yaml file
       start_time = Time.now
       File.open( $INPUT_DIR + files[i], "r+" ) do |yamlfile|
@@ -179,10 +184,13 @@ class DataImporterExporter < PluginBase
         # Prevent the 'edit_map_id' field of System from conflicting
         data.edit_map_id = $DEFAULT_STARTUP_MAP unless $DEFAULT_STARTUP_MAP == -1
       end
- 
+
+      sha256 = Digest::SHA256.file $INPUT_DIR + files[i]
+
       # Dump the data to a YAML file
       File.open($OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml", File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |outfile|
-        YAML::dump({'root' => data}, outfile)
+        File.write(outfile, "# Checksum SHA256: #{sha256.hexdigest}\n")
+        File.write(outfile, YAML::dump({'root' => data}), mode: 'a')
       end
  
       # Calculate the time to dump the .yaml file
