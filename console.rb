@@ -22,7 +22,7 @@ elsif $COMMAND == "start"
 
     plugin.on_start
 
-    # Dump the sytem time at startup into a file to read later
+    # Dump the system time at startup into a file to read later
     dump_startup_time
 
     # Definitely do not want the user to close the command window

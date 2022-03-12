@@ -11,8 +11,6 @@
 # Add bin directory to the Ruby search path
 #$LOAD_PATH << "C:/bin"
 
-require_relative 'addons'
-
 require 'yaml'
 require 'digest'
 
@@ -44,9 +42,9 @@ $TIME_LOG_FILE = "timestamp.bin"
 # An array of invalid Windows filename strings and their substitutions. This
 # array is used to modify the script title in RMXP's script editor to construct
 # a filename for saving the script out to the filesystem.
-$INVALID_CHARS_FOR_FILENAME= [ 
+$INVALID_CHARS_FOR_FILENAME = [
     [" - ", "_"],
-    [" ",   "_"],
+    [" ", "_"],
     ["-", "_"],
     [":", "_"],
     ["/", "_"],
@@ -153,28 +151,4 @@ def load_startup_time(delete_file = false)
     if delete_file then File.delete( $PROJECT_DIR + '/' + $TIME_LOG_FILE ) end
   end
   t
-end
-
-#----------------------------------------------------------------------------
-# generate_filename: Generates a filename given an RGSS script entry.
-#   script: An entry for a script in the loaded Scripts file. This
-#           is a three element array with the 0th element as the unique id,
-#           the 1st element is the script's title in RM, and the 3rd 
-#           element is the script's compressed text
-#----------------------------------------------------------------------------
-def generate_filename(script)
-  (Zlib::Inflate.inflate(script[2]) != '' ? "#{fix_name(script[1])}.rb" : 'EMPTY')
-end
-
-#----------------------------------------------------------------------------
-# generate_filename: Generates a filename given an RGSS script's title.
-#   title: The title of the script in RM's script editor
-#----------------------------------------------------------------------------
-def fix_name(title)
-  result = String.new( title )
-  # Replace all invalid characters
-  for substitution in $INVALID_CHARS_FOR_FILENAME
-    result.gsub!(substitution[0], substitution[1])
-  end
-  result
 end
