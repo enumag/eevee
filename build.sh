@@ -2,14 +2,11 @@
 
 ocra \
   console.rb \
-  rmxp/rgss.rb \
-  rmxp/rgss_internal.rb \
-  rmxp/rgss_mod.rb \
-  rmxp/rgss_rpg.rb \
   common.rb \
   addons.rb \
   plugin_base.rb \
-  plugins/data_importer_exporter.rb \
+  rmxp/*.rb \
+  plugins/*.rb \
   --gemfile "./Gemfile" \
   --gem-full \
   --dll "ruby_builtin_dlls\libssp-0.dll" \

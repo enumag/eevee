@@ -1,5 +1,5 @@
-$COMMAND = ARGV[0]
-$PROJECT_DIR = ARGV[1]
+$COMMAND = ARGV[0] || "start"
+$PROJECT_DIR = Dir.pwd + '/'
 
 $DATA_TYPE = "rxdata"
 $RE_EXPORT = false
