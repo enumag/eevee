@@ -69,9 +69,12 @@ class DataImporterExporter < PluginBase
       data = nil 
 
       # Skip import if checksum matches
-      sha256 = Digest::SHA256.file $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
-      firstLine = File.open($INPUT_DIR + files[i], &:readline)
-      next if firstLine[19..64+18] == sha256.hexdigest
+      output_file = $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
+      if File.exist?(output_file)
+        sha256 = Digest::SHA256.file output_file
+        firstLine = File.open($INPUT_DIR + files[i], &:readline)
+        next if firstLine[19..64+18] == sha256.hexdigest
+      end
 
       # Load the data from yaml file
       start_time = Time.now
@@ -85,7 +88,7 @@ class DataImporterExporter < PluginBase
  
       # Dump the data to .rxdata or .rvdata file
       start_time = Time.now
-      File.open( $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}", "w+" ) do |datafile|
+      File.open( output_file, "w+" ) do |datafile|
         Marshal.dump( data['root'], datafile )
       end
  

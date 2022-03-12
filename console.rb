@@ -20,9 +20,6 @@ elsif $COMMAND == "start"
     require 'listen'
     require 'wdm'
 
-    # Make sure RMXP isn't already running
-    exit if check_for_rmxp(true)
-
     plugin.on_start
 
     # Dump the sytem time at startup into a file to read later

@@ -8,9 +8,6 @@
 #    common to all of the import/export scripts.
 #===============================================================================
 
-require 'win32ole'
-require 'zlib'
-
 # Add bin directory to the Ruby search path
 #$LOAD_PATH << "C:/bin"
 
@@ -156,38 +153,6 @@ def load_startup_time(delete_file = false)
     if delete_file then File.delete( $PROJECT_DIR + '/' + $TIME_LOG_FILE ) end
   end
   t
-end
-
-#----------------------------------------------------------------------------
-# process_running?: Returns true if a win32 process with the specified name
-# is currently running.
-#   process_name: The name of the process.
-#----------------------------------------------------------------------------
-def process_running?(process_name)
-  names = []
-  procs = WIN32OLE.connect("winmgmts:\\\\.")
-  procs.InstancesOf("win32_process").each do |p|
-	  names.push(p.name.to_s.downcase)
-  end
-  return names.index(process_name) != nil
-end
-
-#----------------------------------------------------------------------------
-# check_for_rmxp: Checks if rpgxp.exe is running and, if so, exits.  Also
-# returns true if RMXP was running.
-#   notify: A boolean for whether to print a notification if RMXP is running.
-#----------------------------------------------------------------------------
-def check_for_rmxp( notify = false )
-  if process_running?( "rpgxp.exe" )
-    if notify
-      puts "RPG Maker XP is already running!  Please close it and try again. :)"
-      puts "Exiting..."
-      pause_prompt
-    end
-    return true
-  else
-    return false
-  end
 end
 
 #----------------------------------------------------------------------------
