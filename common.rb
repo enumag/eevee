@@ -21,12 +21,7 @@ require 'yaml'
 # Setup config filename
 config_filename = "config.yaml"
 # Setup the config file path
-os_version = `ver`.strip
-if os_version.index( "Windows XP" )
-  $CONFIG_PATH = String.new( $PROJECT_DIR + "/" + config_filename )
-elsif os_version.index( "Windows" )
-  $CONFIG_PATH = String.new( $PROJECT_DIR + "/" + config_filename ).gsub! "/", "\\"
-end
+$CONFIG_PATH = $PROJECT_DIR + "/" + config_filename
 
 # Read the config YAML file
 config = nil
@@ -41,13 +36,7 @@ $DATA_IGNORE_LIST    = config['data_ignore_list']
 $VERBOSE             = config['verbose']
 $MAGIC_NUMBER        = config['magic_number']
 $DEFAULT_STARTUP_MAP = config['edit_map_id']
-puts 
-
-# This is the filename for the export digest.  This file has an entry for
-# each RGSS script which has been exported from RMXP.  Each entry has 
-# information about the script such as its title in RMXP and the name of
-# the Ruby file it was exported to.
-$EXPORT_DIGEST_FILE = "digest.txt"
+puts
 
 # This is the filename where the startup timestamp is dumped.  Later it can
 # be compared with the modification timestamp for data files to determine
