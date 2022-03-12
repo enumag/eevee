@@ -4,7 +4,6 @@ $PROJECT_DIR = ARGV[1]
 $DATA_TYPE = "rxdata"
 $RE_EXPORT = false
 
-require 'digest'
 require_relative 'rmxp/rgss'
 require_relative 'common'
 require_relative 'plugin_base'

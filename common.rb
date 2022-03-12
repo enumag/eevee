@@ -17,6 +17,7 @@ require 'zlib'
 require_relative 'addons'
 
 require 'yaml'
+require 'digest'
 
 # Setup config filename
 config_filename = "config.yaml"
