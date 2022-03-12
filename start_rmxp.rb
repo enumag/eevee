@@ -11,11 +11,6 @@
 # Setup the project directory from the command-line argument
 OS_VERSION = `ver`.strip
 $PROJECT_DIR = ARGV[0]
-# if OS_VERSION.index( "Windows XP" )
-#   $PROJECT_DIR = String.new( $PROJECT_DIR )
-# elsif OS_VERSION.index( "Windows" )
-#   $PROJECT_DIR = String.new( $PROJECT_DIR ).gsub! "/", "\\"
-# end
 
 $DATA_TYPE = "rxdata"
 $RE_EXPORT = false
