@@ -163,6 +163,10 @@ def yaml_path(stack)
   return parts.join('.')
 end
 
+def encode64(bin)
+  [bin].pack("m0").delete("=")
+end
+
 def yaml_stable_ref(yaml)
   output = ''
   path = []
@@ -179,31 +183,11 @@ def yaml_stable_ref(yaml)
       path << { key: match[:key], index: -1 }
     end
     unless match[:reference].nil?
-      references[match[:reference]] = yaml_path(path)
+      references[match[:reference]] = encode64(yaml_path(path))
       line = line.sub("&" + match[:reference], "&#" + references[match[:reference]] + "#")
     end
     unless match[:pointer].nil?
       line = line.sub("*" + match[:pointer], "*#" + references[match[:pointer]] + "#")
-    end
-    output += line + "\n"
-  end
-  return output
-end
-
-def yaml_real_ref(input)
-  output = ''
-  path = []
-  references = {}
-  i = 1
-  input.split(/\n/).each do |line|
-    match = line.match(/^ *(?:(?:- |[a-zA-Z0-9_]++: ?)(?:&(?<reference>#[0-9a-zA-Z_\]\[\.]++#)|\*(?<pointer>#[0-9a-zA-Z_\]\[\.]++#))?)?/)
-    unless match[:reference].nil?
-      references[match[:reference]] = i
-      line = line.sub(match[:reference], i.to_s)
-      i += 1
-    end
-    unless match[:pointer].nil?
-      line = line.sub(match[:pointer], references[match[:pointer]].to_s)
     end
     output += line + "\n"
   end
