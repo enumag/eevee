@@ -65,28 +65,27 @@ class DataImporterExporter < PluginBase
  
     # For each yaml file, load it and dump the objects to data file
     files.each_index do |i|
-      data = nil 
+      data = nil
+      start_time = Time.now
+      yaml_file = $INPUT_DIR + files[i]
+      data_file = $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
 
       # Skip import if checksum matches
-      output_file = $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
-      unless $FORCE
-        if File.exist?(output_file)
-          sha256 = Digest::SHA256.file output_file
-          firstLine = File.open($INPUT_DIR + files[i], &:readline)
-          next if firstLine[19..64+18] == sha256.hexdigest
-        end
+      if not $FORCE and File.exist?(data_file)
+        sha256 = Digest::SHA256.file data_file
+        firstLine = File.open(yaml_file, &:readline)
+        next if firstLine[19..64+18] == sha256.hexdigest
       end
 
       # Load the data from yaml file
-      start_time = Time.now
-      File.open( $INPUT_DIR + files[i], "r+" ) do |yamlfile|
-        data = YAML::unsafe_load( yamlfile )
+      File.open( yaml_file, "r+" ) do |input_file|
+        data = YAML::unsafe_load( input_file )
       end
  
       # Dump the data to .rxdata or .rvdata file
       start_time = Time.now
-      File.open( output_file, "w+" ) do |datafile|
-        Marshal.dump( data['root'], datafile )
+      File.open( data_file, "w+" ) do |output_file|
+        Marshal.dump( data['root'], output_file )
       end
  
       # Calculate the time to dump the data file
@@ -157,10 +156,12 @@ class DataImporterExporter < PluginBase
     files.each_index do |i|
       data = nil
       start_time = Time.now
+      data_file = $INPUT_DIR + files[i]
+      yaml_file = $OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml"
  
       # Load the data from rmxp's data file
-      File.open( $INPUT_DIR + files[i], "r+" ) do |datafile|
-        data = Marshal.load( datafile )
+      File.open( data_file, "r+" ) do |input_file|
+        data = Marshal.load( input_file )
       end
  
       # Handle default values for the System data file
@@ -176,11 +177,11 @@ class DataImporterExporter < PluginBase
         data.events = data.events.sort.to_h
       end
 
-      sha256 = Digest::SHA256.file $INPUT_DIR + files[i]
+      sha256 = Digest::SHA256.file data_file
 
       # Dump the data to a YAML file
-      File.open($OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml", File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |outfile|
-        File.write(outfile, "# Checksum SHA256: #{sha256.hexdigest}\n" + YAML::dump({'root' => data}))
+      File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+        File.write(output_file, "# Checksum SHA256: #{sha256.hexdigest}\n" + YAML::dump({'root' => data}))
       end
  
       # Calculate the time to dump the .yaml file
