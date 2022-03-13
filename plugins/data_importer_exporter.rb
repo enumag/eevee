@@ -61,7 +61,6 @@ class DataImporterExporter < PluginBase
     end
  
     total_start_time = Time.now
-    total_load_time  = 0.0
     total_dump_time  = 0.0
  
     # For each yaml file, load it and dump the objects to data file
@@ -84,10 +83,6 @@ class DataImporterExporter < PluginBase
         data = YAML::unsafe_load( yamlfile )
       end
  
-      # Calculate the time to load the .yaml file
-      load_time = Time.now - start_time
-      total_load_time += load_time
- 
       # Dump the data to .rxdata or .rvdata file
       start_time = Time.now
       File.open( output_file, "w+" ) do |datafile|
@@ -104,7 +99,7 @@ class DataImporterExporter < PluginBase
       str += "(" + "#{i+1}".rjust(3, '0')
       str += "/"
       str += "#{files.size}".rjust(3, '0') + ")"
-      str += "    #{load_time + dump_time} seconds"
+      str += "    #{dump_time} seconds"
       puts_verbose str
     end
  
@@ -113,9 +108,8 @@ class DataImporterExporter < PluginBase
  
     # Report the times
     print_separator
-    puts_verbose "YAML load time:   #{total_load_time} seconds."
     puts_verbose "#{$DATA_TYPE} dump time: #{total_dump_time} seconds."
-    puts_verbose "Total import time:  #{total_elapsed_time} seconds."
+    puts_verbose "Total import time: #{total_elapsed_time} seconds."
     print_separator
     puts_verbose
   end
@@ -157,9 +151,8 @@ class DataImporterExporter < PluginBase
     end
  
     total_start_time = Time.now
-    total_load_time = 0.0
     total_dump_time = 0.0
- 
+
     # For each data file, load it and dump the objects to YAML
     files.each_index do |i|
       data = nil
@@ -169,12 +162,6 @@ class DataImporterExporter < PluginBase
       File.open( $INPUT_DIR + files[i], "r+" ) do |datafile|
         data = Marshal.load( datafile )
       end
- 
-      # Calculate the time to load the data file
-      load_time = Time.now - start_time
-      total_load_time += load_time
- 
-      start_time = Time.now
  
       # Handle default values for the System data file
       if files[i] == "System.#{$DATA_TYPE}"
@@ -206,7 +193,7 @@ class DataImporterExporter < PluginBase
       str += "(" + "#{i+1}".rjust(3, '0')
       str += "/"
       str += "#{files.size}".rjust(3, '0') + ")"
-      str += "    #{load_time + dump_time} seconds"
+      str += "    #{dump_time} seconds"
       puts_verbose str
     end
  
@@ -215,9 +202,8 @@ class DataImporterExporter < PluginBase
  
     # Report the times
     print_separator
-    puts_verbose "#{$DATA_TYPE} load time: #{total_load_time} seconds."
-    puts_verbose "YAML dump time:   #{total_dump_time} seconds."
-    puts_verbose "Total export time:  #{total_elapsed_time} seconds."
+    puts_verbose "YAML dump time: #{total_dump_time} seconds."
+    puts_verbose "Total export time: #{total_elapsed_time} seconds."
     print_separator
     puts_verbose
   end
