@@ -184,12 +184,16 @@ class DataImporterExporter < PluginBase
         data.edit_map_id = $DEFAULT_STARTUP_MAP unless $DEFAULT_STARTUP_MAP == -1
       end
 
+      # Order map events by keys for stable diffs
+      if data.instance_of?(RPG::Map)
+        data.events = data.events.sort.to_h
+      end
+
       sha256 = Digest::SHA256.file $INPUT_DIR + files[i]
 
       # Dump the data to a YAML file
       File.open($OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml", File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |outfile|
-        File.write(outfile, "# Checksum SHA256: #{sha256.hexdigest}\n")
-        File.write(outfile, YAML::dump({'root' => data}), mode: 'a')
+        File.write(outfile, "# Checksum SHA256: #{sha256.hexdigest}\n" + YAML::dump({'root' => data}))
       end
  
       # Calculate the time to dump the .yaml file
