@@ -78,9 +78,9 @@ class DataImporterExporter < PluginBase
       end
 
       # Load the data from yaml file
-      File.open( yaml_file, "r+" ) do |input_file|
-        data = YAML::unsafe_load( input_file )
-      end
+      yaml = File.read( yaml_file )
+      stable = yaml["- &"] ? yaml_real_ref(yaml) : yaml
+      data = YAML::unsafe_load(stable)
  
       # Dump the data to .rxdata or .rvdata file
       File.open( data_file, "w+" ) do |output_file|
@@ -177,6 +177,8 @@ class DataImporterExporter < PluginBase
       end
 
       # Rewrite data file if the checksum is wrong and RMXP is not open
+      yaml = YAML::dump({'root' => data})
+      data = YAML::unsafe_load(yaml)
       checksum = Digest::SHA256.hexdigest Marshal.dump( data )
       if $FORCE and checksum != Digest::SHA256.file(data_file).hexdigest
         File.open( data_file, "w+" ) do |output_file|
@@ -185,8 +187,9 @@ class DataImporterExporter < PluginBase
       end
 
       # Dump the data to a YAML file
+      unstable = yaml["- &"] ? yaml_stable_ref(yaml) : yaml
       File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + YAML::dump({'root' => data}))
+        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + unstable)
       end
  
       # Calculate the time to dump the .yaml file

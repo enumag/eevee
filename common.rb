@@ -152,3 +152,60 @@ def load_startup_time(delete_file = false)
   end
   t
 end
+
+def yaml_path(stack)
+  parts = []
+  stack.each do |item|
+    part = item[:key]
+    part += "[" + item[:index].to_s + "]" unless item[:index] == -1
+    parts << part
+  end
+  return parts.join('.')
+end
+
+def yaml_stable_ref(yaml)
+  output = ''
+  path = []
+  references = {}
+  yaml.split(/\n/).each do |line|
+    match = line.match(/^(?<indent> *)(?:(?:(?<dash>- )|(?<key>[a-zA-Z0-9_]++): ?)(?:&(?<reference>[0-9]++)|\*(?<pointer>[0-9]++))?)?/)
+    indent = match[:indent].length / 2
+    unless match[:dash].nil?
+      path = path.slice(0, indent + 1)
+      path.last[:index] += 1
+    end
+    unless match[:key].nil?
+      path = path.slice(0, indent)
+      path << { key: match[:key], index: -1 }
+    end
+    unless match[:reference].nil?
+      references[match[:reference]] = yaml_path(path)
+      line = line.sub("&" + match[:reference], "&#" + references[match[:reference]] + "#")
+    end
+    unless match[:pointer].nil?
+      line = line.sub("*" + match[:pointer], "*#" + references[match[:pointer]] + "#")
+    end
+    output += line + "\n"
+  end
+  return output
+end
+
+def yaml_real_ref(input)
+  output = ''
+  path = []
+  references = {}
+  i = 1
+  input.split(/\n/).each do |line|
+    match = line.match(/^ *(?:(?:- |[a-zA-Z0-9_]++: ?)(?:&(?<reference>#[0-9a-zA-Z_\]\[\.]++#)|\*(?<pointer>#[0-9a-zA-Z_\]\[\.]++#))?)?/)
+    unless match[:reference].nil?
+      references[match[:reference]] = i
+      line = line.sub(match[:reference], i.to_s)
+      i += 1
+    end
+    unless match[:pointer].nil?
+      line = line.sub(match[:pointer], references[match[:pointer]].to_s)
+    end
+    output += line + "\n"
+  end
+  return output
+end
