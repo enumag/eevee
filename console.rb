@@ -2,7 +2,7 @@ $COMMAND = ARGV[0] || "start"
 $PROJECT_DIR = Dir.pwd + '/'
 
 $DATA_TYPE = "rxdata"
-$RE_EXPORT = false
+$FORCE = true
 
 require_relative 'rmxp/rgss'
 require_relative 'common'
@@ -14,9 +14,10 @@ plugin = DataImporterExporter.new
 if $COMMAND == "import"
     plugin.on_start
 elsif $COMMAND == "export"
-    $RE_EXPORT = true
     plugin.on_exit
 elsif $COMMAND == "start"
+    $FORCE = false
+
     require 'listen'
     require 'wdm'
 
