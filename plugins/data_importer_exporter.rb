@@ -83,7 +83,6 @@ class DataImporterExporter < PluginBase
       end
  
       # Dump the data to .rxdata or .rvdata file
-      start_time = Time.now
       File.open( data_file, "w+" ) do |output_file|
         Marshal.dump( data['root'], output_file )
       end
@@ -177,11 +176,17 @@ class DataImporterExporter < PluginBase
         data.events = data.events.sort.to_h
       end
 
-      sha256 = Digest::SHA256.file data_file
+      # Rewrite data file if the checksum is wrong and RMXP is not open
+      checksum = Digest::SHA256.hexdigest Marshal.dump( data )
+      if $FORCE and checksum != Digest::SHA256.file(data_file).hexdigest
+        File.open( data_file, "w+" ) do |output_file|
+          Marshal.dump( data, output_file )
+        end
+      end
 
       # Dump the data to a YAML file
       File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-        File.write(output_file, "# Checksum SHA256: #{sha256.hexdigest}\n" + YAML::dump({'root' => data}))
+        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + YAML::dump({'root' => data}))
       end
  
       # Calculate the time to dump the .yaml file
