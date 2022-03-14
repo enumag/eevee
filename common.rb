@@ -166,33 +166,61 @@ def encode64(bin)
   [bin].pack("m0").delete("=")
 end
 
+def analyze(line)
+  content = line.lstrip;
+  indent = (line.length - content.length)
+  dash = content.start_with?('- ')
+  if dash
+    key = nil
+    content = content[2..]
+  else
+    colon = content.index(':')
+    unless colon.nil?
+      key = content[0..colon - 1]
+      content = content[colon + 1..].lstrip
+    end
+  end
+  if dash or not key.nil?
+    anchor = content.start_with?('&') ? content[1..content.index(' ') - 1] : nil
+    pointer = content.start_with?('*') ? content.rstrip[1..] : nil
+  end
+
+  return {
+    indent: indent,
+    dash: dash,
+    key: key,
+    anchor: anchor,
+    alias: pointer,
+  }
+end
+
 def yaml_stable_ref(yaml)
   output = ''
   path = []
   references = {}
   local_indexes = {}
-  yaml.split(/\n/).each do |line|
-    match = line.match(/^(?<indent> *)(?:(?:(?<dash>- )|(?<key>[a-zA-Z0-9_]++): ?)(?:&(?<reference>[0-9]++)|\*(?<pointer>[0-9]++))?)?/)
-    indent = match[:indent].length / 2
-    unless match[:dash].nil?
+  yaml.each_line do |line|
+    analysis = analyze(line)
+    indent = analysis[:indent] / 2
+    if analysis[:dash]
       path = path.slice(0, indent + 1)
       path.last[:index] += 1
     end
-    unless match[:key].nil?
+    unless analysis[:key].nil?
       path = path.slice(0, indent)
-      path << { key: match[:key], index: -1 }
+      path << { key: analysis[:key], index: -1 }
     end
-    unless match[:reference].nil?
+    unless analysis[:anchor].nil?
       keys = yaml_path(path)
       local_indexes[keys] = 0 unless local_indexes.key?(keys)
       local_indexes[keys] += 1
-      references[match[:reference]] = local_indexes[keys].to_s + '_' + encode64(keys)
-      line = line.sub("&" + match[:reference], "&" + references[match[:reference]])
+      references[analysis[:anchor]] = local_indexes[keys].to_s + '_' + encode64(keys)
+      line = line.sub("&" + analysis[:anchor], "&" + references[analysis[:anchor]])
     end
-    unless match[:pointer].nil?
-      line = line.sub("*" + match[:pointer], "*" + references[match[:pointer]])
+    unless analysis[:alias].nil?
+      line = line.sub("*" + analysis[:alias], "*" + references[analysis[:alias]])
     end
-    output += line + "\n"
+    output += line
   end
   return output
 end
