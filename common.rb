@@ -13,6 +13,7 @@
 
 require 'yaml'
 require 'digest'
+require 'open3'
 
 # Setup config filename
 config_filename = "config.yaml"
@@ -184,10 +185,10 @@ def yaml_stable_ref(yaml)
     end
     unless match[:reference].nil?
       references[match[:reference]] = encode64(yaml_path(path))
-      line = line.sub("&" + match[:reference], "&#" + references[match[:reference]] + "#")
+      line = line.sub("&" + match[:reference], "&" + references[match[:reference]])
     end
     unless match[:pointer].nil?
-      line = line.sub("*" + match[:pointer], "*#" + references[match[:pointer]] + "#")
+      line = line.sub("*" + match[:pointer], "*" + references[match[:pointer]])
     end
     output += line + "\n"
   end

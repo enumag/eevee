@@ -31,7 +31,7 @@ class DataImporterExporter < PluginBase
     print_separator(true)
     puts "  RMXP Data Import"
     print_separator(true)
-    
+
     # Check if the input directory exist
     if not (File.exist? $INPUT_DIR and File.directory? $INPUT_DIR)
       puts "Input directory #{$INPUT_DIR} does not exist."
@@ -39,7 +39,7 @@ class DataImporterExporter < PluginBase
       puts
       return
     end
- 
+
     # Check if the output directory exist
     if not (File.exist? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
       puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
@@ -47,22 +47,22 @@ class DataImporterExporter < PluginBase
       puts
       exit
     end
- 
+
     # Create the list of data files to export
     files = Dir.entries( $INPUT_DIR )
     files = files.select { |e| File.extname(e) == '.yaml' }
     files = files.select { |f| f.index("._") != 0 }  # FIX: Ignore TextMate annoying backup files
     files.sort!
- 
+
     if files.empty?
       puts_verbose "No data files to import."
       puts_verbose
       return
     end
- 
+
     total_start_time = Time.now
     total_dump_time  = 0.0
- 
+
     # For each yaml file, load it and dump the objects to data file
     files.each_index do |i|
       data = nil
@@ -72,25 +72,24 @@ class DataImporterExporter < PluginBase
 
       # Skip import if checksum matches
       if not $FORCE and File.exist?(data_file)
-        sha256 = Digest::SHA256.file data_file
         firstLine = File.open(yaml_file, &:readline)
-        next if firstLine[19..64+18] == sha256.hexdigest
+        next if firstLine[19..18+64] == Digest::SHA256.file(data_file).hexdigest
       end
 
       # Load the data from yaml file
       File.open( yaml_file, "r+" ) do |input_file|
         data = YAML::unsafe_load( input_file )
       end
- 
+
       # Dump the data to .rxdata or .rvdata file
       File.open( data_file, "w+" ) do |output_file|
         Marshal.dump( data['root'], output_file )
       end
- 
+
       # Calculate the time to dump the data file
       dump_time = Time.now - start_time
       total_dump_time += dump_time
- 
+
       # Update the user on the status
       str =  "Imported "
       str += "#{files[i]}".ljust(30)
@@ -100,10 +99,10 @@ class DataImporterExporter < PluginBase
       str += "    #{dump_time} seconds"
       puts_verbose str
     end
- 
+
     # Calculate the total elapsed time
     total_elapsed_time = Time.now - total_start_time
- 
+
     # Report the times
     print_separator
     puts_verbose "#{$DATA_TYPE} dump time: #{total_dump_time} seconds."
@@ -116,38 +115,38 @@ class DataImporterExporter < PluginBase
     # Set up the directory paths
     $INPUT_DIR  = $PROJECT_DIR + '/' + $DATA_DIR + '/'
     $OUTPUT_DIR = $PROJECT_DIR + '/' + $YAML_DIR   + '/'
- 
+
     print_separator(true)
     puts "  Data Export"
     print_separator(true)
- 
+
     $STARTUP_TIME = load_startup_time || Time.now
- 
+
     # Check if the input directory exist
     if not (File.exist? $INPUT_DIR and File.directory? $INPUT_DIR)
       puts "Error: Input directory #{$INPUT_DIR} does not exist."
       puts "Hint: Check that the $DATA_DIR variable in paths.rb is set to the correct path."
       exit
     end
- 
+
     # Create the output directory if it doesn't exist
     if not (File.exist? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
       recursive_mkdir( $OUTPUT_DIR )
     end
- 
+
     # Create the list of data files to export
     files = Dir.entries( $INPUT_DIR )
     files -= $DATA_IGNORE_LIST
     files = files.select { |e| File.extname(e) == ".#{$DATA_TYPE}" }
     files = files.select { |e| file_modified_since?($INPUT_DIR + e, $STARTUP_TIME) or not data_file_exported?($INPUT_DIR + e) } unless $FORCE == true
     files.sort!
- 
+
     if files.empty?
       puts_verbose "No data files need to be exported."
       puts_verbose
       return
     end
- 
+
     total_start_time = Time.now
     total_dump_time = 0.0
 
@@ -157,12 +156,12 @@ class DataImporterExporter < PluginBase
       start_time = Time.now
       data_file = $INPUT_DIR + files[i]
       yaml_file = $OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml"
- 
+
       # Load the data from rmxp's data file
       File.open( data_file, "r+" ) do |input_file|
         data = Marshal.load( input_file )
       end
- 
+
       # Handle default values for the System data file
       if files[i] == "System.#{$DATA_TYPE}"
         # Prevent the 'magic_number' field of System from always conflicting
@@ -171,27 +170,36 @@ class DataImporterExporter < PluginBase
         data.edit_map_id = $DEFAULT_STARTUP_MAP unless $DEFAULT_STARTUP_MAP == -1
       end
 
-      # Order map events by keys for stable diffs
-      if data.instance_of?(RPG::Map)
-        data.events = data.events.sort.to_h
+      # Dump the data to a YAML file
+      yaml = yaml_stable_ref(YAML::dump({'root' => data}))
+      checksum = Digest::SHA256.file(data_file).hexdigest
+      File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + yaml)
       end
 
+      # Dirty workaround to sort the keys in yaml
+      command = 'START /B /D"' + $PROJECT_DIR + '"' + ' yq.exe "sort_keys(..)" "' + yaml_file + '"'
+      stdout, stderr = Open3.capture3(command)
+      print stderr
+      File.write(yaml_file, stdout)
+
       # Rewrite data file if the checksum is wrong and RMXP is not open
-      yaml = YAML::dump({'root' => data})
-      data = YAML::unsafe_load(yaml)['root']
-      checksum = Digest::SHA256.hexdigest Marshal.dump( data )
-      if $FORCE and checksum != Digest::SHA256.file(data_file).hexdigest
-        File.open( data_file, "w+" ) do |output_file|
-          Marshal.dump( data, output_file )
+      File.open( yaml_file, "r+" ) do |input_file|
+        data = YAML::unsafe_load( input_file )
+      end
+
+      final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
+      if checksum != final_checksum
+        yaml = File.read(yaml_file)
+        yaml[19..18+64] = final_checksum
+        File.write(yaml_file, yaml)
+        if $FORCE
+          File.open( data_file, "w+" ) do |output_file|
+            Marshal.dump( data['root'], output_file )
+          end
         end
       end
 
-      # Dump the data to a YAML file
-      unstable = yaml["- &"] ? yaml_stable_ref(yaml) : yaml
-      File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + unstable)
-      end
- 
       # Calculate the time to dump the .yaml file
       dump_time = Time.now - start_time
       total_dump_time += dump_time
