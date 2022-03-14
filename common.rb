@@ -157,9 +157,7 @@ end
 def yaml_path(stack)
   parts = []
   stack.each do |item|
-    part = item[:key]
-    part += "[" + item[:index].to_s + "]" unless item[:index] == -1
-    parts << part
+    parts << item[:key]
   end
   return parts.join('.')
 end
@@ -172,6 +170,7 @@ def yaml_stable_ref(yaml)
   output = ''
   path = []
   references = {}
+  local_indexes = {}
   yaml.split(/\n/).each do |line|
     match = line.match(/^(?<indent> *)(?:(?:(?<dash>- )|(?<key>[a-zA-Z0-9_]++): ?)(?:&(?<reference>[0-9]++)|\*(?<pointer>[0-9]++))?)?/)
     indent = match[:indent].length / 2
@@ -184,7 +183,10 @@ def yaml_stable_ref(yaml)
       path << { key: match[:key], index: -1 }
     end
     unless match[:reference].nil?
-      references[match[:reference]] = encode64(yaml_path(path))
+      keys = yaml_path(path)
+      local_indexes[keys] = 0 unless local_indexes.key?(keys)
+      local_indexes[keys] += 1
+      references[match[:reference]] = local_indexes[keys].to_s + '_' + encode64(keys)
       line = line.sub("&" + match[:reference], "&" + references[match[:reference]])
     end
     unless match[:pointer].nil?
