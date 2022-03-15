@@ -154,71 +154,28 @@ def load_startup_time(delete_file = false)
   t
 end
 
-def yaml_path(stack)
-  parts = []
-  stack.each do |item|
-    parts << item[:key]
-  end
-  return parts.join('.')
-end
-
-def encode64(bin)
-  [bin].pack("m0").delete("=")
-end
-
-def analyze(line)
-  content = line.lstrip;
-  indent = (line.length - content.length)
-  dash = content.start_with?('- ')
-  if dash
-    key = nil
-    content = content[2..]
-  else
-    colon = content.index(':')
-    unless colon.nil?
-      key = content[0..colon - 1]
-      content = content[colon + 1..].lstrip
-    end
-  end
-  if dash or not key.nil?
-    anchor = content.start_with?('&') ? content[1..content.index(' ') - 1] : nil
-    pointer = content.start_with?('*') ? content.rstrip[1..] : nil
-  end
-
-  return {
-    indent: indent,
-    dash: dash,
-    key: key,
-    anchor: anchor,
-    alias: pointer,
-  }
-end
-
 def yaml_stable_ref(yaml)
   output = ''
-  path = []
-  references = {}
-  local_indexes = {}
+  i = 1
+  j = 1
+  queue = Queue.new
   yaml.each_line do |line|
-    analysis = analyze(line)
-    indent = analysis[:indent] / 2
-    if analysis[:dash]
-      path = path.slice(0, indent + 1)
-      path.last[:index] += 1
-    end
-    unless analysis[:key].nil?
-      path = path.slice(0, indent)
-      path << { key: analysis[:key], index: -1 }
-    end
-    unless analysis[:anchor].nil?
-      keys = yaml_path(path)
-      local_indexes[keys] = 0 unless local_indexes.key?(keys)
-      local_indexes[keys] += 1
-      references[analysis[:anchor]] = local_indexes[keys].to_s + '_' + encode64(keys)
-      line = line.sub("&" + analysis[:anchor], "&" + references[analysis[:anchor]])
-    end
-    unless analysis[:alias].nil?
-      line = line.sub("*" + analysis[:alias], "*" + references[analysis[:alias]])
+    match = line.match(/^ *- (?<type>[&*])(?<reference>[0-9]++)/)
+    unless match.nil?
+      if match[:type] === '&'
+        queue.push(match[:reference])
+        line['- &' + match[:reference]] = '- &' + i.to_s
+        i += 1
+      elsif match[:reference] === queue.pop()
+        line['- *' + match[:reference]] = '- *' + j.to_s
+        j += 1
+        if queue.empty?
+          i = 1
+          j = 1
+        end
+      else
+        raise "Unexpected alias " + match[:reference]
+      end
     end
     output += line
   end

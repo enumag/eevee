@@ -171,17 +171,16 @@ class DataImporterExporter < PluginBase
       end
 
       # Dump the data to a YAML file
-      yaml = yaml_stable_ref(YAML::dump({'root' => data}))
       checksum = Digest::SHA256.file(data_file).hexdigest
       File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + yaml)
+        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + YAML::dump({'root' => data}))
       end
 
       # Dirty workaround to sort the keys in yaml
       command = 'START /B /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + yaml_file + '"'
       stdout, stderr = Open3.capture3(command)
       print stderr
-      File.write(yaml_file, stdout)
+      File.write(yaml_file, yaml_stable_ref(stdout))
 
       # Rewrite data file if the checksum is wrong and RMXP is not open
       File.open( yaml_file, "r+" ) do |input_file|
