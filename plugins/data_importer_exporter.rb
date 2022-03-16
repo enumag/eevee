@@ -71,7 +71,7 @@ class DataImporterExporter < PluginBase
       data_file = $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
 
       # Skip import if checksum matches
-      if File.exist?(data_file)
+      if not $FORCE and File.exist?(data_file)
         firstLine = File.open(yaml_file, &:readline)
         next if firstLine[19..18+64] == Digest::SHA256.file(data_file).hexdigest
       end

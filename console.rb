@@ -1,4 +1,4 @@
-$COMMAND = ARGV[0] || "start"
+$COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
 
 $DATA_TYPE = "rxdata"
