@@ -186,22 +186,15 @@ class DataImporterExporter < PluginBase
       File.open( yaml_file, "r+" ) do |input_file|
         data = YAML::unsafe_load( input_file )
       end
-      temp_file = data_file + '.tmp'
-      File.open( temp_file, "w+" ) do |output_file|
-        Marshal.dump( data['root'], output_file )
-      end
-
-      # Calling SHA256 on in-memory Marshal strings sometimes has different results
-      final_checksum = Digest::SHA256.file(temp_file).hexdigest
+      final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
       if checksum != final_checksum
         yaml = File.read(yaml_file)
         yaml[19..18+64] = final_checksum
         File.write(yaml_file, yaml)
         if $FORCE
-          File.delete(data_file)
-          File.rename(temp_file, data_file)
-        else
-          File.delete(temp_file)
+          File.open( data_file, "w+" ) do |output_file|
+            Marshal.dump( data['root'], output_file )
+          end
         end
       end
 
