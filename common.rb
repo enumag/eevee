@@ -13,7 +13,7 @@
 
 require 'yaml'
 require 'digest'
-require 'open3'
+require 'tmpdir'
 
 # Setup config filename
 config_filename = "config.yaml"
@@ -154,34 +154,32 @@ def load_startup_time(delete_file = false)
   t
 end
 
-def yaml_stable_ref(yaml)
-  output = ''
+def yaml_stable_ref(input_file, output_file)
   i = 1
   j = 1
   queue = Queue.new
-  yaml.each_line do |line|
-    if line['- &'].nil? and line['- *'].nil?
-      output += line
-      next
-    end
-    match = line.match(/^ *- (?<type>[&*])(?<reference>[0-9]++)/)
-    unless match.nil?
-      if match[:type] === '&'
-        queue.push(match[:reference])
-        line['- &' + match[:reference]] = '- &' + i.to_s
-        i += 1
-      elsif match[:reference] === queue.pop()
-        line['- *' + match[:reference]] = '- *' + j.to_s
-        j += 1
-        if queue.empty?
-          i = 1
-          j = 1
+  File.open(output_file, 'w') do |output|
+    File.open(input_file, 'r').each do |line|
+      if not line['- &'].nil? or not line['- *'].nil?
+        match = line.match(/^ *- (?<type>[&*])(?<reference>[0-9]++)/)
+        unless match.nil?
+          if match[:type] === '&'
+            queue.push(match[:reference])
+            line['- &' + match[:reference]] = '- &' + i.to_s
+            i += 1
+          elsif match[:reference] === queue.pop()
+            line['- *' + match[:reference]] = '- *' + j.to_s
+            j += 1
+            if queue.empty?
+              i = 1
+              j = 1
+            end
+          else
+            raise "Unexpected alias " + match[:reference]
+          end
         end
-      else
-        raise "Unexpected alias " + match[:reference]
       end
+      output.print line
     end
-    output += line
   end
-  return output
 end

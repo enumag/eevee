@@ -177,10 +177,10 @@ class DataImporterExporter < PluginBase
       end
 
       # Dirty workaround to sort the keys in yaml
-      command = 'START /B /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + yaml_file + '"'
-      stdout, stderr = Open3.capture3(command)
-      print stderr
-      File.write(yaml_file, yaml_stable_ref(stdout))
+      temp_file = Dir.tmpdir() + '/temp.yaml'
+      command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + yaml_file + '" > "' + temp_file + '"'
+      system(command)
+      yaml_stable_ref(temp_file, yaml_file)
 
       # Rewrite data file if the checksum is wrong and RMXP is not open
       File.open( yaml_file, "r+" ) do |input_file|
