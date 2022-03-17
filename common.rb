@@ -160,6 +160,10 @@ def yaml_stable_ref(yaml)
   j = 1
   queue = Queue.new
   yaml.each_line do |line|
+    if line['- &'].nil? and line['- *'].nil?
+      output += line
+      next
+    end
     match = line.match(/^ *- (?<type>[&*])(?<reference>[0-9]++)/)
     unless match.nil?
       if match[:type] === '&'

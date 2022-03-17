@@ -15,3 +15,32 @@
 #===============================================================================
 
 # Add any additional classes saved out in the rxdata files here...
+
+class PokemonDataCopy
+  attr_accessor :dataOldHash
+  attr_accessor :dataNewHash
+  attr_accessor :dataTime
+  attr_accessor :data
+
+  def initialize(data,datasave)
+    @datafile=data
+    @datasave=datasave
+    @data=readfile(@datafile)
+    @dataOldHash=crc32(@data)
+    @dataTime=filetime(@datafile)
+  end
+end
+
+class PBFieldNote
+  attr_accessor :fieldeffect
+  attr_accessor :text
+  attr_accessor :elaboration
+  attr_accessor :cogwheeltext
+
+  def initialize(fieldeffect, text, elaboration = "", cogwheeltext = "")
+    @fieldeffect = fieldeffect
+    @text = text
+    @elaboration = elaboration
+    @cogwheeltext = cogwheeltext
+  end
+end
