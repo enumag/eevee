@@ -38,8 +38,9 @@ elsif $COMMAND == "start"
     listener.start
 
     # Start RMXP
-    command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" Game.rxproj'
-    system(command)
+    File.write($PROJECT_DIR + '/Game.rxproj', 'RPGXP 1.05')
+    system('START /B /WAIT /D"' + $PROJECT_DIR + '" Game.rxproj')
+    File.delete($PROJECT_DIR + '/Game.rxproj')
 
     plugin.on_exit
 
