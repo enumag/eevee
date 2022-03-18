@@ -161,15 +161,15 @@ def yaml_stable_ref(input_file, output_file)
   queue = Queue.new
   File.open(output_file, 'w') do |output|
     File.open(input_file, 'r').each do |line|
-      if not line['- &'].nil? or not line['- *'].nil?
-        match = line.match(/^ *- (?<type>[&*])(?<reference>[0-9]++)/)
+      if not line[' &'].nil? or not line[' *'].nil?
+        match = line.match(/^ *(?:-|[a-zA-Z0-9_]++:) (?<type>[&*])(?<reference>[0-9]++)/)
         unless match.nil?
           if match[:type] === '&'
             queue.push(match[:reference])
-            line['- &' + match[:reference]] = '- &' + i.to_s
+            line[' &' + match[:reference]] = ' &' + i.to_s
             i += 1
           elsif match[:reference] === queue.pop()
-            line['- *' + match[:reference]] = '- *' + j.to_s
+            line[' *' + match[:reference]] = ' *' + j.to_s
             j += 1
             if queue.empty?
               i = 1
