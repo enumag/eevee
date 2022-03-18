@@ -67,13 +67,18 @@ class DataImporterExporter < PluginBase
     files.each_index do |i|
       data = nil
       start_time = Time.now
+      filename = File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
       yaml_file = $INPUT_DIR + files[i]
-      data_file = $OUTPUT_DIR + File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
+      data_file = $OUTPUT_DIR + filename
+      import_only = $IMPORT_ONLY_LIST.include?(filename)
 
       # Skip import if checksum matches
-      if not $FORCE and File.exist?(data_file)
+      if not $FORCE and not import_only and File.exist?(data_file)
         firstLine = File.open(yaml_file, &:readline)
         next if firstLine[19..18+64] == Digest::SHA256.file(data_file).hexdigest
+      end
+      if import_only
+        next if File.file?(data_file)
       end
 
       # Load the data from yaml file
@@ -156,6 +161,9 @@ class DataImporterExporter < PluginBase
       start_time = Time.now
       data_file = $INPUT_DIR + files[i]
       yaml_file = $OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml"
+      import_only = $IMPORT_ONLY_LIST.include?(files[i])
+
+      next if import_only and File.file?(yaml_file)
 
       # Load the data from rmxp's data file
       File.open( data_file, "r+" ) do |input_file|
@@ -173,7 +181,10 @@ class DataImporterExporter < PluginBase
       # Dump the data to a YAML file
       checksum = Digest::SHA256.file(data_file).hexdigest
       File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-        File.write(output_file, "# Checksum SHA256: #{checksum}\n" + YAML::dump({'root' => data}))
+        File.write(
+          output_file,
+          (! import_only ? "# Checksum SHA256: #{checksum}\n" : '') + YAML::dump({'root' => data})
+        )
       end
 
       # Dirty workaround to sort the keys in yaml
@@ -183,17 +194,19 @@ class DataImporterExporter < PluginBase
       yaml_stable_ref(temp_file, yaml_file)
 
       # Rewrite data file if the checksum is wrong and RMXP is not open
-      File.open( yaml_file, "r+" ) do |input_file|
-        data = YAML::unsafe_load( input_file )
-      end
-      final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
-      if checksum != final_checksum
-        yaml = File.read(yaml_file)
-        yaml[19..18+64] = final_checksum
-        File.write(yaml_file, yaml)
-        if $FORCE
-          File.open( data_file, "w+" ) do |output_file|
-            Marshal.dump( data['root'], output_file )
+      unless import_only
+        File.open( yaml_file, "r+" ) do |input_file|
+          data = YAML::unsafe_load( input_file )
+        end
+        final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
+        if checksum != final_checksum
+          yaml = File.read(yaml_file)
+          yaml[19..18+64] = final_checksum
+          File.write(yaml_file, yaml)
+          if $FORCE
+            File.open( data_file, "w+" ) do |output_file|
+              Marshal.dump( data['root'], output_file )
+            end
           end
         end
       end

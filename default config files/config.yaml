@@ -30,6 +30,10 @@ yaml_dir:     DataExport
 data_ignore_list:
   - "Scripts.rxdata"
 
+# This array specifies all .rxdata files that should be imported but not
+# exported. They'll only be exported in case the yaml file is missing.
+import_only_list:
+
 # This parameter determines whether the import/export scripts print verbose 
 # information such as each filename as it is imported or exported and timing 
 # information.  Errors are always printed.

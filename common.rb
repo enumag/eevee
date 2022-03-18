@@ -30,6 +30,7 @@ end
 $DATA_DIR            = config['data_dir']
 $YAML_DIR            = config['yaml_dir']
 $DATA_IGNORE_LIST    = config['data_ignore_list']
+$IMPORT_ONLY_LIST    = config['import_only_list']
 $VERBOSE             = config['verbose']
 $MAGIC_NUMBER        = config['magic_number']
 $DEFAULT_STARTUP_MAP = config['edit_map_id']
