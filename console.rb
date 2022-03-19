@@ -6,7 +6,6 @@ $FORCE = true
 
 require_relative 'rmxp/rgss'
 require_relative 'common'
-require_relative 'plugin_base'
 require_relative 'plugins/data_importer_exporter'
 
 plugin = DataImporterExporter.new

@@ -11,14 +11,7 @@
 #  system is started again, the YAML files are read back into the original data files.
 #===============================================================================
 
-class DataImporterExporter < PluginBase
-  # Register this plugin so that the system knows to execute it
-  register self
-
-  # Specify the execution constraints
-  before "ScriptImporterExporter", :on_start
-  after  "ScriptImporterExporter", :on_exit
-
+class DataImporterExporter
   def initialize
     super
   end

@@ -3,7 +3,6 @@
 ocra \
   console.rb \
   common.rb \
-  plugin_base.rb \
   rmxp/*.rb \
   plugins/*.rb \
   --gemfile "./Gemfile" \
