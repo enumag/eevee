@@ -55,24 +55,23 @@ class DataImporterExporter
 
     total_start_time = Time.now
     total_dump_time  = 0.0
+    checksums = load_checksums()
 
     # For each yaml file, load it and dump the objects to data file
     files.each_index do |i|
       data = nil
       start_time = Time.now
-      filename = File.basename(files[i], ".yaml") + ".#{$DATA_TYPE}"
+      name = File.basename(files[i], ".yaml")
+      record = checksums[name]
+      filename = name + ".#{$DATA_TYPE}"
       yaml_file = $INPUT_DIR + files[i]
       data_file = $OUTPUT_DIR + filename
       import_only = $IMPORT_ONLY_LIST.include?(filename)
+      yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
+      data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
 
       # Skip import if checksum matches
-      if not $FORCE and not import_only and File.exist?(data_file)
-        firstLine = File.open(yaml_file, &:readline)
-        next if firstLine[19..18+64] == Digest::SHA256.file(data_file).hexdigest
-      end
-      if import_only
-        next if File.file?(data_file)
-      end
+      next if skip_file(record, data_checksum, yaml_checksum, import_only)
 
       # Load the data from yaml file
       File.open( yaml_file, "r+" ) do |input_file|
@@ -82,6 +81,11 @@ class DataImporterExporter
       # Dump the data to .rxdata or .rvdata file
       File.open( data_file, "w+" ) do |output_file|
         Marshal.dump( data['root'], output_file )
+      end
+
+      # Update checksums
+      unless import_only
+        checksums[name] = FileRecord.new(name, yaml_checksum, Digest::SHA256.file(data_file).hexdigest)
       end
 
       # Calculate the time to dump the data file
@@ -97,6 +101,8 @@ class DataImporterExporter
       str += "    #{dump_time} seconds"
       puts_verbose str
     end
+
+    save_checksums(checksums)
 
     # Calculate the total elapsed time
     total_elapsed_time = Time.now - total_start_time
@@ -147,16 +153,22 @@ class DataImporterExporter
 
     total_start_time = Time.now
     total_dump_time = 0.0
+    checksums = load_checksums()
 
     # For each data file, load it and dump the objects to YAML
     files.each_index do |i|
       data = nil
       start_time = Time.now
+      name = File.basename(files[i], ".#{$DATA_TYPE}")
+      record = checksums[name]
       data_file = $INPUT_DIR + files[i]
-      yaml_file = $OUTPUT_DIR + File.basename(files[i], ".#{$DATA_TYPE}") + ".yaml"
+      yaml_file = $OUTPUT_DIR + name + ".yaml"
       import_only = $IMPORT_ONLY_LIST.include?(files[i])
+      yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
+      data_checksum = Digest::SHA256.file(data_file).hexdigest
 
-      next if import_only and File.file?(yaml_file)
+      # Skip import if checksum matches
+      next if skip_file(record, data_checksum, yaml_checksum, import_only)
 
       # Load the data from rmxp's data file
       File.open( data_file, "r+" ) do |input_file|
@@ -172,12 +184,8 @@ class DataImporterExporter
       end
 
       # Dump the data to a YAML file
-      checksum = Digest::SHA256.file(data_file).hexdigest
       File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-        File.write(
-          output_file,
-          (! import_only ? "# Checksum SHA256: #{checksum}\n" : '') + YAML::dump({'root' => data})
-        )
+        File.write(output_file, YAML::dump({'root' => data}))
       end
 
       # Dirty workaround to sort the keys in yaml
@@ -192,16 +200,16 @@ class DataImporterExporter
           data = YAML::unsafe_load( input_file )
         end
         final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
-        if checksum != final_checksum
-          yaml = File.read(yaml_file)
-          yaml[19..18+64] = final_checksum
-          File.write(yaml_file, yaml)
-          if $FORCE
-            File.open( data_file, "w+" ) do |output_file|
-              Marshal.dump( data['root'], output_file )
-            end
+        if data_checksum != final_checksum and $FORCE
+          File.open( data_file, "w+" ) do |output_file|
+            Marshal.dump( data['root'], output_file )
           end
         end
+        checksums[name] = FileRecord.new(
+          name,
+          Digest::SHA256.file(yaml_file).hexdigest,
+          final_checksum
+        )
       end
 
       # Calculate the time to dump the .yaml file
@@ -217,7 +225,9 @@ class DataImporterExporter
       str += "    #{dump_time} seconds"
       puts_verbose str
     end
- 
+
+    save_checksums(checksums)
+
     # Calculate the total elapsed time
     total_elapsed_time = Time.now - total_start_time
  

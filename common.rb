@@ -36,6 +36,8 @@ $MAGIC_NUMBER        = config['magic_number']
 $DEFAULT_STARTUP_MAP = config['edit_map_id']
 puts
 
+$CHECKSUMS_FILE = $DATA_DIR + '/checksums.csv'
+
 # This is the filename where the startup timestamp is dumped.  Later it can
 # be compared with the modification timestamp for data files to determine
 # if they need to be exported.
@@ -183,4 +185,42 @@ def yaml_stable_ref(input_file, output_file)
       output.print line
     end
   end
+end
+
+class FileRecord
+  attr_accessor :name
+  attr_accessor :yaml_checksum
+  attr_accessor :data_checksum
+
+  def initialize(name, yaml_checksum, data_checksum)
+    @name=name
+    @yaml_checksum=yaml_checksum
+    @data_checksum=data_checksum
+  end
+end
+
+def load_checksums
+  hash = {}
+  if File.exist?($CHECKSUMS_FILE)
+    File.open($CHECKSUMS_FILE, 'r').each do |line|
+      name, yaml_checksum, data_checksum = line.rstrip.split(',', 3)
+      hash[name] = FileRecord.new(name, yaml_checksum, data_checksum)
+    end
+  end
+  return hash
+end
+
+def save_checksums(hash)
+  File.open($CHECKSUMS_FILE, 'w') do |output|
+    hash.each_value do |record|
+      output.print "#{record.name},#{record.yaml_checksum},#{record.data_checksum}\n"
+    end
+  end
+end
+
+def skip_file(record, data_checksum, yaml_checksum, import_only)
+  return false if $FORCE or data_checksum.nil? or yaml_checksum.nil?
+  return true if import_only
+  return false if record.nil?
+  return (data_checksum === record.data_checksum and yaml_checksum === record.yaml_checksum)
 end
