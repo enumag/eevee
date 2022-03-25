@@ -197,3 +197,102 @@ class Config
     @startup_map      = config['edit_map_id']
   end
 end
+
+def import_file(file, checksums, input_dir, output_dir)
+  data = nil
+  start_time = Time.now
+  name = File.basename(file, ".yaml")
+  record = checksums[name]
+  filename = name + ".rxdata"
+  yaml_file = input_dir + file
+  data_file = output_dir + filename
+  import_only = $CONFIG.import_only_list.include?(filename)
+  yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
+  data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
+
+  # Skip import if checksum matches
+  return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
+
+  # Load the data from yaml file
+  File.open( yaml_file, "r+" ) do |input_file|
+    data = YAML::unsafe_load( input_file )
+  end
+
+  if data === false
+    puts 'Error: ' + file + ' is not a valid YAML file.'
+    exit 1
+  end
+
+  # Dump the data to .rxdata or .rvdata file
+  File.open( data_file, "w+" ) do |output_file|
+    Marshal.dump( data['root'], output_file )
+  end
+
+  # Update checksums
+  unless import_only
+    checksums[name] = FileRecord.new(name, yaml_checksum, Digest::SHA256.file(data_file).hexdigest)
+  end
+
+  # Calculate the time to dump the data file
+  dump_time = Time.now - start_time
+end
+
+def export_file(file, checksums, input_dir, output_dir)
+  data = nil
+  start_time = Time.now
+  name = File.basename(file, ".rxdata")
+  record = checksums[name]
+  data_file = input_dir + file
+  yaml_file = output_dir + name + ".yaml"
+  import_only = $CONFIG.import_only_list.include?(file)
+  yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
+  data_checksum = Digest::SHA256.file(data_file).hexdigest
+
+  # Skip import if checksum matches
+  return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
+
+  # Load the data from rmxp's data file
+  File.open( data_file, "r+" ) do |input_file|
+    data = Marshal.load( input_file )
+  end
+
+  # Handle default values for the System data file
+  if file == "System.rxdata"
+    # Prevent the 'magic_number' field of System from always conflicting
+    data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
+    # Prevent the 'edit_map_id' field of System from conflicting
+    data.edit_map_id = $CONFIG.startup_map unless $CONFIG.startup_map == -1
+  end
+
+  # Dump the data to a YAML file
+  File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+    File.write(output_file, YAML::dump({'root' => data}))
+  end
+
+  # Dirty workaround to sort the keys in yaml
+  temp_file = Dir.tmpdir() + '/' + file + '.yaml'
+  command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + yaml_file + '" > "' + temp_file + '"'
+  system(command)
+  yaml_stable_ref(temp_file, yaml_file)
+
+  # Rewrite data file if the checksum is wrong and RMXP is not open
+  unless import_only
+    File.open( yaml_file, "r+" ) do |input_file|
+      data = YAML::unsafe_load( input_file )
+    end
+    final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
+    if data_checksum != final_checksum and $FORCE
+      File.open( data_file, "w+" ) do |output_file|
+        Marshal.dump( data['root'], output_file )
+      end
+    end
+    checksums[name] = FileRecord.new(
+      name,
+      Digest::SHA256.file(yaml_file).hexdigest,
+      final_checksum
+    )
+  end
+
+  # Calculate the time to dump the .yaml file
+  dump_time = Time.now - start_time
+end
