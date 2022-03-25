@@ -98,6 +98,11 @@ class DataImporterExporter
         data = YAML::unsafe_load( input_file )
       end
 
+      if data === false
+        puts 'Error: ' + file + ' is not a valid YAML file.'
+        exit 1
+      end
+
       # Dump the data to .rxdata or .rvdata file
       File.open( data_file, "w+" ) do |output_file|
         Marshal.dump( data['root'], output_file )
