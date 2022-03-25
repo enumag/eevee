@@ -36,39 +36,12 @@ $MAGIC_NUMBER        = config['magic_number']
 $DEFAULT_STARTUP_MAP = config['edit_map_id']
 puts
 
-$CHECKSUMS_FILE = $DATA_DIR + '/checksums.csv'
+CHECKSUMS_FILE = 'checksums.csv'
 
 # This is the filename where the startup timestamp is dumped.  Later it can
 # be compared with the modification timestamp for data files to determine
 # if they need to be exported.
-$TIME_LOG_FILE = "timestamp.bin"
-
-# An array of invalid Windows filename strings and their substitutions. This
-# array is used to modify the script title in RMXP's script editor to construct
-# a filename for saving the script out to the filesystem.
-$INVALID_CHARS_FOR_FILENAME = [
-    [" - ", "_"],
-    [" ", "_"],
-    ["-", "_"],
-    [":", "_"],
-    ["/", "_"],
-    ["\\", "_"],
-    ["*", "_"],
-    ["|", "_"],
-    ["<", "_"],
-    [">", "_"],
-    ["?", "_"]
-]
-
-# Lengths of the columns in the script export digest
-$COLUMN1_WIDTH  = 12
-$COLUMN2_WIDTH  = 45
-
-# Length of a filename (for output formatting purposes)
-$FILENAME_WIDTH = 35
-
-# Length of a line separator for output
-$LINE_LENGTH = 80
+TIME_LOG_FILE = "timestamp.bin"
 
 #----------------------------------------------------------------------------
 # recursive_mkdir: Creates a directory and all its parent directories if they
@@ -93,7 +66,7 @@ end
 # print_separator: Prints a separator line to stdout.
 #----------------------------------------------------------------------------
 def print_separator( enable = $VERBOSE )
-  puts "-" * $LINE_LENGTH if enable
+  puts "-" * 80 if enable
 end
 
 #----------------------------------------------------------------------------
@@ -137,7 +110,7 @@ end
 #   directory: The directory to dump the system tile into.
 #----------------------------------------------------------------------------
 def dump_startup_time
-  File.open( $PROJECT_DIR + '/' + $TIME_LOG_FILE, "w+" ) do |outfile|
+  File.open( $PROJECT_DIR + '/' + TIME_LOG_FILE, "w+" ) do |outfile|
     Marshal.dump( Time.now, outfile )
   end
 end
@@ -148,11 +121,11 @@ end
 #----------------------------------------------------------------------------
 def load_startup_time(delete_file = false)
   t = nil
-  if File.exist?( $PROJECT_DIR + '/' + $TIME_LOG_FILE )
-    File.open( $PROJECT_DIR + '/' + $TIME_LOG_FILE, "r+" ) do |infile|
+  if File.exist?( $PROJECT_DIR + '/' + TIME_LOG_FILE )
+    File.open( $PROJECT_DIR + '/' + TIME_LOG_FILE, "r+" ) do |infile|
       t = Marshal.load( infile )
     end
-    if delete_file then File.delete( $PROJECT_DIR + '/' + $TIME_LOG_FILE ) end
+    if delete_file then File.delete( $PROJECT_DIR + '/' + TIME_LOG_FILE ) end
   end
   t
 end
@@ -201,8 +174,8 @@ end
 
 def load_checksums
   hash = {}
-  if File.exist?($CHECKSUMS_FILE)
-    File.open($CHECKSUMS_FILE, 'r').each do |line|
+  if File.exist?($DATA_DIR + '/' + CHECKSUMS_FILE)
+    File.open($DATA_DIR + '/' + CHECKSUMS_FILE, 'r').each do |line|
       name, yaml_checksum, data_checksum = line.rstrip.split(',', 3)
       hash[name] = FileRecord.new(name, yaml_checksum, data_checksum)
     end
@@ -211,7 +184,7 @@ def load_checksums
 end
 
 def save_checksums(hash)
-  File.open($CHECKSUMS_FILE, 'w') do |output|
+  File.open($DATA_DIR + '/' + CHECKSUMS_FILE, 'w') do |output|
     hash.each_value do |record|
       output.print "#{record.name},#{record.yaml_checksum},#{record.data_checksum}\n"
     end

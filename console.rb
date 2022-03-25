@@ -1,7 +1,6 @@
 $COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
-
-$FORCE = true
+$FORCE = $COMMAND != "start"
 
 require_relative 'rmxp/rgss'
 require_relative 'common'
@@ -14,8 +13,6 @@ if $COMMAND == "import"
 elsif $COMMAND == "export"
     plugin.on_exit
 elsif $COMMAND == "start"
-    $FORCE = false
-
     require 'listen'
     require 'wdm'
 
