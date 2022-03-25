@@ -15,20 +15,6 @@ require 'yaml'
 require 'digest'
 require 'tmpdir'
 
-# Setup config filename
-config_filename = "config.yaml"
-# Setup the config file path
-$CONFIG_PATH = $PROJECT_DIR + "/" + config_filename
-
-# Read the config YAML file
-config = nil
-File.open( $CONFIG_PATH, "r+" ) do |configfile|
-  config = YAML::load( configfile )
-end
-
-# Initialize configuration parameters
-$CONFIG = Config.new(config)
-
 CHECKSUMS_FILE = 'checksums.csv'
 
 # This is the filename where the startup timestamp is dumped.  Later it can

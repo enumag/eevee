@@ -6,6 +6,20 @@ require_relative 'rmxp/rgss'
 require_relative 'common'
 require_relative 'plugins/data_importer_exporter'
 
+# Setup config filename
+config_filename = "config.yaml"
+# Setup the config file path
+$CONFIG_PATH = $PROJECT_DIR + "/" + config_filename
+
+# Read the config YAML file
+config = nil
+File.open( $CONFIG_PATH, "r+" ) do |configfile|
+  config = YAML::load( configfile )
+end
+
+# Initialize configuration parameters
+$CONFIG = Config.new(config)
+
 plugin = DataImporterExporter.new
 
 if $COMMAND == "import"
