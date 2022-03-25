@@ -18,8 +18,8 @@ class DataImporterExporter
 
   def on_start
     # Set up the directory paths
-    input_dir  = $PROJECT_DIR + '/' + $YAML_DIR + '/'
-    output_dir = $PROJECT_DIR + '/' + $DATA_DIR + '/'
+    input_dir  = $PROJECT_DIR + '/' + $CONFIG.yaml_dir + '/'
+    output_dir = $PROJECT_DIR + '/' + $CONFIG.data_dir + '/'
 
     print_separator(true)
     puts "  RMXP Data Import"
@@ -36,7 +36,7 @@ class DataImporterExporter
     # Check if the output directory exist
     if not (File.exist? output_dir and File.directory? output_dir)
       puts "Error: Output directory #{output_dir} does not exist."
-      puts "Hint: Check that the $DATA_DIR variable in paths.rb is set to the correct path."
+      puts "Hint: Check that the $CONFIG.data_dir variable in paths.rb is set to the correct path."
       puts
       exit
     end
@@ -66,7 +66,7 @@ class DataImporterExporter
       filename = name + ".rxdata"
       yaml_file = input_dir + files[i]
       data_file = output_dir + filename
-      import_only = $IMPORT_ONLY_LIST.include?(filename)
+      import_only = $CONFIG.import_only_list.include?(filename)
       yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
       data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
 
@@ -117,8 +117,8 @@ class DataImporterExporter
 
   def on_exit
     # Set up the directory paths
-    input_dir  = $PROJECT_DIR + '/' + $DATA_DIR + '/'
-    output_dir = $PROJECT_DIR + '/' + $YAML_DIR   + '/'
+    input_dir  = $PROJECT_DIR + '/' + $CONFIG.data_dir + '/'
+    output_dir = $PROJECT_DIR + '/' + $CONFIG.yaml_dir   + '/'
 
     print_separator(true)
     puts "  Data Export"
@@ -129,7 +129,7 @@ class DataImporterExporter
     # Check if the input directory exist
     if not (File.exist? input_dir and File.directory? input_dir)
       puts "Error: Input directory #{input_dir} does not exist."
-      puts "Hint: Check that the $DATA_DIR variable in paths.rb is set to the correct path."
+      puts "Hint: Check that the $CONFIG.data_dir variable in paths.rb is set to the correct path."
       exit
     end
 
@@ -140,7 +140,7 @@ class DataImporterExporter
 
     # Create the list of data files to export
     files = Dir.entries( input_dir )
-    files -= $DATA_IGNORE_LIST
+    files -= $CONFIG.data_ignore_list
     files = files.select { |e| File.extname(e) == ".rxdata" }
     files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) or not data_file_exported?(input_dir + e) } unless $FORCE == true
     files.sort!
@@ -163,7 +163,7 @@ class DataImporterExporter
       record = checksums[name]
       data_file = input_dir + files[i]
       yaml_file = output_dir + name + ".yaml"
-      import_only = $IMPORT_ONLY_LIST.include?(files[i])
+      import_only = $CONFIG.import_only_list.include?(files[i])
       yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
       data_checksum = Digest::SHA256.file(data_file).hexdigest
 
@@ -178,9 +178,9 @@ class DataImporterExporter
       # Handle default values for the System data file
       if files[i] == "System.rxdata"
         # Prevent the 'magic_number' field of System from always conflicting
-        data.magic_number = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
+        data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
         # Prevent the 'edit_map_id' field of System from conflicting
-        data.edit_map_id = $DEFAULT_STARTUP_MAP unless $DEFAULT_STARTUP_MAP == -1
+        data.edit_map_id = $CONFIG.startup_map unless $CONFIG.startup_map == -1
       end
 
       # Dump the data to a YAML file

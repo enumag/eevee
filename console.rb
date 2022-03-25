@@ -27,7 +27,7 @@ elsif $COMMAND == "start"
     puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     puts_verbose
 
-    listener = Listen.to($PROJECT_DIR + $DATA_DIR) do |modified, added, removed|
+    listener = Listen.to($PROJECT_DIR + $CONFIG.data_dir) do |modified, added, removed|
         plugin.on_exit
     end
     listener.start

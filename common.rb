@@ -27,14 +27,7 @@ File.open( $CONFIG_PATH, "r+" ) do |configfile|
 end
 
 # Initialize configuration parameters
-$DATA_DIR            = config['data_dir']
-$YAML_DIR            = config['yaml_dir']
-$DATA_IGNORE_LIST    = config['data_ignore_list']
-$IMPORT_ONLY_LIST    = config['import_only_list']
-$VERBOSE             = config['verbose']
-$MAGIC_NUMBER        = config['magic_number']
-$DEFAULT_STARTUP_MAP = config['edit_map_id']
-puts
+$CONFIG = Config.new(config)
 
 CHECKSUMS_FILE = 'checksums.csv'
 
@@ -65,7 +58,7 @@ end
 #----------------------------------------------------------------------------
 # print_separator: Prints a separator line to stdout.
 #----------------------------------------------------------------------------
-def print_separator( enable = $VERBOSE )
+def print_separator( enable = $CONFIG.verbose )
   puts "-" * 80 if enable
 end
 
@@ -82,7 +75,7 @@ end
 #   s: The string to print
 #----------------------------------------------------------------------------
 def puts_verbose(s = "")
-  puts s if $VERBOSE
+  puts s if $CONFIG.verbose
 end
 
 #----------------------------------------------------------------------------
@@ -101,7 +94,7 @@ end
 #   filename: The name of the data file.
 #----------------------------------------------------------------------------
 def data_file_exported?(filename)
-  exported_filename = $PROJECT_DIR + '/' + $YAML_DIR + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
+  exported_filename = $PROJECT_DIR + '/' + $CONFIG.yaml_dir + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
   return File.exist?( exported_filename )
 end
 
@@ -174,8 +167,8 @@ end
 
 def load_checksums
   hash = {}
-  if File.exist?($DATA_DIR + '/' + CHECKSUMS_FILE)
-    File.open($DATA_DIR + '/' + CHECKSUMS_FILE, 'r').each do |line|
+  if File.exist?($CONFIG.data_dir + '/' + CHECKSUMS_FILE)
+    File.open($CONFIG.data_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
       name, yaml_checksum, data_checksum = line.rstrip.split(',', 3)
       hash[name] = FileRecord.new(name, yaml_checksum, data_checksum)
     end
@@ -184,7 +177,7 @@ def load_checksums
 end
 
 def save_checksums(hash)
-  File.open($DATA_DIR + '/' + CHECKSUMS_FILE, 'w') do |output|
+  File.open($CONFIG.data_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
     hash.each_value do |record|
       output.print "#{record.name},#{record.yaml_checksum},#{record.data_checksum}\n"
     end
@@ -196,4 +189,24 @@ def skip_file(record, data_checksum, yaml_checksum, import_only)
   return true if import_only
   return false if record.nil?
   return (data_checksum === record.data_checksum and yaml_checksum === record.yaml_checksum)
+end
+
+class Config
+  attr_accessor :data_dir
+  attr_accessor :yaml_dir
+  attr_accessor :data_ignore_list
+  attr_accessor :import_only_list
+  attr_accessor :verbose
+  attr_accessor :magic_number
+  attr_accessor :startup_map
+
+  def initialize(config)
+    @data_dir         = config['data_dir']
+    @yaml_dir         = config['yaml_dir']
+    @data_ignore_list = config['data_ignore_list']
+    @import_only_list = config['import_only_list']
+    @verbose          = config['verbose']
+    @magic_number     = config['magic_number']
+    @startup_map      = config['edit_map_id']
+  end
 end
