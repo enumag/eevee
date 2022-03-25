@@ -14,6 +14,7 @@
 require 'yaml'
 require 'digest'
 require 'tmpdir'
+require 'parallel'
 
 CHECKSUMS_FILE = 'checksums.csv'
 

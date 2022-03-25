@@ -55,16 +55,36 @@ class DataImporterExporter
 
     total_start_time = Time.now
     total_dump_time  = 0.0
+    i = 1
     checksums = load_checksums()
 
     # For each yaml file, load it and dump the objects to data file
-    files.each_index do |i|
+    results = Parallel.map(
+      files,
+      in_threads: 4,
+      finish: -> (file, index, dump_time) {
+        next if dump_time.nil?
+        index = i if $FORCE
+
+        # Update the user on the status
+        str =  "Imported "
+        str += "#{file}".ljust(30)
+        str += "(" + "#{index}".rjust(3, '0')
+        str += "/"
+        str += "#{files.size}".rjust(3, '0') + ")"
+        str += "    #{dump_time} seconds"
+        puts str
+
+        total_dump_time += dump_time
+        i += 1
+      }
+    ) do |file|
       data = nil
       start_time = Time.now
-      name = File.basename(files[i], ".yaml")
+      name = File.basename(file, ".yaml")
       record = checksums[name]
       filename = name + ".rxdata"
-      yaml_file = input_dir + files[i]
+      yaml_file = input_dir + file
       data_file = output_dir + filename
       import_only = $CONFIG.import_only_list.include?(filename)
       yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
@@ -90,16 +110,6 @@ class DataImporterExporter
 
       # Calculate the time to dump the data file
       dump_time = Time.now - start_time
-      total_dump_time += dump_time
-
-      # Update the user on the status
-      str =  "Imported "
-      str += "#{files[i]}".ljust(30)
-      str += "(" + "#{i+1}".rjust(3, '0')
-      str += "/"
-      str += "#{files.size}".rjust(3, '0') + ")"
-      str += "    #{dump_time} seconds"
-      puts_verbose str
     end
 
     save_checksums(checksums)
@@ -153,17 +163,37 @@ class DataImporterExporter
 
     total_start_time = Time.now
     total_dump_time = 0.0
+    i = 1
     checksums = load_checksums()
 
     # For each data file, load it and dump the objects to YAML
-    files.each_index do |i|
+    results = Parallel.map(
+      files,
+      in_threads: 4,
+      finish: -> (file, index, dump_time) {
+        next if dump_time.nil?
+        index = i if $FORCE
+
+        # Update the user on the export status
+        str =  "Exported "
+        str += "#{file}".ljust(30)
+        str += "(" + "#{index}".rjust(3, '0')
+        str += "/"
+        str += "#{files.size}".rjust(3, '0') + ")"
+        str += "    #{dump_time} seconds"
+        puts_verbose str
+
+        total_dump_time += dump_time
+        i += 1
+      }
+    ) do |file|
       data = nil
       start_time = Time.now
-      name = File.basename(files[i], ".rxdata")
+      name = File.basename(file, ".rxdata")
       record = checksums[name]
-      data_file = input_dir + files[i]
+      data_file = input_dir + file
       yaml_file = output_dir + name + ".yaml"
-      import_only = $CONFIG.import_only_list.include?(files[i])
+      import_only = $CONFIG.import_only_list.include?(file)
       yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
       data_checksum = Digest::SHA256.file(data_file).hexdigest
 
@@ -176,7 +206,7 @@ class DataImporterExporter
       end
 
       # Handle default values for the System data file
-      if files[i] == "System.rxdata"
+      if file == "System.rxdata"
         # Prevent the 'magic_number' field of System from always conflicting
         data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
         # Prevent the 'edit_map_id' field of System from conflicting
@@ -189,7 +219,7 @@ class DataImporterExporter
       end
 
       # Dirty workaround to sort the keys in yaml
-      temp_file = Dir.tmpdir() + '/temp.yaml'
+      temp_file = Dir.tmpdir() + '/' + file + '.yaml'
       command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + yaml_file + '" > "' + temp_file + '"'
       system(command)
       yaml_stable_ref(temp_file, yaml_file)
@@ -214,16 +244,6 @@ class DataImporterExporter
 
       # Calculate the time to dump the .yaml file
       dump_time = Time.now - start_time
-      total_dump_time += dump_time
- 
-      # Update the user on the export status
-      str =  "Exported "
-      str += "#{files[i]}".ljust(30)
-      str += "(" + "#{i+1}".rjust(3, '0')
-      str += "/"
-      str += "#{files.size}".rjust(3, '0') + ")"
-      str += "    #{dump_time} seconds"
-      puts_verbose str
     end
 
     save_checksums(checksums)
