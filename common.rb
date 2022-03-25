@@ -154,8 +154,8 @@ end
 
 def load_checksums
   hash = {}
-  if File.exist?($CONFIG.data_dir + '/' + CHECKSUMS_FILE)
-    File.open($CONFIG.data_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
+  if File.exist?($CONFIG.yaml_dir + '/' + CHECKSUMS_FILE)
+    File.open($CONFIG.yaml_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
       name, yaml_checksum, data_checksum = line.rstrip.split(',', 3)
       hash[name] = FileRecord.new(name, yaml_checksum, data_checksum)
     end
@@ -164,7 +164,7 @@ def load_checksums
 end
 
 def save_checksums(hash)
-  File.open($CONFIG.data_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
+  File.open($CONFIG.yaml_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
     hash.each_value do |record|
       output.print "#{record.name},#{record.yaml_checksum},#{record.data_checksum}\n"
     end
