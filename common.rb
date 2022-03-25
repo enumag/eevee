@@ -265,15 +265,20 @@ def export_file(file, checksums, input_dir, output_dir)
   end
 
   # Dump the data to a YAML file
-  File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+  export_file = Dir.tmpdir() + '/' + file + '_export.yaml'
+  File.open(export_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
     File.write(output_file, YAML::dump({'root' => data}))
   end
 
   # Dirty workaround to sort the keys in yaml
-  temp_file = Dir.tmpdir() + '/' + file + '.yaml'
-  command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + yaml_file + '" > "' + temp_file + '"'
+  sorted_file = Dir.tmpdir() + '/' + file + '_sorted.yaml'
+  command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + export_file + '" > "' + sorted_file + '"'
   system(command)
-  yaml_stable_ref(temp_file, yaml_file)
+
+  # Simplify references in yaml to avoid conflicts
+  fixed_file = Dir.tmpdir() + '/' + file + '_fixed.yaml'
+  yaml_stable_ref(sorted_file, fixed_file)
+  File.rename(fixed_file, yaml_file)
 
   # Rewrite data file if the checksum is wrong and RMXP is not open
   unless import_only
