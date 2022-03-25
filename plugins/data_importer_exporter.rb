@@ -63,7 +63,7 @@ class DataImporterExporter
       start_time = Time.now
       name = File.basename(files[i], ".yaml")
       record = checksums[name]
-      filename = name + ".#{$DATA_TYPE}"
+      filename = name + ".rxdata"
       yaml_file = input_dir + files[i]
       data_file = output_dir + filename
       import_only = $IMPORT_ONLY_LIST.include?(filename)
@@ -109,7 +109,7 @@ class DataImporterExporter
 
     # Report the times
     print_separator
-    puts_verbose "#{$DATA_TYPE} dump time: #{total_dump_time} seconds."
+    puts_verbose "rxdata dump time: #{total_dump_time} seconds."
     puts_verbose "Total import time: #{total_elapsed_time} seconds."
     print_separator
     puts_verbose
@@ -141,7 +141,7 @@ class DataImporterExporter
     # Create the list of data files to export
     files = Dir.entries( input_dir )
     files -= $DATA_IGNORE_LIST
-    files = files.select { |e| File.extname(e) == ".#{$DATA_TYPE}" }
+    files = files.select { |e| File.extname(e) == ".rxdata" }
     files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) or not data_file_exported?(input_dir + e) } unless $FORCE == true
     files.sort!
 
@@ -159,7 +159,7 @@ class DataImporterExporter
     files.each_index do |i|
       data = nil
       start_time = Time.now
-      name = File.basename(files[i], ".#{$DATA_TYPE}")
+      name = File.basename(files[i], ".rxdata")
       record = checksums[name]
       data_file = input_dir + files[i]
       yaml_file = output_dir + name + ".yaml"
@@ -176,7 +176,7 @@ class DataImporterExporter
       end
 
       # Handle default values for the System data file
-      if files[i] == "System.#{$DATA_TYPE}"
+      if files[i] == "System.rxdata"
         # Prevent the 'magic_number' field of System from always conflicting
         data.magic_number = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
         # Prevent the 'edit_map_id' field of System from conflicting

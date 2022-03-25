@@ -1,7 +1,6 @@
 $COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
 
-$DATA_TYPE = "rxdata"
 $FORCE = true
 
 require_relative 'rmxp/rgss'
