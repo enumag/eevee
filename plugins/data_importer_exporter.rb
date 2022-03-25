@@ -18,31 +18,31 @@ class DataImporterExporter
 
   def on_start
     # Set up the directory paths
-    $INPUT_DIR  = $PROJECT_DIR + '/' + $YAML_DIR + '/'
-    $OUTPUT_DIR = $PROJECT_DIR + '/' + $DATA_DIR + '/'
+    input_dir  = $PROJECT_DIR + '/' + $YAML_DIR + '/'
+    output_dir = $PROJECT_DIR + '/' + $DATA_DIR + '/'
 
     print_separator(true)
     puts "  RMXP Data Import"
     print_separator(true)
 
     # Check if the input directory exist
-    if not (File.exist? $INPUT_DIR and File.directory? $INPUT_DIR)
-      puts "Input directory #{$INPUT_DIR} does not exist."
+    if not (File.exist? input_dir and File.directory? input_dir)
+      puts "Input directory #{input_dir} does not exist."
       puts "Nothing to import...skipping import."
       puts
       return
     end
 
     # Check if the output directory exist
-    if not (File.exist? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
-      puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
+    if not (File.exist? output_dir and File.directory? output_dir)
+      puts "Error: Output directory #{output_dir} does not exist."
       puts "Hint: Check that the $DATA_DIR variable in paths.rb is set to the correct path."
       puts
       exit
     end
 
     # Create the list of data files to export
-    files = Dir.entries( $INPUT_DIR )
+    files = Dir.entries( input_dir )
     files = files.select { |e| File.extname(e) == '.yaml' }
     files = files.select { |f| f.index("._") != 0 }  # FIX: Ignore TextMate annoying backup files
     files.sort!
@@ -64,8 +64,8 @@ class DataImporterExporter
       name = File.basename(files[i], ".yaml")
       record = checksums[name]
       filename = name + ".#{$DATA_TYPE}"
-      yaml_file = $INPUT_DIR + files[i]
-      data_file = $OUTPUT_DIR + filename
+      yaml_file = input_dir + files[i]
+      data_file = output_dir + filename
       import_only = $IMPORT_ONLY_LIST.include?(filename)
       yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
       data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
@@ -117,8 +117,8 @@ class DataImporterExporter
 
   def on_exit
     # Set up the directory paths
-    $INPUT_DIR  = $PROJECT_DIR + '/' + $DATA_DIR + '/'
-    $OUTPUT_DIR = $PROJECT_DIR + '/' + $YAML_DIR   + '/'
+    input_dir  = $PROJECT_DIR + '/' + $DATA_DIR + '/'
+    output_dir = $PROJECT_DIR + '/' + $YAML_DIR   + '/'
 
     print_separator(true)
     puts "  Data Export"
@@ -127,22 +127,22 @@ class DataImporterExporter
     $STARTUP_TIME = load_startup_time || Time.now
 
     # Check if the input directory exist
-    if not (File.exist? $INPUT_DIR and File.directory? $INPUT_DIR)
-      puts "Error: Input directory #{$INPUT_DIR} does not exist."
+    if not (File.exist? input_dir and File.directory? input_dir)
+      puts "Error: Input directory #{input_dir} does not exist."
       puts "Hint: Check that the $DATA_DIR variable in paths.rb is set to the correct path."
       exit
     end
 
     # Create the output directory if it doesn't exist
-    if not (File.exist? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
-      recursive_mkdir( $OUTPUT_DIR )
+    if not (File.exist? output_dir and File.directory? output_dir)
+      recursive_mkdir( output_dir )
     end
 
     # Create the list of data files to export
-    files = Dir.entries( $INPUT_DIR )
+    files = Dir.entries( input_dir )
     files -= $DATA_IGNORE_LIST
     files = files.select { |e| File.extname(e) == ".#{$DATA_TYPE}" }
-    files = files.select { |e| file_modified_since?($INPUT_DIR + e, $STARTUP_TIME) or not data_file_exported?($INPUT_DIR + e) } unless $FORCE == true
+    files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) or not data_file_exported?(input_dir + e) } unless $FORCE == true
     files.sort!
 
     if files.empty?
@@ -161,8 +161,8 @@ class DataImporterExporter
       start_time = Time.now
       name = File.basename(files[i], ".#{$DATA_TYPE}")
       record = checksums[name]
-      data_file = $INPUT_DIR + files[i]
-      yaml_file = $OUTPUT_DIR + name + ".yaml"
+      data_file = input_dir + files[i]
+      yaml_file = output_dir + name + ".yaml"
       import_only = $IMPORT_ONLY_LIST.include?(files[i])
       yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
       data_checksum = Digest::SHA256.file(data_file).hexdigest
