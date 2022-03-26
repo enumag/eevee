@@ -56,12 +56,12 @@ class DataImporterExporter
     total_start_time = Time.now
     total_dump_time  = 0.0
     i = 1
-    checksums = load_checksums()
+    checksums = load_checksums
 
     # For each yaml file, load it and dump the objects to data file
     Parallel.each(
       files,
-      in_threads: 4,
+      in_threads: detect_cores,
       finish: -> (file, index, dump_time) {
         next if dump_time.nil?
         index = i if $FORCE
@@ -134,12 +134,12 @@ class DataImporterExporter
     total_start_time = Time.now
     total_dump_time = 0.0
     i = 1
-    checksums = load_checksums()
+    checksums = load_checksums
 
     # For each data file, load it and dump the objects to YAML
     Parallel.each(
       files,
-      in_threads: 4,
+      in_threads: detect_cores,
       finish: -> (file, index, dump_time) {
         next if dump_time.nil?
         index = i if $FORCE

@@ -301,3 +301,12 @@ def export_file(file, checksums, input_dir, output_dir)
   # Calculate the time to dump the .yaml file
   dump_time = Time.now - start_time
 end
+
+def detect_cores
+  begin
+    return Parallel.physical_processor_count
+  rescue
+    # Fallback because so far I was unable to compile win32ole into the exe file
+    return `WMIC CPU Get NumberOfCores /Format:List`.match(/NumberOfCores=([0-9]++)/)[1].to_i
+  end
+end
