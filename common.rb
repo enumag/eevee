@@ -50,15 +50,7 @@ def print_separator( enable = $CONFIG.verbose )
 end
 
 #----------------------------------------------------------------------------
-# pause_prompt: Prints a pause prompt to stdout.
-#----------------------------------------------------------------------------
-def pause_prompt
-  puts "Press ENTER to continue . . ."
-  STDIN.getc
-end
-
-#----------------------------------------------------------------------------
-# pause_prompt: Prints a string to stdout if verbosity is enabled.
+# puts_verbose: Prints a string to stdout if verbosity is enabled.
 #   s: The string to print
 #----------------------------------------------------------------------------
 def puts_verbose(s = "")
