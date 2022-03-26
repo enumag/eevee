@@ -1,13 +1,13 @@
 $COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
-$FORCE = $COMMAND != "start"
+$FORCE = $COMMAND != "rmxp"
 
 require_relative 'rmxp/rgss'
-require_relative 'common'
-require_relative 'plugins/data_importer_exporter'
+require_relative 'src/common'
+require_relative 'src/data_importer_exporter'
 
 # Setup config filename
-config_filename = "config.yaml"
+config_filename = "eevee.yaml"
 # Setup the config file path
 $CONFIG_PATH = $PROJECT_DIR + "/" + config_filename
 
@@ -26,7 +26,7 @@ if $COMMAND == "import"
   plugin.on_start
 elsif $COMMAND == "export"
   plugin.on_exit
-elsif $COMMAND == "start"
+elsif $COMMAND == "rmxp"
   require 'listen'
   require 'wdm'
 

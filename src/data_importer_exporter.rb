@@ -12,10 +12,6 @@
 #===============================================================================
 
 class DataImporterExporter
-  def initialize
-    super
-  end
-
   def on_start
     # Set up the directory paths
     input_dir  = $PROJECT_DIR + '/' + $CONFIG.yaml_dir + '/'
