@@ -1,3 +1,6 @@
+**I didn't bother with updating this README with everything I've changed so it's severely outdated. It works very differently now - many features were added, many were removed. Feel free to nag me to update this readme properly.**
+~ @enumag
+
 # Rxdata Versioning Utility
 ### Version: 1.0.6
 
