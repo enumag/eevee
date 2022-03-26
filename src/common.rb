@@ -108,7 +108,7 @@ def yaml_stable_ref(input_file, output_file)
   queue = Queue.new
   File.open(output_file, 'w') do |output|
     File.open(input_file, 'r').each do |line|
-      if not line[' &'].nil? or not line[' *'].nil?
+      if ! line[' &'].nil? || ! line[' *'].nil?
         match = line.match(/^ *(?:-|[a-zA-Z0-9_]++:) (?<type>[&*])(?<reference>[0-9]++)/)
         unless match.nil?
           if match[:type] === '&'
@@ -164,10 +164,10 @@ def save_checksums(hash)
 end
 
 def skip_file(record, data_checksum, yaml_checksum, import_only)
-  return false if $FORCE or data_checksum.nil? or yaml_checksum.nil?
+  return false if $FORCE || data_checksum.nil? || yaml_checksum.nil?
   return true if import_only
   return false if record.nil?
-  return (data_checksum === record.data_checksum and yaml_checksum === record.yaml_checksum)
+  return (data_checksum === record.data_checksum && yaml_checksum === record.yaml_checksum)
 end
 
 class Config
@@ -202,7 +202,7 @@ def import_file(file, checksums, input_dir, output_dir)
   yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
   data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
   local_file = input_dir + name + '.local.yaml'
-  local_merge = name == 'MapInfos' and File.exist?(local_file)
+  local_merge = name == 'MapInfos' && File.exist?(local_file)
 
   # Skip import if checksum matches
   return nil if ! local_merge && skip_file(record, data_checksum, yaml_checksum, import_only)
@@ -304,7 +304,7 @@ def export_file(file, checksums, input_dir, output_dir)
       data = YAML::unsafe_load( input_file )
     end
     final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
-    if data_checksum != final_checksum and $FORCE
+    if data_checksum != final_checksum && $FORCE
       File.open( data_file, "w+" ) do |output_file|
         Marshal.dump( data['root'], output_file )
       end

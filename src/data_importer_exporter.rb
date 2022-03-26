@@ -118,7 +118,7 @@ class DataImporterExporter
     files = Dir.entries( input_dir )
     files -= $CONFIG.data_ignore_list
     files = files.select { |e| File.extname(e) == ".rxdata" }
-    files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) or not data_file_exported?(input_dir + e) } unless $FORCE == true
+    files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) } unless $FORCE == true
     files.sort!
 
     if files.empty?
