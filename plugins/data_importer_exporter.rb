@@ -43,7 +43,7 @@ class DataImporterExporter
 
     # Create the list of data files to export
     files = Dir.entries( input_dir )
-    files = files.select { |e| File.extname(e) == '.yaml' }
+    files = files.select { |e| File.extname(e) == '.yaml' && ! e.end_with?('.local.yaml') }
     files = files.select { |f| f.index("._") != 0 }  # FIX: Ignore TextMate annoying backup files
     files.sort!
 

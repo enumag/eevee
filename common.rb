@@ -209,9 +209,11 @@ def import_file(file, checksums, input_dir, output_dir)
   import_only = $CONFIG.import_only_list.include?(filename)
   yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
   data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
+  local_file = input_dir + name + '.local.yaml'
+  local_merge = name == 'MapInfos' and File.exist?(local_file)
 
   # Skip import if checksum matches
-  return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
+  return nil if ! local_merge && skip_file(record, data_checksum, yaml_checksum, import_only)
 
   # Load the data from yaml file
   File.open( yaml_file, "r+" ) do |input_file|
@@ -223,7 +225,22 @@ def import_file(file, checksums, input_dir, output_dir)
     exit 1
   end
 
-  # Dump the data to .rxdata or .rvdata file
+  if local_merge
+    local_data = nil
+    File.open( local_file, "r+" ) do |input_file|
+      local_data = YAML::unsafe_load( input_file )
+    end
+    data['root'].each do |key, map|
+      local_map = local_data['root'][key]
+      unless local_map.nil?
+        map.expanded = local_map.expanded
+        map.scroll_x = local_map.scroll_x
+        map.scroll_y = local_map.scroll_y
+      end
+    end
+  end
+
+  # Dump the data to .rxdata file
   File.open( data_file, "w+" ) do |output_file|
     Marshal.dump( data['root'], output_file )
   end
@@ -257,11 +274,20 @@ def export_file(file, checksums, input_dir, output_dir)
   end
 
   # Handle default values for the System data file
-  if file == "System.rxdata"
+  if name == 'System'
     # Prevent the 'magic_number' field of System from always conflicting
     data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
     # Prevent the 'edit_map_id' field of System from conflicting
     data.edit_map_id = $CONFIG.startup_map unless $CONFIG.startup_map == -1
+  elsif name == 'MapInfos'
+    File.open(output_dir + name + '.local.yaml', File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+      File.write(output_file, YAML::dump({'root' => data}))
+    end
+    data.each do |key, map|
+      map.expanded = false
+      map.scroll_x = 0
+      map.scroll_y = 0
+    end
   end
 
   # Dump the data to a YAML file
