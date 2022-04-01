@@ -280,6 +280,11 @@ def export_file(file, checksums, input_dir, output_dir)
       map.scroll_x = 0
       map.scroll_y = 0
     end
+    # Sort the maps hash by keys to keep stable order in yaml.
+    data = data.sort.to_h
+  elsif data.instance_of?(RPG::Map)
+    # Sort the events hash by keys to keep stable order in yaml.
+    data.events = data.events.sort.to_h
   end
 
   # Dump the data to a YAML file
@@ -288,14 +293,9 @@ def export_file(file, checksums, input_dir, output_dir)
     File.write(output_file, YAML::dump({'root' => data}))
   end
 
-  # Dirty workaround to sort the keys in yaml
-  sorted_file = Dir.tmpdir() + '/' + file + '_sorted.yaml'
-  command = 'START /B /WAIT /D"' + $PROJECT_DIR + '" yq.exe "sort_keys(..)" "' + export_file + '" > "' + sorted_file + '"'
-  system(command)
-
   # Simplify references in yaml to avoid conflicts
   fixed_file = Dir.tmpdir() + '/' + file + '_fixed.yaml'
-  yaml_stable_ref(sorted_file, fixed_file)
+  yaml_stable_ref(export_file, fixed_file)
   File.rename(fixed_file, yaml_file)
 
   # Rewrite data file if the checksum is wrong and RMXP is not open
