@@ -800,7 +800,7 @@ module RPG
     @id = 0
     @name = ""
     @members = []
-    @pages = [RPG::BattleEventPage.new]
+    @pages = []
   end
   attr_accessor :id
   attr_accessor :name

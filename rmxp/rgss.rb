@@ -39,7 +39,7 @@ RPG::System.new
 RPG::System::Words.new
 RPG::System::TestBattler.new
 RPG::Tileset.new
-# RPG::Troop.new
+RPG::Troop.new
 RPG::Troop::Member.new
 RPG::Troop::Page.new
 RPG::Troop::Page::Condition.new
