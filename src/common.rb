@@ -191,7 +191,6 @@ class Config
 end
 
 def import_file(file, checksums, input_dir, output_dir)
-  data = nil
   start_time = Time.now
   name = File.basename(file, ".yaml")
   record = checksums[name]
@@ -202,15 +201,13 @@ def import_file(file, checksums, input_dir, output_dir)
   yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
   data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
   local_file = input_dir + name + '.local.yaml'
-  local_merge = name == 'MapInfos' && File.exist?(local_file)
+  local_merge = File.exist?(local_file)
 
   # Skip import if checksum matches
   return nil if ! local_merge && skip_file(record, data_checksum, yaml_checksum, import_only)
 
   # Load the data from yaml file
-  File.open( yaml_file, "r+" ) do |input_file|
-    data = YAML::unsafe_load( input_file )
-  end
+  data = load_yaml(yaml_file)
 
   if data === false
     puts 'Error: ' + file + ' is not a valid YAML file.'
@@ -218,23 +215,25 @@ def import_file(file, checksums, input_dir, output_dir)
   end
 
   if local_merge
-    local_data = nil
-    File.open( local_file, "r+" ) do |input_file|
-      local_data = YAML::unsafe_load( input_file )
-    end
-    data['root'].each do |key, map|
-      local_map = local_data['root'][key]
-      unless local_map.nil?
-        map.expanded = local_map.expanded
-        map.scroll_x = local_map.scroll_x
-        map.scroll_y = local_map.scroll_y
+    local_data = load_yaml(local_file)
+    if name == 'System'
+      data.magic_number = local_data.magic_number
+      data.edit_map_id = local_data.edit_map_id
+    elsif name == 'MapInfos'
+      data.each do |key, map|
+        local_map = local_data[key]
+        unless local_map.nil?
+          map.expanded = local_map.expanded
+          map.scroll_x = local_map.scroll_x
+          map.scroll_y = local_map.scroll_y
+        end
       end
     end
   end
 
   # Dump the data to .rxdata file
   File.open( data_file, "w+" ) do |output_file|
-    Marshal.dump( data['root'], output_file )
+    Marshal.dump( data, output_file )
   end
 
   # Update checksums
@@ -267,14 +266,13 @@ def export_file(file, checksums, input_dir, output_dir)
 
   # Handle default values for the System data file
   if name == 'System'
+    save_yaml(output_dir + name + '.local.yaml', data)
     # Prevent the 'magic_number' field of System from always conflicting
     data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
     # Prevent the 'edit_map_id' field of System from conflicting
     data.edit_map_id = $CONFIG.startup_map unless $CONFIG.startup_map == -1
   elsif name == 'MapInfos'
-    File.open(output_dir + name + '.local.yaml', File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-      File.write(output_file, YAML::dump({'root' => data}))
-    end
+    save_yaml(output_dir + name + '.local.yaml', data)
     data.each do |key, map|
       map.expanded = false
       map.scroll_x = 0
@@ -289,9 +287,7 @@ def export_file(file, checksums, input_dir, output_dir)
 
   # Dump the data to a YAML file
   export_file = Dir.tmpdir() + '/' + file + '_export.yaml'
-  File.open(export_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
-    File.write(output_file, YAML::dump({'root' => data}))
-  end
+  save_yaml(export_file, data)
 
   # Simplify references in yaml to avoid conflicts
   fixed_file = Dir.tmpdir() + '/' + file + '_fixed.yaml'
@@ -300,13 +296,11 @@ def export_file(file, checksums, input_dir, output_dir)
 
   # Rewrite data file if the checksum is wrong and RMXP is not open
   unless import_only
-    File.open( yaml_file, "r+" ) do |input_file|
-      data = YAML::unsafe_load( input_file )
-    end
-    final_checksum = Digest::SHA256.hexdigest Marshal.dump( data['root'] )
+    data = load_yaml(yaml_file)
+    final_checksum = Digest::SHA256.hexdigest Marshal.dump( data )
     if data_checksum != final_checksum && $FORCE
       File.open( data_file, "w+" ) do |output_file|
-        Marshal.dump( data['root'], output_file )
+        Marshal.dump( data, output_file )
       end
     end
     checksums[name] = FileRecord.new(
@@ -326,5 +320,19 @@ def detect_cores
   rescue
     # Fallback because so far I was unable to compile win32ole into the exe file
     return `WMIC CPU Get NumberOfCores /Format:List`.match(/NumberOfCores=([0-9]++)/)[1].to_i
+  end
+end
+
+def load_yaml(yaml_file)
+  data = nil
+  File.open( yaml_file, "r+" ) do |input_file|
+    data = YAML::unsafe_load( input_file )
+  end
+  return data['root']
+end
+
+def save_yaml(yaml_file, data)
+  File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+    File.write(output_file, YAML::dump({'root' => data}))
   end
 end
