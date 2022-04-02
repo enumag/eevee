@@ -259,9 +259,19 @@ def export_file(file, checksums, input_dir, output_dir)
   # Skip import if checksum matches
   return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
 
+  # Change strings to utf-8 to prevent base64 encoding in yaml
+  load = -> (value) {
+    if value.instance_of? RPG::EventCommand
+      value.parameters.each do |parameter|
+        parameter.force_encoding('utf-8') if parameter.instance_of? String
+      end
+    end
+    value
+  }
+
   # Load the data from rmxp's data file
   File.open( data_file, "r+" ) do |input_file|
-    data = Marshal.load( input_file )
+    data = Marshal.load( input_file, load )
   end
 
   # Handle default values for the System data file
