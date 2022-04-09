@@ -192,9 +192,9 @@ end
 
 def import_file(file, checksums, input_dir, output_dir)
   start_time = Time.now
-  name = File.basename(file, ".yaml")
+  name = File.basename(file, '.yaml')
   record = checksums[name]
-  filename = name + ".rxdata"
+  filename = format_rxdata_name(name)
   yaml_file = input_dir + file
   data_file = output_dir + filename
   import_only = $CONFIG.import_only_list.include?(filename)
@@ -232,9 +232,7 @@ def import_file(file, checksums, input_dir, output_dir)
   end
 
   # Dump the data to .rxdata file
-  File.open( data_file, "w+" ) do |output_file|
-    Marshal.dump( data, output_file )
-  end
+  save_rxdata(data_file, data)
 
   # Update checksums
   unless import_only
@@ -245,13 +243,12 @@ def import_file(file, checksums, input_dir, output_dir)
   dump_time = Time.now - start_time
 end
 
-def export_file(file, checksums, input_dir, output_dir)
-  data = nil
+def export_file(file, checksums, maps, input_dir, output_dir)
   start_time = Time.now
-  name = File.basename(file, ".rxdata")
+  name = File.basename(file, '.rxdata')
   record = checksums[name]
   data_file = input_dir + file
-  yaml_file = output_dir + name + ".yaml"
+  yaml_file = output_dir + format_yaml_name(name, maps)
   import_only = $CONFIG.import_only_list.include?(file)
   yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
   data_checksum = Digest::SHA256.file(data_file).hexdigest
@@ -259,20 +256,8 @@ def export_file(file, checksums, input_dir, output_dir)
   # Skip import if checksum matches
   return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
 
-  # Change strings to utf-8 to prevent base64 encoding in yaml
-  load = -> (value) {
-    if value.instance_of? RPG::EventCommand
-      value.parameters.each do |parameter|
-        parameter.force_encoding('utf-8') if parameter.instance_of? String
-      end
-    end
-    value
-  }
-
   # Load the data from rmxp's data file
-  File.open( data_file, "r+" ) do |input_file|
-    data = Marshal.load( input_file, load )
-  end
+  data = load_rxdata(data_file)
 
   # Handle default values for the System data file
   if name == 'System'
@@ -302,6 +287,12 @@ def export_file(file, checksums, input_dir, output_dir)
   # Simplify references in yaml to avoid conflicts
   fixed_file = Dir.tmpdir() + '/' + file + '_fixed.yaml'
   yaml_stable_ref(export_file, fixed_file)
+
+  # Delete other maps with same number to handle map rename
+  Dir.glob(output_dir + name + ' - *.yaml').each { |file| File.delete(file) }
+  Dir.glob(output_dir + name + '.yaml').each { |file| File.delete(file) }
+
+  # Save map yaml
   File.rename(fixed_file, yaml_file)
 
   # Rewrite data file if the checksum is wrong and RMXP is not open
@@ -345,4 +336,56 @@ def save_yaml(yaml_file, data)
   File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
     File.write(output_file, YAML::dump({'root' => data}))
   end
+end
+
+def load_rxdata(data_file)
+  # Change strings to utf-8 to prevent base64 encoding in yaml
+  load = -> (value) {
+    if value.instance_of? RPG::EventCommand
+      value.parameters.each do |parameter|
+        parameter.force_encoding('utf-8') if parameter.instance_of? String
+      end
+    end
+    value
+  }
+
+  data = nil
+  File.open( data_file, "r+" ) do |input_file|
+    data = Marshal.load( input_file, load )
+  end
+
+  return data
+end
+
+def save_rxdata(data_file, data)
+  File.open( data_file, "w+" ) do |output_file|
+    Marshal.dump( data, output_file )
+  end
+end
+
+def load_maps
+  unless File.exist?($CONFIG.data_dir + '/MapInfos.rxdata')
+    raise "Missing MapInfos.rxdata"
+  end
+  return load_rxdata($CONFIG.data_dir + '/MapInfos.rxdata')
+end
+
+def format_yaml_name(name, maps)
+  match = name.match(/^Map0*+(?<number>[0-9]++)$/)
+  return name + '.yaml' if match.nil?
+  map_name = maps.fetch(match[:number].to_i).name.gsub(/[^0-9A-Za-z ]/, '')
+  return name + '.yaml' if map_name == ''
+  return name + ' - ' + map_name + '.yaml'
+end
+
+def format_rxdata_name(name)
+  match = name.match(/^(?<map>Map[0-9]++)(?: - .*)?/)
+  return name + '.rxdata' if match.nil?
+  return match[:map] + '.rxdata'
+end
+
+def ensure_non_duplicate_maps(files)
+  data_files = files.map { |file| format_rxdata_name(File.basename(file, '.yaml')) }
+  duplicates = data_files.tally.select { |_, count| count > 1 }.keys
+  raise "Found multiple yamls for same map: #{duplicates}" unless duplicates.empty?
 end

@@ -53,6 +53,7 @@ class DataImporterExporter
     total_dump_time  = 0.0
     i = 1
     checksums = load_checksums
+    ensure_non_duplicate_maps(files)
 
     # For each yaml file, load it and dump the objects to data file
     Parallel.each(
@@ -64,7 +65,7 @@ class DataImporterExporter
 
         # Update the user on the status
         str =  "Imported "
-        str += "#{file}".ljust(30)
+        str += "#{file}".ljust(40)
         str += "(" + "#{index}".rjust(3, '0')
         str += "/"
         str += "#{files.size}".rjust(3, '0') + ")"
@@ -131,6 +132,7 @@ class DataImporterExporter
     total_dump_time = 0.0
     i = 1
     checksums = load_checksums
+    maps = load_maps
 
     # For each data file, load it and dump the objects to YAML
     Parallel.each(
@@ -153,7 +155,7 @@ class DataImporterExporter
         i += 1
       }
     ) do |file|
-      export_file(file, checksums, input_dir, output_dir)
+      export_file(file, checksums, maps, input_dir, output_dir)
     end
 
     save_checksums(checksums)
