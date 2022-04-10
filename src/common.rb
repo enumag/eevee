@@ -198,8 +198,8 @@ def import_file(file, checksums, input_dir, output_dir)
   yaml_file = input_dir + file
   data_file = output_dir + filename
   import_only = $CONFIG.import_only_list.include?(filename)
-  yaml_checksum = Digest::SHA256.file(yaml_file).hexdigest
-  data_checksum = File.exist?(data_file) ? Digest::SHA256.file(data_file).hexdigest : nil
+  yaml_checksum = calculate_checksum(yaml_file)
+  data_checksum = File.exist?(data_file) ? calculate_checksum(data_file) : nil
   local_file = input_dir + name + '.local.yaml'
   local_merge = File.exist?(local_file)
 
@@ -236,7 +236,7 @@ def import_file(file, checksums, input_dir, output_dir)
 
   # Update checksums
   unless import_only
-    checksums[name] = FileRecord.new(name, yaml_checksum, Digest::SHA256.file(data_file).hexdigest)
+    checksums[name] = FileRecord.new(name, yaml_checksum, calculate_checksum(data_file))
   end
 
   # Calculate the time to dump the data file
@@ -250,8 +250,8 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   data_file = input_dir + file
   yaml_file = output_dir + format_yaml_name(name, maps)
   import_only = $CONFIG.import_only_list.include?(file)
-  yaml_checksum = File.exist?(yaml_file) ? Digest::SHA256.file(yaml_file).hexdigest : nil
-  data_checksum = Digest::SHA256.file(data_file).hexdigest
+  yaml_checksum = File.exist?(yaml_file) ? calculate_checksum(yaml_file) : nil
+  data_checksum = calculate_checksum(data_file)
 
   # Skip import if checksum matches
   return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
@@ -295,20 +295,9 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   # Save map yaml
   File.rename(fixed_file, yaml_file)
 
-  # Rewrite data file if the checksum is wrong and RMXP is not open
+  # Update checksums
   unless import_only
-    data = load_yaml(yaml_file)
-    final_checksum = Digest::SHA256.hexdigest Marshal.dump( data )
-    if data_checksum != final_checksum && $FORCE
-      File.open( data_file, "w+" ) do |output_file|
-        Marshal.dump( data, output_file )
-      end
-    end
-    checksums[name] = FileRecord.new(
-      name,
-      Digest::SHA256.file(yaml_file).hexdigest,
-      final_checksum
-    )
+    checksums[name] = FileRecord.new(name, calculate_checksum(yaml_file), data_checksum)
   end
 
   # Calculate the time to dump the .yaml file
@@ -388,4 +377,8 @@ def ensure_non_duplicate_maps(files)
   data_files = files.map { |file| format_rxdata_name(File.basename(file, '.yaml')) }
   duplicates = data_files.tally.select { |_, count| count > 1 }.keys
   raise "Found multiple yamls for same map: #{duplicates}" unless duplicates.empty?
+end
+
+def calculate_checksum(file)
+  return Digest::SHA256.file(file).hexdigest
 end
