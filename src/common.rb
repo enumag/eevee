@@ -192,9 +192,9 @@ end
 
 def import_file(file, checksums, input_dir, output_dir)
   start_time = Time.now
-  name = File.basename(file, '.yaml')
+  filename = format_rxdata_name(File.basename(file, '.yaml'))
+  name = File.basename(filename, '.rxdata')
   record = checksums[name]
-  filename = format_rxdata_name(name)
   yaml_file = input_dir + file
   data_file = output_dir + filename
   import_only = $CONFIG.import_only_list.include?(filename)
@@ -380,5 +380,5 @@ def ensure_non_duplicate_maps(files)
 end
 
 def calculate_checksum(file)
-  return File.mtime(file).to_s + '/' + File.size(file).to_s
+  return File.mtime(file).to_i.to_s + '/' + File.size(file).to_s
 end
