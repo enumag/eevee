@@ -380,5 +380,5 @@ def ensure_non_duplicate_maps(files)
 end
 
 def calculate_checksum(file)
-  return Digest::SHA256.file(file).hexdigest
+  return File.mtime(file).to_s + '/' + File.size(file).to_s
 end
