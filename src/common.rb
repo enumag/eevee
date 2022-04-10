@@ -12,7 +12,6 @@
 #$LOAD_PATH << "C:/bin"
 
 require 'yaml'
-require 'digest'
 require 'tmpdir'
 require 'parallel'
 
