@@ -59,7 +59,7 @@ elsif $COMMAND == "patch"
   require 'open3'
   require 'zip'
 
-  generate_patch(ARGV[1])
+  generate_patch()
 else
   puts "Unknown command " + $COMMAND
 end

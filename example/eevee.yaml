@@ -44,4 +44,7 @@ magic_number: 77323823
 # unnecessary conflicts, we are using a default map id.  If, for any reason, 
 # this causes problems, you can disable the default functionality by setting 
 # the value -1.
-edit_map_id: 1
+startup_map: 1
+
+# Base commit reference for generating a patch.
+base_commit:

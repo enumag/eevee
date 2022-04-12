@@ -177,6 +177,7 @@ class Config
   attr_accessor :verbose
   attr_accessor :magic_number
   attr_accessor :startup_map
+  attr_accessor :base_commit
 
   def initialize(config)
     @data_dir         = config['data_dir']
@@ -185,7 +186,8 @@ class Config
     @import_only_list = config['import_only_list']
     @verbose          = config['verbose']
     @magic_number     = config['magic_number']
-    @startup_map      = config['edit_map_id']
+    @startup_map      = config['startup_map']
+    @base_commit      = config['base_commit']
   end
 end
 
@@ -382,17 +384,19 @@ def calculate_checksum(file)
   return File.mtime(file).to_i.to_s + '/' + File.size(file).to_s
 end
 
-def generate_patch(commit)
-  if commit.nil? || ! commit.match(/^[a-z0-9]+$/)
-    puts 'Specify a commit ID.'
+def generate_patch()
+  if $CONFIG.base_commit.nil? || ! $CONFIG.base_commit.match(/^[a-z0-9]+$/)
+    puts 'Specify the base_commit in eevee.yaml.'
     exit
   end
 
-  command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + commit + '..HEAD'
+  command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + $CONFIG.base_commit + '..HEAD'
   files = nil
   Open3.popen3(command) do |stdin, stdout|
     files = stdout.read.split("\n")
   end
+
+  puts "Found #{files.length} changed files."
 
   File.delete('patch.zip') if File.exist?('patch.zip')
 
