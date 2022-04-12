@@ -55,6 +55,11 @@ elsif $COMMAND == "rmxp"
 
   # Delete the startup timestamp
   load_startup_time(true)
+elsif $COMMAND == "patch"
+  require 'open3'
+  require 'zip'
+
+  generate_patch(ARGV[1])
 else
   puts "Unknown command " + $COMMAND
 end

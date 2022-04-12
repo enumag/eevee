@@ -14,6 +14,7 @@ ocra ^
   --dll "ruby_builtin_dlls\libgmp-10.dll" ^
   --dll "ruby_builtin_dlls\libgcc_s_seh-1.dll" ^
   --dll "ruby_builtin_dlls\libwinpthread-1.dll" ^
+  --dll "ruby_builtin_dlls\zlib1.dll" ^
   --output "eevee.exe" ^
   --no-dep-run ^
   --no-lzma

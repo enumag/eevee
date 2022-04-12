@@ -381,3 +381,31 @@ end
 def calculate_checksum(file)
   return File.mtime(file).to_i.to_s + '/' + File.size(file).to_s
 end
+
+def generate_patch(commit)
+  if commit.nil? || ! commit.match(/^[a-z0-9]+$/)
+    puts 'Specify a commit ID.'
+    exit
+  end
+
+  command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + commit + '..HEAD'
+  files = nil
+  Open3.popen3(command) do |stdin, stdout|
+    files = stdout.read.split("\n")
+  end
+
+  File.delete('patch.zip') if File.exist?('patch.zip')
+
+  Zip::File.open('patch.zip', create: true) do |zipfile|
+    files.each do |file|
+      next if file.start_with?('eevee.')
+      if file.start_with?($CONFIG.yaml_dir + '/')
+        file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
+      end
+      zipfile.add(file, file)
+    end
+    Dir["Scripts/**/**"].each do |file|
+      zipfile.add(file, file)
+    end
+  end
+end
