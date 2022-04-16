@@ -46,5 +46,8 @@ magic_number: 77323823
 # the value -1.
 startup_map: 1
 
+# Regular expression to filter files for patch.
+patch_filter: '/.*/'
+
 # Base commit reference for generating a patch.
 base_commit:

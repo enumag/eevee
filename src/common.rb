@@ -177,6 +177,7 @@ class Config
   attr_accessor :verbose
   attr_accessor :magic_number
   attr_accessor :startup_map
+  attr_accessor :patch_filter
   attr_accessor :base_commit
 
   def initialize(config)
@@ -187,6 +188,7 @@ class Config
     @verbose          = config['verbose']
     @magic_number     = config['magic_number']
     @startup_map      = config['startup_map']
+    @patch_filter     = config['patch_filter']
     @base_commit      = config['base_commit']
   end
 end
@@ -396,13 +398,14 @@ def generate_patch()
     files = stdout.read.split("\n")
   end
 
+  files.select! { |file| file.match($CONFIG.patch_filter) }
+
   puts "Found #{files.length} changed files."
 
   File.delete('patch.zip') if File.exist?('patch.zip')
 
   Zip::File.open('patch.zip', create: true) do |zipfile|
     files.each do |file|
-      next if file.start_with?('eevee.')
       if file.start_with?($CONFIG.yaml_dir + '/')
         file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
       end
