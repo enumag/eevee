@@ -414,5 +414,6 @@ def generate_patch()
     Dir["Scripts/**/**"].each do |file|
       zipfile.add(file, file)
     end
+    zipfile.add('version', 'version')
   end
 end
