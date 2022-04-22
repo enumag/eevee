@@ -53,13 +53,15 @@ elsif $COMMAND == "rmxp"
 
   plugin.on_exit
 
+  clear_backups
+
   # Delete the startup timestamp
   load_startup_time(true)
 elsif $COMMAND == "patch"
   require 'open3'
   require 'zip'
 
-  generate_patch()
+  generate_patch
 else
   puts "Unknown command " + $COMMAND
 end

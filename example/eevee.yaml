@@ -5,10 +5,13 @@
 #-------------------------------------------------------------------------------
 
 # Modify this path to specify where your .rxdata files reside
-data_dir:     Data
+data_dir: Data
 
 # Modify this path to specify where you want the game data emitted in YAML
-yaml_dir:     DataExport
+yaml_dir: DataExport
+
+# Modify this path to specify where to backup .rxdata files
+backup_dir: DataBackup
 
 #-------------------------------------------------------------------------------
 #  Miscellaneous Parameters

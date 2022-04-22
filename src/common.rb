@@ -172,6 +172,7 @@ end
 class Config
   attr_accessor :data_dir
   attr_accessor :yaml_dir
+  attr_accessor :backup_dir
   attr_accessor :data_ignore_list
   attr_accessor :import_only_list
   attr_accessor :verbose
@@ -183,6 +184,7 @@ class Config
   def initialize(config)
     @data_dir         = config['data_dir']
     @yaml_dir         = config['yaml_dir']
+    @backup_dir       = config['backup_dir']
     @data_ignore_list = config['data_ignore_list']
     @import_only_list = config['import_only_list']
     @verbose          = config['verbose']
@@ -205,6 +207,7 @@ def import_file(file, checksums, input_dir, output_dir)
   data_checksum = File.exist?(data_file) ? calculate_checksum(data_file) : nil
   local_file = input_dir + name + '.local.yaml'
   local_merge = File.exist?(local_file)
+  now = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
   # Skip import if checksum matches
   return nil if ! local_merge && skip_file(record, data_checksum, yaml_checksum, import_only)
@@ -233,6 +236,9 @@ def import_file(file, checksums, input_dir, output_dir)
       end
     end
   end
+
+  # Create backup of .rxdata file
+  File.rename(data_file, $CONFIG.backup_dir + '/' + now + '.' + name + '.rxdata') if File.exist?(data_file)
 
   # Dump the data to .rxdata file
   save_rxdata(data_file, data)
@@ -415,5 +421,14 @@ def generate_patch()
       zipfile.add(file, file)
     end
     zipfile.add('version', 'version')
+  end
+end
+
+def clear_backups()
+  files = Dir.entries( $CONFIG.backup_dir )
+  files = files.select { |e| File.extname(e) == ".rxdata" }
+  files = files.select { |e| ! file_modified_since?($CONFIG.backup_dir + '/' + e, Time.now - 7*24*60*60) }
+  files.each do |file|
+    File.delete($CONFIG.backup_dir + '/' + file)
   end
 end
