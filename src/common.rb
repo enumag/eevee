@@ -178,7 +178,8 @@ class Config
   attr_accessor :verbose
   attr_accessor :magic_number
   attr_accessor :startup_map
-  attr_accessor :patch_filter
+  attr_accessor :patch_changed
+  attr_accessor :patch_always
   attr_accessor :base_commit
 
   def initialize(config)
@@ -190,7 +191,8 @@ class Config
     @verbose          = config['verbose']
     @magic_number     = config['magic_number']
     @startup_map      = config['startup_map']
-    @patch_filter     = config['patch_filter']
+    @patch_always     = config['patch_always']
+    @patch_changed    = config['patch_changed']
     @base_commit      = config['base_commit']
   end
 end
@@ -404,7 +406,7 @@ def generate_patch()
     files = stdout.read.split("\n")
   end
 
-  files.select! { |file| file.match($CONFIG.patch_filter) }
+  files.select! { |file| File.fnmatch($CONFIG.patch_changed, file, File::FNM_EXTGLOB) }
 
   puts "Found #{files.length} changed files."
 
@@ -417,10 +419,9 @@ def generate_patch()
       end
       zipfile.add(file, file)
     end
-    Dir["Scripts/**/**"].each do |file|
+    Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB).each do |file|
       zipfile.add(file, file)
     end
-    zipfile.add('version', 'version')
   end
 end
 

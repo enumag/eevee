@@ -49,8 +49,11 @@ magic_number: 77323823
 # the value -1.
 startup_map: 1
 
-# Regular expression to filter files for patch.
-patch_filter: '/.*/'
+# Glob mask for files that should always be included in a patch.
+patch_always: 'Scripts/*'
+
+# Glob mask to filter changed files for patch.
+patch_changed: '{Audio/*,Data/*,DataExport/*,Graphics/*}'
 
 # Base commit reference for generating a patch.
 base_commit:
