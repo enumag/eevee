@@ -255,6 +255,47 @@ def import_file(file, checksums, input_dir, output_dir)
   dump_time = Time.now - start_time
 end
 
+def has_rock_climb(page)
+  page.list.each do |command|
+    if command.code == 111 && command.parameters[1] == 'Kernel.pbRockClimb'
+      return true
+    end
+  end
+  return false
+end
+
+def insert_rock_climb_scripts(page, event, name)
+  beforeInserts = 0
+  afterInserts = 0
+  commands = []
+  page.list.each_with_index do |command, i|
+    if command.code == 111 && command.parameters[1] == 'Kernel.pbRockClimb'
+      commands.push command
+      if page.list[i + 1].code != 355 || page.list[i + 1].parameters[0] != 'pbBeforeRockClimb'
+        commands.push RPG::EventCommand.new(355, command.indent + 1, ['pbBeforeRockClimb'])
+      end
+      beforeInserts += 1
+    elsif command.code == 115 && beforeInserts > 0
+      if page.list[i - 1].code != 355 || page.list[i - 1].parameters[0] != 'pbAfterRockClimb'
+        commands.push RPG::EventCommand.new(355, command.indent, ['pbAfterRockClimb'])
+      end
+      afterInserts += 1
+      commands.push command
+    else
+      commands.push command
+    end
+  end
+  if beforeInserts != afterInserts
+    puts 'wrong rock climb insertion count ' + name + ' ' + event.x.to_s + ' / ' + event.y.to_s
+    return
+  end
+  page.list = commands
+end
+
+def transform_page(page, event, name)
+  insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
+end
+
 def export_file(file, checksums, maps, input_dir, output_dir)
   start_time = Time.now
   name = File.basename(file, '.rxdata')
@@ -305,6 +346,11 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   elsif data.instance_of?(RPG::Map)
     # Sort the events hash by keys to keep stable order in yaml or ruby.
     data.events = data.events.sort.to_h
+    data.events.each do |key, event|
+      event.pages.each do |page|
+        transform_page(page, event, yaml_file)
+      end
+    end
   end
 
   temp_file = Dir.tmpdir() + '/' + name + '_fixed' + $CONFIG.export_extension
