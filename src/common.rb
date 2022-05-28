@@ -292,8 +292,36 @@ def insert_rock_climb_scripts(page, event, name)
   page.list = commands
 end
 
+def has_mine_cart(page)
+  page.list.each do |command|
+    if command.code == 117 && command.parameters[0] == 61
+      return true
+    end
+  end
+  return false
+end
+
+def insert_mine_cart_scripts(page, event, name)
+  if page.list[1].code == 355 && page.list[1].parameters[0] == 'pbBeforeMineCart'
+    return
+  end
+  commands = []
+  commands.push RPG::EventCommand.new(355, 0, ['pbBeforeMineCart'])
+  page.list.each_with_index do |command, i|
+    if command.code == 0 && command.indent == 0
+      commands.push RPG::EventCommand.new(355, 0, ['pbAfterMineCart'])
+    end
+    commands.push command
+    if command.code == 509 && command.parameters[0].code == 29 && command.parameters[0].parameters[0] == 3
+      commands.push RPG::EventCommand.new(210, command.indent, [])
+    end
+  end
+  page.list = commands
+end
+
 def transform_page(page, event, name)
   insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
+  insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
