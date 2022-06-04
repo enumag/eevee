@@ -1,6 +1,5 @@
 $COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
-$FORCE = $COMMAND != "rmxp"
 
 require_relative 'rmxp/rgss'
 require_relative 'src/common'

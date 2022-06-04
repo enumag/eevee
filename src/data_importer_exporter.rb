@@ -61,7 +61,6 @@ class DataImporterExporter
       in_threads: detect_cores,
       finish: -> (file, index, dump_time) {
         next if dump_time.nil?
-        index = i if $FORCE
 
         # Update the user on the status
         str =  "Imported "
@@ -119,7 +118,7 @@ class DataImporterExporter
     files = Dir.entries( input_dir )
     files -= $CONFIG.data_ignore_list
     files = files.select { |e| File.extname(e) == ".rxdata" }
-    files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) } unless $FORCE == true
+    files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) }
     files.sort!
 
     if files.empty?
@@ -140,7 +139,6 @@ class DataImporterExporter
       in_threads: detect_cores,
       finish: -> (file, index, dump_time) {
         next if dump_time.nil?
-        index = i if $FORCE
 
         # Update the user on the export status
         str =  "Exported "
