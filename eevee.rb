@@ -49,7 +49,7 @@ elsif $COMMAND == "rmxp"
   # Start RMXP
   File.write($PROJECT_DIR + '/Game.rxproj', 'RPGXP 1.05')
   system('START /WAIT /D "' + $PROJECT_DIR + '" Game.rxproj')
-  File.delete($PROJECT_DIR + '/Game.rxproj')
+  File.delete($PROJECT_DIR + '/Game.rxproj') if File.exist?($PROJECT_DIR + '/Game.rxproj')
 
   plugin.on_exit
 
