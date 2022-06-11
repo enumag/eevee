@@ -234,6 +234,7 @@ def import_file(file, checksums, input_dir, output_dir)
           map.expanded = local_map.expanded
           map.scroll_x = local_map.scroll_x
           map.scroll_y = local_map.scroll_y
+          map.order = local_map.order
         end
       end
     end
@@ -283,6 +284,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
       map.expanded = false
       map.scroll_x = 0
       map.scroll_y = 0
+      map.order = 0
     end
     # Sort the maps hash by keys to keep stable order in yaml.
     data = data.sort.to_h
