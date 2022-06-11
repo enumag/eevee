@@ -45,7 +45,7 @@ end
 # print_separator: Prints a separator line to stdout.
 #----------------------------------------------------------------------------
 def print_separator( enable = $CONFIG.verbose )
-  puts "-" * 80 if enable
+  puts "-" * 100 if enable
 end
 
 #----------------------------------------------------------------------------
@@ -373,9 +373,7 @@ end
 def format_yaml_name(name, maps)
   match = name.match(/^Map0*+(?<number>[0-9]++)$/)
   return name + '.yaml' if match.nil?
-  key = match[:number].to_i
-  map_name = ''
-  map_name = maps.fetch(key).name.gsub(/[^0-9A-Za-z ]/, '') if maps.has_key?(key)
+  map_name = maps.fetch(match[:number].to_i).name.gsub(/[^0-9A-Za-z ]/, '')
   return name + '.yaml' if map_name == ''
   return name + ' - ' + map_name + '.yaml'
 end

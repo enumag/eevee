@@ -51,7 +51,6 @@ class DataImporterExporter
 
     total_start_time = Time.now
     total_dump_time  = 0.0
-    i = 1
     checksums = load_checksums
     ensure_non_duplicate_maps(files)
 
@@ -64,7 +63,7 @@ class DataImporterExporter
 
         # Update the user on the status
         str =  "Imported "
-        str += "#{file}".ljust(40)
+        str += "#{file}".ljust(50)
         str += "(" + "#{index}".rjust(3, '0')
         str += "/"
         str += "#{files.size}".rjust(3, '0') + ")"
@@ -72,7 +71,6 @@ class DataImporterExporter
         puts str
 
         total_dump_time += dump_time
-        i += 1
       }
     ) do |file|
       import_file(file, checksums, input_dir, output_dir)
@@ -91,7 +89,7 @@ class DataImporterExporter
     puts_verbose
   end
 
-  def on_exit
+  def on_exit(maps, removed_files = [])
     # Set up the directory paths
     input_dir  = $PROJECT_DIR + $CONFIG.data_dir + '/'
     output_dir = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
@@ -114,6 +112,26 @@ class DataImporterExporter
       recursive_mkdir( output_dir )
     end
 
+    total_start_time = Time.now
+    total_dump_time = 0.0
+    checksums = load_checksums
+
+    # Handle deleted files
+    removed_files.each do |file|
+      puts file
+      if file.start_with?(input_dir) && file.end_with?('.rxdata')
+        name = file.slice(input_dir.length .. - '.rxdata'.length - 1)
+        yaml_file = output_dir + format_yaml_name(name, maps)
+        if File.exist?(yaml_file)
+          File.delete(yaml_file)
+          puts_verbose 'Deleted ' + name + '.rxdata'
+        end
+      end
+    end
+
+    # Reload maps to correctly detect newly added ones.
+    maps = load_maps
+
     # Create the list of data files to export
     files = Dir.entries( input_dir )
     files -= $CONFIG.data_ignore_list
@@ -126,12 +144,6 @@ class DataImporterExporter
       puts_verbose
       return
     end
-
-    total_start_time = Time.now
-    total_dump_time = 0.0
-    i = 1
-    checksums = load_checksums
-    maps = load_maps
 
     # For each data file, load it and dump the objects to YAML
     Parallel.each(
@@ -150,7 +162,6 @@ class DataImporterExporter
         puts_verbose str
 
         total_dump_time += dump_time
-        i += 1
       }
     ) do |file|
       export_file(file, checksums, maps, input_dir, output_dir)

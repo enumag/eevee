@@ -24,7 +24,7 @@ plugin = DataImporterExporter.new
 if $COMMAND == "import"
   plugin.on_start
 elsif $COMMAND == "export"
-  plugin.on_exit
+  plugin.on_exit(load_maps)
 elsif $COMMAND == "rmxp"
   require 'listen'
   require 'wdm'
@@ -40,22 +40,11 @@ elsif $COMMAND == "rmxp"
   puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   puts_verbose
 
+  # Load map names before hand to be able to properly delete maps.
   maps = load_maps
-  input_dir = $PROJECT_DIR + $CONFIG.data_dir + '/'
-  output_dir = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
-  listener = Listen.to(input_dir) do |modified, added, removed|
-    removed.each do |file|
-      if file.start_with?(input_dir) && file.end_with?('.rxdata')
-        name = file.slice(input_dir.length .. - '.rxdata'.length - 1)
-        yaml_file = output_dir + format_yaml_name(name, maps)
-        if File.exist?(yaml_file)
-          File.delete(yaml_file)
-          puts 'Deleted ' + name + '.rxdata'
-        end
-      end
-    end
-
-    plugin.on_exit
+  listener = Listen.to($PROJECT_DIR + $CONFIG.data_dir) do |modified, added, removed|
+    plugin.on_exit(maps, removed)
+    maps = load_maps
   end
   listener.start
 
@@ -64,7 +53,7 @@ elsif $COMMAND == "rmxp"
   system('START /WAIT /D "' + $PROJECT_DIR + '" Game.rxproj')
   File.delete($PROJECT_DIR + '/Game.rxproj') if File.exist?($PROJECT_DIR + '/Game.rxproj')
 
-  plugin.on_exit
+  plugin.on_exit(maps)
 
   clear_backups
 
