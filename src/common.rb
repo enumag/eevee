@@ -72,7 +72,7 @@ end
 #   filename: The name of the data file.
 #----------------------------------------------------------------------------
 def data_file_exported?(filename)
-  exported_filename = $PROJECT_DIR + '/' + $CONFIG.yaml_dir + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
+  exported_filename = $PROJECT_DIR + $CONFIG.yaml_dir + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
   return File.exist?( exported_filename )
 end
 
@@ -81,7 +81,7 @@ end
 #   directory: The directory to dump the system tile into.
 #----------------------------------------------------------------------------
 def dump_startup_time
-  File.open( $PROJECT_DIR + '/' + TIME_LOG_FILE, "w+" ) do |outfile|
+  File.open( $PROJECT_DIR + TIME_LOG_FILE, "w+" ) do |outfile|
     Marshal.dump( Time.now, outfile )
   end
 end
@@ -92,11 +92,11 @@ end
 #----------------------------------------------------------------------------
 def load_startup_time(delete_file = false)
   t = nil
-  if File.exist?( $PROJECT_DIR + '/' + TIME_LOG_FILE )
-    File.open( $PROJECT_DIR + '/' + TIME_LOG_FILE, "r+" ) do |infile|
+  if File.exist?( $PROJECT_DIR + TIME_LOG_FILE )
+    File.open( $PROJECT_DIR + TIME_LOG_FILE, "r+" ) do |infile|
       t = Marshal.load( infile )
     end
-    if delete_file then File.delete( $PROJECT_DIR + '/' + TIME_LOG_FILE ) end
+    if delete_file then File.delete( $PROJECT_DIR + TIME_LOG_FILE ) end
   end
   t
 end
@@ -373,7 +373,9 @@ end
 def format_yaml_name(name, maps)
   match = name.match(/^Map0*+(?<number>[0-9]++)$/)
   return name + '.yaml' if match.nil?
-  map_name = maps.fetch(match[:number].to_i).name.gsub(/[^0-9A-Za-z ]/, '')
+  key = match[:number].to_i
+  map_name = ''
+  map_name = maps.fetch(key).name.gsub(/[^0-9A-Za-z ]/, '') if maps.has_key?(key)
   return name + '.yaml' if map_name == ''
   return name + ' - ' + map_name + '.yaml'
 end

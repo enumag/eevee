@@ -14,8 +14,8 @@
 class DataImporterExporter
   def on_start
     # Set up the directory paths
-    input_dir  = $PROJECT_DIR + '/' + $CONFIG.yaml_dir + '/'
-    output_dir = $PROJECT_DIR + '/' + $CONFIG.data_dir + '/'
+    input_dir  = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
+    output_dir = $PROJECT_DIR + $CONFIG.data_dir + '/'
 
     print_separator(true)
     puts "  RMXP Data Import"
@@ -93,8 +93,8 @@ class DataImporterExporter
 
   def on_exit
     # Set up the directory paths
-    input_dir  = $PROJECT_DIR + '/' + $CONFIG.data_dir + '/'
-    output_dir = $PROJECT_DIR + '/' + $CONFIG.yaml_dir   + '/'
+    input_dir  = $PROJECT_DIR + $CONFIG.data_dir + '/'
+    output_dir = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
 
     print_separator(true)
     puts "  Data Export"

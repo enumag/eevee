@@ -40,7 +40,21 @@ elsif $COMMAND == "rmxp"
   puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   puts_verbose
 
-  listener = Listen.to($PROJECT_DIR + $CONFIG.data_dir) do |modified, added, removed|
+  maps = load_maps
+  input_dir = $PROJECT_DIR + $CONFIG.data_dir + '/'
+  output_dir = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
+  listener = Listen.to(input_dir) do |modified, added, removed|
+    removed.each do |file|
+      if file.start_with?(input_dir) && file.end_with?('.rxdata')
+        name = file.slice(input_dir.length .. - '.rxdata'.length - 1)
+        yaml_file = output_dir + format_yaml_name(name, maps)
+        if File.exist?(yaml_file)
+          File.delete(yaml_file)
+          puts 'Deleted ' + name + '.rxdata'
+        end
+      end
+    end
+
     plugin.on_exit
   end
   listener.start
