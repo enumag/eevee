@@ -104,13 +104,21 @@ end
 def yaml_stable_ref(input_file, output_file)
   i = 1
   j = 1
+  k = 1
   queue = Queue.new
+  hash = {}
   File.open(output_file, 'w') do |output|
     File.open(input_file, 'r').each do |line|
       if ! line[' &'].nil? || ! line[' *'].nil?
-        match = line.match(/^ *(?:-|[a-zA-Z0-9_]++:) (?<type>[&*])(?<reference>[0-9]++)/)
+        match = line.match(/^ *(?:-|[a-zA-Z0-9_]++:) (?<type>[&*])(?<reference>[0-9]++)(?: !ruby\/object:(?<class>[a-zA-Z0-9:_]++))?/)
         unless match.nil?
-          if match[:type] === '&'
+          if match[:type] == '&' && match[:class] != 'RPG::MoveCommand'
+            hash[match[:reference]] = k
+            line[' &' + match[:reference]] = ' &x' + k.to_s
+            k += 1
+          elsif match[:type] == '*' && hash.key?(match[:reference])
+            line[' *' + match[:reference]] = ' *x' + hash[match[:reference]].to_s
+          elsif match[:type] == '&'
             queue.push(match[:reference])
             line[' &' + match[:reference]] = ' &' + i.to_s
             i += 1
@@ -166,7 +174,7 @@ def skip_file(record, data_checksum, yaml_checksum, import_only)
   return false if data_checksum.nil? || yaml_checksum.nil?
   return true if import_only
   return false if record.nil?
-  return (data_checksum === record.data_checksum && yaml_checksum === record.yaml_checksum)
+  return (data_checksum == record.data_checksum && yaml_checksum == record.yaml_checksum)
 end
 
 class Config
@@ -345,6 +353,10 @@ def load_rxdata(data_file)
   load = -> (value) {
     if value.instance_of? RPG::EventCommand
       value.parameters.each do |parameter|
+        parameter.force_encoding('utf-8') if parameter.instance_of? String
+      end
+    elsif value.instance_of? Array
+      value.map do |parameter|
         parameter.force_encoding('utf-8') if parameter.instance_of? String
       end
     end

@@ -44,3 +44,6 @@ class PBFieldNote
     @cogwheeltext = cogwheeltext
   end
 end
+
+class SerialRecord < Array
+end
