@@ -24,6 +24,22 @@ Support for exporting scripts was in the original project but I removed it becau
 - Internal post-processing to minimize the amount of changed lines and conflicts.
 - Parallel processing to speed things up.
 
-## Usage
+## Installation
 
 TBD, feel free to nag me about this.
+
+## Docker
+
+In eevee directory:
+
+```
+docker build . --tag eevee
+```
+
+In game directory:
+
+```
+docker run --rm --interactive --tty -volume $PWD:/app eevee import
+docker run --rm --interactive --tty -volume $PWD:/app eevee export
+```
+
