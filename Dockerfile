@@ -1,4 +1,4 @@
-FROM ruby:3-alpine
+FROM ruby:3
 
 RUN gem install parallel
 

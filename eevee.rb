@@ -8,7 +8,7 @@ require_relative 'src/data_importer_exporter'
 # Setup config filename
 config_filename = "eevee.yaml"
 # Setup the config file path
-$CONFIG_PATH = $PROJECT_DIR + "/" + config_filename
+$CONFIG_PATH = $PROJECT_DIR + config_filename
 
 # Read the config YAML file
 config = nil

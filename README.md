@@ -39,7 +39,7 @@ docker build . --tag eevee
 In game directory:
 
 ```
-docker run --rm --interactive --tty -volume $PWD:/app eevee import
-docker run --rm --interactive --tty -volume $PWD:/app eevee export
+docker run -v $PWD:/app eevee import
+docker run -v $PWD:/app eevee export
 ```
 
