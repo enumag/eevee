@@ -174,7 +174,7 @@ def skip_file(record, data_checksum, yaml_checksum, import_only)
   return false if data_checksum.nil? || yaml_checksum.nil?
   return true if import_only
   return false if record.nil?
-  return (data_checksum == record.data_checksum && yaml_checksum == record.yaml_checksum)
+  return data_checksum == record.data_checksum && yaml_checksum == record.yaml_checksum
 end
 
 class Config
