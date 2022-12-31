@@ -188,6 +188,7 @@ class Config
   attr_accessor :startup_map
   attr_accessor :patch_changed
   attr_accessor :patch_always
+  attr_accessor :base_tag
   attr_accessor :base_commit
 
   def initialize(config)
@@ -201,6 +202,7 @@ class Config
     @startup_map      = config['startup_map']
     @patch_always     = config['patch_always']
     @patch_changed    = config['patch_changed']
+    @base_tag         = config['base_tag']
     @base_commit      = config['base_commit']
   end
 end
@@ -409,12 +411,9 @@ def calculate_checksum(file)
 end
 
 def generate_patch()
-  if $CONFIG.base_commit.nil? || ! $CONFIG.base_commit.match(/^[a-z0-9]+$/)
-    puts 'Specify the base_commit in eevee.yaml.'
-    exit
-  end
+  base_commit = $CONFIG.base_tag.nil? ? get_base_commit_from_config : get_base_commit_from_tag
 
-  command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + $CONFIG.base_commit + '..HEAD'
+  command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + base_commit + '..HEAD'
   files = nil
   Open3.popen3(command) do |stdin, stdout|
     files = stdout.read.split("\n")
@@ -437,6 +436,22 @@ def generate_patch()
       zipfile.add(file, file)
     end
   end
+end
+
+def get_base_commit_from_tag()
+  command = 'git rev-list -n 1 tags/' + $CONFIG.base_tag
+  Open3.popen3(command) do |stdin, stdout|
+    return stdout.read
+  end
+end
+
+def get_base_commit_from_config()
+  if $CONFIG.base_commit.nil? || ! $CONFIG.base_commit.match(/^[a-z0-9]+$/)
+    puts 'Specify the base_tag or base_commit in eevee.yaml.'
+    exit
+  end
+
+  return $CONFIG.base_commit
 end
 
 def clear_backups()

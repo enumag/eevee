@@ -55,5 +55,8 @@ patch_always: 'Scripts/*'
 # Glob mask to filter changed files for patch.
 patch_changed: '{Audio/*,Data/*,DataExport/*,Graphics/*}'
 
+# Base tag for generating a patch.
+base_tag:
+
 # Base commit reference for generating a patch.
 base_commit:
