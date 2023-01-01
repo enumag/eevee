@@ -419,7 +419,7 @@ def generate_patch()
     files = stdout.read.split("\n")
   end
 
-  files.select! { |file| File.fnmatch($CONFIG.patch_changed, file, File::FNM_EXTGLOB | File::FNM_PATHNAME) }
+  files.select! { |file| File.fnmatch($CONFIG.patch_changed, file, File::FNM_EXTGLOB) }
 
   puts "Found #{files.length} changed files."
 
