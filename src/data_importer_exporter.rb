@@ -78,6 +78,22 @@ class DataImporterExporter
 
     save_checksums(checksums)
 
+    # Delete local copies of maps that were deleted by another contributor.
+    maps = load_maps
+    files = Dir.entries( output_dir )
+    files -= $CONFIG.data_ignore_list
+    files = files.select { |e| File.extname(e) == ".rxdata" }
+    files = files.select do |e|
+      name = File.basename(e, '.rxdata')
+      match = name.match(/^Map0*+(?<number>[0-9]++)$/)
+      next false if match.nil?
+      next maps.fetch(match[:number].to_i, nil).nil?
+    end
+    files.each do |file|
+      File.delete(output_dir + '/' + file)
+      puts_verbose 'Deleted ' + file
+    end
+
     # Calculate the total elapsed time
     total_elapsed_time = Time.now - total_start_time
 
@@ -118,9 +134,8 @@ class DataImporterExporter
 
     # Handle deleted files
     removed_files.each do |file|
-      puts file
-      if file.start_with?(input_dir) && file.end_with?('.rxdata')
-        name = file.slice(input_dir.length .. - '.rxdata'.length - 1)
+      if file.end_with?('.rxdata')
+        name = File.basename(file, '.rxdata')
         yaml_file = output_dir + format_yaml_name(name, maps)
         if File.exist?(yaml_file)
           File.delete(yaml_file)
