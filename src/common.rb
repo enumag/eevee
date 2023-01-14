@@ -304,11 +304,11 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   end
 
   # Dump the data to a YAML file
-  export_file = Dir.tmpdir() + '/' + file + '_export.yaml'
+  export_file = Dir.tmpdir() + '/' + name + '_export.yaml'
   save_yaml(export_file, data)
 
   # Simplify references in yaml to avoid conflicts
-  fixed_file = Dir.tmpdir() + '/' + file + '_fixed.yaml'
+  fixed_file = Dir.tmpdir() + '/' + name + '_fixed.yaml'
   yaml_stable_ref(export_file, fixed_file)
 
   # Delete other maps with same number to handle map rename
@@ -316,7 +316,11 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   Dir.glob(output_dir + name + '.yaml').each { |file| File.delete(file) }
 
   # Save map yaml
-  File.rename(fixed_file, yaml_file)
+  if File.exist?(fixed_file)
+    File.rename(fixed_file, yaml_file)
+  else
+    puts "Missing file: " + fixed_file
+  end
 
   # Update checksums
   unless import_only
