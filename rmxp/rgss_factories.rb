@@ -1,9 +1,51 @@
+def map(
+  data,
+  events,
+  tileset_id = 1,
+  autoplay_bgm = false,
+  bgm = RPG::AudioFile.new,
+  autoplay_bgs = false,
+  bgs = RPG::AudioFile.new("", 80),
+  encounter_list = [],
+  encounter_step = 30
+)
+  map = RPG::Map.new(data.xsize, data.ysize)
+  map.tileset_id = tileset_id
+  map.autoplay_bgm = autoplay_bgm
+  map.bgm = bgm
+  map.autoplay_bgs = autoplay_bgs
+  map.bgs = bgs
+  map.encounter_list = encounter_list
+  map.encounter_step = encounter_step
+  map.data = data
+  events_hash = {}
+  events.each do |event|
+    events_hash[event.id] = event
+  end
+  map.events = events_hash
+  return map
+end
+
+def audio(
+  name = "",
+  volume = 100,
+  pitch = 100
+)
+  return RPG::AudioFile.new(name, volume, pitch)
+end
+
 def event(id, name, x, y, *pages)
   event = RPG::Event.new(x, y)
   event.id = id
   event.name = name
   event.pages = pages
   return event
+end
+
+def table(x, y = 0, z = 0, data = [])
+  table = Table(x, y, z)
+  table.data = data
+  return table
 end
 
 def page(

@@ -19,17 +19,51 @@ def dump_rb(object, level)
   end
 end
 
-def dump_map(object, level)
-  object.events.each do |key, event|
-    return indent(level + 1) + dump_event(event, level + 1)
-  end
-end
-
+DEFAULT_AUDIO = Marshal.dump(RPG::AudioFile.new)
+DEFAULT_BGS = Marshal.dump(RPG::AudioFile.new("", 80))
 DEFAULT_CONDITION = Marshal.dump(RPG::Event::Page::Condition.new)
 DEFAULT_GRAPHIC = Marshal.dump(RPG::Event::Page::Graphic.new)
 DEFAULT_COMMAND = Marshal.dump(RPG::EventCommand.new)
 DEFAULT_ROUTE = Marshal.dump(RPG::MoveRoute.new)
 DEFAULT_MOVE = Marshal.dump(RPG::MoveCommand.new)
+
+def dump_map(map, level)
+  value = "map(\n"
+  value += indent(level + 1) + "tileset_id: " + map.tileset_id.inspect + ",\n" if map.tileset_id != 1
+  value += indent(level + 1) + "autoplay_bgm: " + map.autoplay_bgm.inspect + ",\n" if map.autoplay_bgm != false
+  value += indent(level + 1) + "bgm: " + dump_audio(map.bgm, level + 1) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
+  value += indent(level + 1) + "autoplay_bgs: " + map.autoplay_bgs.inspect + ",\n" if map.autoplay_bgs != false
+  value += indent(level + 1) + "bgs: " + dump_audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
+  raise "non-empty map encounter_list" if map.encounter_list != []
+  value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
+  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1)
+  value += indent(level + 1) + "events: [\n\n"
+  map.events.each do |key, event|
+    value += indent(level + 2) + dump_event(event, level + 2) + ",\n\n"
+  end
+  value += indent(level + 1) + "]\n"
+  value += indent(level) + ")"
+  return value
+end
+
+def dump_audio(audio, level)
+  value = "audio(\n"
+  value += indent(level + 1) + "name: " + audio.name.inspect + ",\n" if audio.name != ""
+  value += indent(level + 1) + "volume: " + audio.volume.inspect + ",\n" if audio.volume != 100
+  value += indent(level + 1) + "pitch: " + audio.pitch.inspect + ",\n" if audio.pitch != 100
+  value += indent(level) + ")"
+  return value
+end
+
+def dump_table(table, level)
+  value = "table(\n"
+  value += indent(level + 1) + "x: " + table.xsize.inspect + ",\n"
+  value += indent(level + 1) + "y: " + table.ysize.inspect + ",\n" if table.ysize > 1
+  value += indent(level + 1) + "z: " + table.zsize.inspect + ",\n" if table.zsize > 1
+  value += indent(level + 1) + "data: " + table.data.inspect + ",\n"
+  value += indent(level) + ")"
+  return value
+end
 
 def dump_event(event, level)
   value = "event(\n"
