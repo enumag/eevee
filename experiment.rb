@@ -124,11 +124,16 @@ def dump_command_list(commands, level)
   while i < commands.count
     command = commands[i]
     case command.code
-    when 355
+    when 101 # text
+      parts = collect(commands, i + 1, 401)
+      i += parts.count
+      parts.unshift(command)
+      value += dump_command_array('text', parts, level)
+    when 355 # script
       parts = collect(commands, i + 1, 655)
       i += parts.count
       parts.unshift(command)
-      value += dump_command_script(parts, level)
+      value += dump_command_array('script', parts, level)
     else
       value += indent(level) + dump_command(command, level) + ",\n"
     end
@@ -147,10 +152,10 @@ def collect(commands, index, code)
   return parts
 end
 
-def dump_command_script(commands, level)
-  value = indent(level) + "script(\n"
+def dump_command_array(function, commands, level)
+  value = indent(level) + function + "(\n"
   commands.each do |command|
-    raise "unexpected script parameters" if command.parameters.count != 1
+    raise "unexpected command parameters" if command.parameters.count != 1
     value += indent(level + 1) + command.parameters[0].inspect + ",\n"
   end
   value += indent(level) + "),\n"
