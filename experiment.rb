@@ -16,6 +16,7 @@ def save_rb(file, data)
   #save_yaml('Map006 - Department Store 11F.rb2.yaml', reconstructed)
   #yaml_stable_ref('Map006 - Department Store 11F.rb.yaml', 'Map006 - Department Store 11F.yaml')
   puts marshal == Marshal.dump(reconstructed)
+  puts Marshal.dump(data) == Marshal.dump(reconstructed)
 end
 
 def dump_rb(object, level)
@@ -102,11 +103,12 @@ def dump_page(page, level)
   value += indent(level + 1) + "through: " + page.through.inspect + ",\n" if page.through != false
   value += indent(level + 1) + "always_on_top: " + page.always_on_top.inspect + ",\n" if page.always_on_top != false
   value += indent(level + 1) + "trigger: " + page.trigger.inspect + ",\n" if page.trigger != 0
-  last = page.list.pop
+  commands = page.list.clone
+  last = commands.pop
   raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
   if page.list.count != 0
     value += indent(level + 1) + "list: [\n"
-    value += dump_command_list(page.list, level + 2)
+    value += dump_command_list(commands, level + 2)
     value += indent(level + 1) + "],\n"
   end
   value += indent(level) + ")"
