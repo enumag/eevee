@@ -9,7 +9,13 @@ def indent(level)
 end
 
 def save_rb(file, data)
-  puts dump_rb(data, 0)
+  ruby = dump_rb(data, 0)
+  puts ruby
+  File.write('Map006 - Department Store 11F.rb', ruby)
+  reconstructed = eval(ruby)
+  save_yaml('Map006 - Department Store 11F.rb.yaml', reconstructed)
+  yaml_stable_ref('Map006 - Department Store 11F.rb.yaml', 'Map006 - Department Store 11F.yaml')
+  puts Marshal.dump(data) == Marshal.dump(reconstructed)
 end
 
 def dump_rb(object, level)
@@ -36,12 +42,12 @@ def dump_map(map, level)
   value += indent(level + 1) + "bgs: " + dump_audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
   raise "non-empty map encounter_list" if map.encounter_list != []
   value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
-  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1) + "\n"
+  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1) + ",\n"
   value += indent(level + 1) + "events: [\n\n"
   map.events.each do |key, event|
     value += indent(level + 2) + dump_event(event, level + 2) + ",\n\n"
   end
-  value += indent(level + 1) + "]\n"
+  value += indent(level + 1) + "],\n"
   value += indent(level) + ")"
   return value
 end
@@ -73,9 +79,11 @@ def dump_event(event, level)
   value += indent(level + 1) + "name: " + event.name.inspect + ",\n"
   value += indent(level + 1) + "x: " + event.x.inspect + ",\n"
   value += indent(level + 1) + "y: " + event.y.inspect + ",\n"
+  value += indent(level + 1) + "pages: [\n"
   event.pages.each do |page|
-    value += indent(level + 1) + dump_page(page, level + 1) + ",\n"
+    value += indent(level + 2) + dump_page(page, level + 2) + ",\n"
   end
+  value += indent(level + 1) + "],\n"
   value += indent(level) + ")"
   return value
 end
@@ -136,7 +144,7 @@ def dump_command_list(commands, level)
     when 201 # transfer player
       value += dump_transfer_player(command, level)
     when 223 # change screen color tone
-      value += dump_command_change_tone(command, level)
+      value += dump_change_tone(command, level)
     when 250 # play se
       value += dump_play_se(command, level)
     when 355 # script
@@ -172,12 +180,12 @@ def dump_command_array(function, commands, level)
   return value
 end
 
-def dump_command_change_tone(command, level)
+def dump_change_tone(command, level)
   raise "unexpected command parameters" if command.parameters.count != 2
   value = indent(level) + "change_tone("
-  value += command.parameters[0].red.to_i.inspect + ", "
-  value += command.parameters[0].green.to_i.inspect + ", "
-  value += command.parameters[0].blue.to_i.inspect + ", "
+  value += "red: " + command.parameters[0].red.to_i.inspect + ", "
+  value += "green: " + command.parameters[0].green.to_i.inspect + ", "
+  value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
   value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
   value += "time: " + command.parameters[1].inspect
   value += "),\n"
@@ -186,9 +194,9 @@ end
 
 def dump_play_se(command, level)
   raise "unexpected command parameters" if command.parameters.count != 1
-  value = indent(level) + "play_se "
+  value = indent(level) + "play_se("
   value += dump_audio(command.parameters[0], level + 1)
-  value += ",\n"
+  value += "),\n"
   return value
 end
 
@@ -224,9 +232,9 @@ end
 
 def dump_wait(command, level)
   raise "unexpected command parameters" if command.parameters.count != 1
-  value = indent(level) + "wait "
+  value = indent(level) + "wait("
   value += command.parameters[0].inspect
-  value += ",\n"
+  value += "),\n"
   return value
 end
 

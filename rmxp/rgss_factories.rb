@@ -1,13 +1,13 @@
 def map(
-  data,
-  events,
-  tileset_id = 1,
-  autoplay_bgm = false,
-  bgm = RPG::AudioFile.new,
-  autoplay_bgs = false,
-  bgs = RPG::AudioFile.new("", 80),
-  encounter_list = [],
-  encounter_step = 30
+  data:,
+  events:,
+  tileset_id: 1,
+  autoplay_bgm: false,
+  bgm: RPG::AudioFile.new,
+  autoplay_bgs: false,
+  bgs: RPG::AudioFile.new("", 80),
+  encounter_list: [],
+  encounter_step: 30
 )
   map = RPG::Map.new(data.xsize, data.ysize)
   map.tileset_id = tileset_id
@@ -27,14 +27,14 @@ def map(
 end
 
 def audio(
-  name = "",
-  volume = 100,
-  pitch = 100
+  name: "",
+  volume: 100,
+  pitch: 100
 )
   return RPG::AudioFile.new(name, volume, pitch)
 end
 
-def event(id, name, x, y, *pages)
+def event(id:, name:, x:, y:, pages:)
   event = RPG::Event.new(x, y)
   event.id = id
   event.name = name
@@ -42,26 +42,26 @@ def event(id, name, x, y, *pages)
   return event
 end
 
-def table(x, y = 0, z = 0, data = [])
-  table = Table(x, y, z)
+def table(x:, y: 0, z: 0, data: [])
+  table = Table.new(x, y, z)
   table.data = data
   return table
 end
 
 def page(
-  condition = RPG::Event::Page::Condition.new,
-  graphic = RPG::Event::Page::Graphic.new,
-  move_type = 0,
-  move_speed = 3,
-  move_frequency = 3,
-  move_route = RPG::MoveRoute.new,
-  walk_anime = true,
-  step_anime = false,
-  direction_fix = false,
-  through = false,
-  always_on_top = false,
-  trigger = 0,
-  list = []
+  condition: RPG::Event::Page::Condition.new,
+  graphic: RPG::Event::Page::Graphic.new,
+  move_type: 0,
+  move_speed: 3,
+  move_frequency: 3,
+  move_route: RPG::MoveRoute.new,
+  walk_anime: true,
+  step_anime: false,
+  direction_fix: false,
+  through: false,
+  always_on_top: false,
+  trigger: 0,
+  list: []
 )
   page = RPG::Event::Page.new
   page.condition = condition
@@ -77,7 +77,7 @@ def page(
   page.always_on_top = always_on_top
   page.trigger = trigger
   list.append RPG::EventCommand.new
-  page.list = list
+  page.list = list.flatten
   return page
 end
 
@@ -94,15 +94,15 @@ def command(
 end
 
 def condition(
-  switch1_valid = false,
-  switch2_valid = false,
-  variable_valid = false,
-  self_switch_valid = false,
-  switch1_id = 1,
-  switch2_id = 1,
-  variable_id = 1,
-  variable_value = 0,
-  self_switch_ch = "A"
+  switch1_valid: false,
+  switch2_valid: false,
+  variable_valid: false,
+  self_switch_valid: false,
+  switch1_id: 1,
+  switch2_id: 1,
+  variable_id: 1,
+  variable_value: 0,
+  self_switch_ch: "A"
 )
   condition = RPG::Event::Page::Condition.new
   condition.switch1_valid = switch1_valid
@@ -118,13 +118,13 @@ def condition(
 end
 
 def graphic(
-  tile_id = 0,
-  character_name = "",
-  character_hue = 0,
-  direction = 2,
-  pattern = 0,
-  opacity = 255,
-  blend_type = 0
+  tile_id: 0,
+  character_name: "",
+  character_hue: 0,
+  direction: 2,
+  pattern: 0,
+  opacity: 255,
+  blend_type: 0
 )
   graphic = RPG::Event::Page::Graphic.new
   graphic.tile_id = tile_id
@@ -138,9 +138,9 @@ def graphic(
 end
 
 def route(
-  repeat = true,
-  skippable = false,
-  list = []
+  repeat: true,
+  skippable: false,
+  list: []
 )
   route = RPG::MoveRoute.new
   route.repeat = repeat
@@ -158,4 +158,52 @@ def move(
   move.code = code
   move.parameters = parameters
   return move
+end
+
+def script(*parts)
+  commands = parts.map { |text| command(655, 0, [text]) }
+  commands[0].code = 355
+  return commands
+end
+
+def text(*parts)
+  commands = parts.map { |text| command(401, 0, [text]) }
+  commands[0].code = 101
+  return commands
+end
+
+def wait(time)
+  return command(106, 0, [time])
+end
+
+def play_se(audio)
+  return command(250, 0, [audio])
+end
+
+def change_tone(red:, green:, blue:, gray: 0, time:)
+  return command(223, 0, [Tone.new(red, green, blue, gray), time])
+end
+
+DIRECTIONS = {
+  retain: 0,
+  down: 1,
+  left: 2,
+  right: 3,
+  up: 4,
+}
+
+def transfer_player(map:, x:, y:, direction:, fading:)
+  return command(
+    201,
+    0,
+    [0, map, x, y, DIRECTIONS[direction], fading ? 0 : 1]
+  )
+end
+
+def transfer_player_variables(map:, x:, y:, direction:, fading:)
+  return command(
+    201,
+    0,
+    [1, map, x, y, DIRECTIONS[direction], fading ? 0 : 1]
+  )
 end
