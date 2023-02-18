@@ -47,11 +47,13 @@ def dump_map(map, level)
 end
 
 def dump_audio(audio, level)
-  value = "audio(\n"
-  value += indent(level + 1) + "name: " + audio.name.inspect + ",\n" if audio.name != ""
-  value += indent(level + 1) + "volume: " + audio.volume.inspect + ",\n" if audio.volume != 100
-  value += indent(level + 1) + "pitch: " + audio.pitch.inspect + ",\n" if audio.pitch != 100
-  value += indent(level) + ")"
+  value = "audio("
+  parameters = []
+  parameters.append "name: " + audio.name.inspect if audio.name != ""
+  parameters.append "volume: " + audio.volume.inspect if audio.volume != 100
+  parameters.append "pitch: " + audio.pitch.inspect if audio.pitch != 100
+  value += parameters.join(", ")
+  value += ")"
   return value
 end
 
@@ -129,6 +131,14 @@ def dump_command_list(commands, level)
       i += parts.count
       parts.unshift(command)
       value += dump_command_array('text', parts, level)
+    when 106 # wait
+      value += dump_wait(command, level)
+    when 201 # transfer player
+      value += dump_transfer_player(command, level)
+    when 223 # change screen color tone
+      value += dump_command_change_tone(command, level)
+    when 250 # play se
+      value += dump_play_se(command, level)
     when 355 # script
       parts = collect(commands, i + 1, 655)
       i += parts.count
@@ -159,6 +169,64 @@ def dump_command_array(function, commands, level)
     value += indent(level + 1) + command.parameters[0].inspect + ",\n"
   end
   value += indent(level) + "),\n"
+  return value
+end
+
+def dump_command_change_tone(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 2
+  value = indent(level) + "change_tone("
+  value += command.parameters[0].red.to_i.inspect + ", "
+  value += command.parameters[0].green.to_i.inspect + ", "
+  value += command.parameters[0].blue.to_i.inspect + ", "
+  value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
+  value += "time: " + command.parameters[1].inspect
+  value += "),\n"
+  return value
+end
+
+def dump_play_se(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "play_se "
+  value += dump_audio(command.parameters[0], level + 1)
+  value += ",\n"
+  return value
+end
+
+def dump_transfer_player(command, level)
+  value = indent(level)
+  value += "transfer_player(" if command.parameters[0] == 0
+  value += "transfer_player_variables(" if command.parameters[0] == 1
+  parameters = []
+  parameters.append "map: " + command.parameters[1].inspect
+  parameters.append "x: " + command.parameters[2].inspect
+  parameters.append "y: " + command.parameters[3].inspect
+  parameters.append "direction: " + dump_direction(command.parameters[4])
+  parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
+  value += parameters.join(", ")
+  value += "),\n"
+  return value
+end
+
+def dump_direction(direction)
+  case direction
+  when 0
+    return ':retain'
+  when 1
+    return ':down'
+  when 2
+    return ':left'
+  when 3
+    return ':right'
+  when 4
+    return ':up'
+  end
+end
+
+def dump_wait(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "wait "
+  value += command.parameters[0].inspect
+  value += ",\n"
   return value
 end
 
