@@ -9,13 +9,13 @@ def indent(level)
 end
 
 def save_rb(file, data)
+  marshal = Marshal.dump(data)
   ruby = dump_rb(data, 0)
   puts ruby
-  File.write('Map006 - Department Store 11F.rb', ruby)
   reconstructed = eval(ruby)
-  save_yaml('Map006 - Department Store 11F.rb.yaml', reconstructed)
-  yaml_stable_ref('Map006 - Department Store 11F.rb.yaml', 'Map006 - Department Store 11F.yaml')
-  puts Marshal.dump(data) == Marshal.dump(reconstructed)
+  #save_yaml('Map006 - Department Store 11F.rb2.yaml', reconstructed)
+  #yaml_stable_ref('Map006 - Department Store 11F.rb.yaml', 'Map006 - Department Store 11F.yaml')
+  puts marshal == Marshal.dump(reconstructed)
 end
 
 def dump_rb(object, level)
