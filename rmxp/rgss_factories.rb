@@ -76,7 +76,7 @@ def page(
   page.through = through
   page.always_on_top = always_on_top
   page.trigger = trigger
-  list[] = RPG::EventCommand.new
+  list.append RPG::EventCommand.new
   page.list = list
   return page
 end
@@ -145,7 +145,7 @@ def route(
   route = RPG::MoveRoute.new
   route.repeat = repeat
   route.skippable = skippable
-  list[] = RPG::MoveCommand.new
+  list.append RPG::MoveCommand.new
   route.list = list
   return route
 end

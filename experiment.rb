@@ -36,7 +36,7 @@ def dump_map(map, level)
   value += indent(level + 1) + "bgs: " + dump_audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
   raise "non-empty map encounter_list" if map.encounter_list != []
   value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
-  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1)
+  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1) + "\n"
   value += indent(level + 1) + "events: [\n\n"
   map.events.each do |key, event|
     value += indent(level + 2) + dump_event(event, level + 2) + ",\n\n"
@@ -96,9 +96,7 @@ def dump_page(page, level)
   raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
   if page.list.count != 0
     value += indent(level + 1) + "list: [\n"
-    page.list.each do |command|
-      value += indent(level + 2) + dump_command(command, level + 2) + ",\n"
-    end
+    value += dump_command_list(page.list, level + 2)
     value += indent(level + 1) + "],\n"
   end
   value += indent(level) + ")"
@@ -117,6 +115,45 @@ def dump_condition(condition, level)
   value += indent(level + 1) + "variable_value: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
   value += indent(level + 1) + "self_switch_ch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A"
   value += indent(level) + ")"
+  return value
+end
+
+def dump_command_list(commands, level)
+  value = ""
+  i = 0
+  while i < commands.count
+    command = commands[i]
+    case command.code
+    when 355
+      parts = collect(commands, i + 1, 655)
+      i += parts.count
+      parts.unshift(command)
+      value += dump_command_script(parts, level)
+    else
+      value += indent(level) + dump_command(command, level) + ",\n"
+    end
+    i += 1
+  end
+  return value
+end
+
+def collect(commands, index, code)
+  parts = []
+  while commands[index].code == code
+    parts.append(commands[index])
+    index += 1
+    break if commands.length == index
+  end
+  return parts
+end
+
+def dump_command_script(commands, level)
+  value = indent(level) + "script(\n"
+  commands.each do |command|
+    raise "unexpected script parameters" if command.parameters.count != 1
+    value += indent(level + 1) + command.parameters[0].inspect + ",\n"
+  end
+  value += indent(level) + "),\n"
   return value
 end
 
