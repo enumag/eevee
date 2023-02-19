@@ -2,7 +2,7 @@ require_relative 'rmxp/rgss'
 require_relative 'rmxp/rgss_factories'
 require_relative 'src/common'
 
-data = load_yaml('Map006 - Department Store 11F.yaml')
+data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
 
 def indent(level)
   return ' ' * level * 2
@@ -91,7 +91,7 @@ end
 
 def dump_page(page, level)
   value = "page(\n"
-  value += indent(level + 1) + "condition: " + dump_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
+  value += indent(level + 1) + "condition: " + dump_page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
   value += indent(level + 1) + "graphic: " + dump_graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
   value += indent(level + 1) + "move_type: " + page.move_type.inspect + ",\n" if page.move_type != 0
   value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
@@ -115,8 +115,8 @@ def dump_page(page, level)
   return value
 end
 
-def dump_condition(condition, level)
-  value = "condition(\n"
+def dump_page_condition(condition, level)
+  value = "page_condition(\n"
   value += indent(level + 1) + "switch1_valid: " + condition.switch1_valid.inspect + ",\n" if condition.switch1_valid != false
   value += indent(level + 1) + "switch2_valid: " + condition.switch2_valid.inspect + ",\n" if condition.switch2_valid != false
   value += indent(level + 1) + "variable_valid: " + condition.variable_valid.inspect + ",\n" if condition.variable_valid != false
@@ -143,6 +143,9 @@ def dump_command_list(commands, level)
       value += dump_command_array('text', parts, level)
     when 106 # wait
       value += dump_wait(command, level)
+    when 111 # if
+      value += dump_condition(command, level)
+      level += 2
     when 201 # transfer player
       value += dump_transfer_player(command, level)
     when 223 # change screen color tone
@@ -154,6 +157,15 @@ def dump_command_list(commands, level)
       i += parts.count
       parts.unshift(command)
       value += dump_command_array('script', parts, level)
+    when 411 # else
+      level -= 2
+      value += indent(level + 1) + "],\n"
+      value += indent(level + 1) + "else_commands: [\n"
+      level += 2
+    when 412 # branch end
+      level -= 2
+      value += indent(level + 1) + "],\n"
+      value += indent(level) + "),\n"
     else
       value += indent(level) + dump_command(command, level) + ",\n"
     end
@@ -163,6 +175,7 @@ def dump_command_list(commands, level)
 end
 
 def collect(commands, index, code)
+  return [] if commands.length == index
   parts = []
   while commands[index].code == code
     parts.append(commands[index])
@@ -241,6 +254,9 @@ def dump_wait(command, level)
 end
 
 def dump_command(command, level)
+  command.parameters.each do |parameter|
+    raise "missing when for command code " + command.code.to_s if parameter.inspect.start_with?('#')
+  end
   value = "command(\n"
   value += indent(level + 1) + "code: " + command.code.inspect + ",\n"
   value += indent(level + 1) + "indent: " + command.indent.inspect + ",\n"
@@ -284,6 +300,13 @@ def dump_move(move, level)
   value += indent(level + 1) + "code: " + move.code.inspect + ",\n"
   value += indent(level + 1) + "parameters: " + move.parameters.inspect + ",\n"
   value += indent(level) + ")"
+  return value
+end
+
+def dump_condition(condition, level)
+  value = "condition(\n"
+  value += indent(level + 1) + "parameters: " + condition.parameters.inspect + ",\n"
+  value += indent(level + 1) + "then_commands: [\n"
   return value
 end
 

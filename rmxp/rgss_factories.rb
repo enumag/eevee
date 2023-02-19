@@ -93,7 +93,7 @@ def command(
   return command
 end
 
-def condition(
+def page_condition(
   switch1_valid: false,
   switch2_valid: false,
   variable_valid: false,
@@ -206,4 +206,22 @@ def transfer_player_variables(map:, x:, y:, direction:, fading:)
     0,
     [1, map, x, y, DIRECTIONS[direction], fading ? 0 : 1]
   )
+end
+
+def condition(parameters: [], then_commands: [], else_commands: [])
+  commands = []
+  commands.append(command(111, 0, parameters))
+  then_commands.each do |command|
+    command.indent += 1
+    commands.append(command)
+  end
+  if else_commands != []
+    commands.append(command(411, 0, parameters))
+    else_commands.each do |command|
+      command.indent += 1
+      commands.append(command)
+    end
+  end
+  commands.append(command(412, 0, parameters))
+  return commands
 end
