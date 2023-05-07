@@ -319,9 +319,21 @@ def insert_mine_cart_scripts(page, event, name)
   page.list = commands
 end
 
+def has_scrap_train(page)
+  page.list.each do |command|
+    if command.code == 355 && command.parameters[0].include?('pbDependentEventOpacity')
+      return true
+    end
+  end
+  return false
+end
+
 def transform_page(page, event, name)
-  insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
-  insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
+  # insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
+  # insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
+  if has_scrap_train(page)
+    puts name + ' ' + event.x.to_s + ' / ' + event.y.to_s
+  end
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
@@ -335,7 +347,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   data_checksum = calculate_checksum(data_file)
 
   # Skip import if checksum matches
-  return nil if skip_file(record, data_checksum, export_checksum, import_only)
+  # return nil if skip_file(record, data_checksum, export_checksum, import_only)
 
   # Load the data from rmxp's data file
   data = load_rxdata(data_file)
