@@ -312,8 +312,18 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   yaml_stable_ref(export_file, fixed_file)
 
   # Delete other maps with same number to handle map rename
-  Dir.glob(output_dir + name + ' - *.yaml').each { |file| File.delete(file) }
-  Dir.glob(output_dir + name + '.yaml').each { |file| File.delete(file) }
+  Dir.glob(output_dir + name + ' - *.yaml').each do |file|
+    begin
+      File.delete(file)
+    rescue Errno::ENOENT
+    end
+  end
+  Dir.glob(output_dir + name + '.yaml').each do |file|
+    begin
+      File.delete(file)
+    rescue Errno::ENOENT
+    end
+  end
 
   # Save map yaml
   if File.exist?(fixed_file)
