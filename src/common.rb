@@ -326,9 +326,9 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   end
 
   # Save map yaml
-  if File.exist?(fixed_file)
+  begin
     File.rename(fixed_file, yaml_file)
-  else
+  rescue Errno::ENOENT
     puts "Missing file: " + fixed_file
   end
 
