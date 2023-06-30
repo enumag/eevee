@@ -106,6 +106,18 @@ class DataImporterExporter
   end
 
   def on_exit(maps, removed_files = [])
+    begin
+      file = Dir.tmpdir() + '/eevee_' + $CONFIG.base_commit
+      lock = File.open(file, File::CREAT)
+      lock.flock(File::LOCK_EX)
+      on_exit_exclusive(maps, removed_files)
+    ensure
+      lock.flock(File::LOCK_UN)
+      lock.close
+    end
+  end
+
+  def on_exit_exclusive(maps, removed_files = [])
     # Set up the directory paths
     input_dir  = $PROJECT_DIR + $CONFIG.data_dir + '/'
     output_dir = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
