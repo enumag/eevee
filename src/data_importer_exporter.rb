@@ -106,14 +106,21 @@ class DataImporterExporter
   end
 
   def on_exit(maps, removed_files = [])
+    lock = nil
     begin
-      file = Dir.tmpdir() + '/eevee_' + $CONFIG.base_commit
-      lock = File.open(file, File::CREAT)
+      file = Dir.tmpdir() + '/eevee_' + $SEED
+      loop do
+        lock = File.open(file, File::WRONLY|File::CREAT|File::TRUNC)
+        break unless lock.nil?
+        sleep 1
+      end
       lock.flock(File::LOCK_EX)
       on_exit_exclusive(maps, removed_files)
     ensure
-      lock.flock(File::LOCK_UN)
-      lock.close
+      unless lock.nil?
+        lock.flock(File::LOCK_UN)
+        lock.close
+      end
     end
   end
 

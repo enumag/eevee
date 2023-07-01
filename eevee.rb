@@ -1,5 +1,6 @@
 $COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
+$SEED = $PROJECT_DIR.hash.to_s
 
 require_relative 'rmxp/rgss'
 require_relative 'src/common'
