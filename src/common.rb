@@ -424,8 +424,17 @@ def calculate_checksum(file)
   return File.mtime(file).to_i.to_s + '/' + File.size(file).to_s
 end
 
-def generate_patch()
-  base_commit = $CONFIG.base_tag.nil? ? get_base_commit_from_config : get_base_commit_from_tag
+def generate_patch(base_tag)
+  if ! base_tag.nil?
+    base_commit = get_base_commit_from_tag(base_tag)
+    puts "Generating patch with changes since tag #{base_tag}."
+  elsif $CONFIG.base_tag.nil?
+    base_commit = get_base_commit_from_config
+    puts "Generating patch with changes since commit #{base_commit}."
+  else
+    base_commit = get_base_commit_from_tag($CONFIG.base_tag)
+    puts "Generating patch with changes since tag #{$CONFIG.base_tag}."
+  end
 
   command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + base_commit + '..HEAD'
   files = nil
@@ -452,8 +461,8 @@ def generate_patch()
   end
 end
 
-def get_base_commit_from_tag()
-  command = 'git rev-list -n 1 tags/' + $CONFIG.base_tag
+def get_base_commit_from_tag(tag)
+  command = 'git rev-list -n 1 tags/' + tag
   Open3.popen3(command) do |stdin, stdout|
     return stdout.read
   end
@@ -461,7 +470,7 @@ end
 
 def get_base_commit_from_config()
   if $CONFIG.base_commit.nil? || ! $CONFIG.base_commit.match(/^[a-z0-9]+$/)
-    puts 'Specify the base_tag or base_commit in eevee.yaml.'
+    puts 'Specify the base_tag or base_commit in eevee.yaml or pass a base tag as argument.'
     exit
   end
 

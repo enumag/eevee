@@ -67,7 +67,9 @@ elsif $COMMAND == "patch"
   require 'open3'
   require 'zip'
 
-  generate_patch
+  base_tag = ARGV[1] || nil
+
+  generate_patch(base_tag)
 else
   puts "Unknown command " + $COMMAND
 end
