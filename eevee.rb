@@ -49,6 +49,9 @@ elsif $COMMAND == "rmxp"
   end
   listener.start
 
+  # Start Resizer tool if it exists
+  pid = Process.spawn($PROJECT_DIR + 'ResizeEnableRunner.exe') if File.exist?($PROJECT_DIR + 'ResizeEnableRunner.exe')
+
   # Start RMXP
   File.write($PROJECT_DIR + 'Game.rxproj', 'RPGXP 1.05')
   system('START /WAIT /D "' + $PROJECT_DIR + '" Game.rxproj')
@@ -56,6 +59,9 @@ elsif $COMMAND == "rmxp"
     File.delete($PROJECT_DIR + 'Game.rxproj')
   rescue Errno::ENOENT
   end
+
+  # Cleanup
+  system("taskkill /im #{pid} /f /t >nul 2>&1") if pid
 
   plugin.on_exit(maps)
 
