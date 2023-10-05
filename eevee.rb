@@ -72,10 +72,12 @@ elsif $COMMAND == "rmxp"
 elsif $COMMAND == "patch"
   require 'open3'
   require 'zip'
+  require 'seven_zip_ruby'
 
   base_tag = ARGV[1] || nil
+  password = ARGV[2] || nil
 
-  generate_patch(base_tag)
+  generate_patch(base_tag, password)
 else
   puts "Unknown command " + $COMMAND
 end

@@ -424,7 +424,7 @@ def calculate_checksum(file)
   return File.mtime(file).to_i.to_s + '/' + File.size(file).to_s
 end
 
-def generate_patch(base_tag)
+def generate_patch(base_tag, password)
   if ! base_tag.nil?
     base_commit = get_base_commit_from_tag(base_tag)
     puts "Generating patch with changes since tag #{base_tag}."
@@ -446,17 +446,35 @@ def generate_patch(base_tag)
 
   puts "Found #{files.length} changed files."
 
-  File.delete('patch.zip') if File.exist?('patch.zip')
+  if password
+    File.delete('patch.7z') if File.exist?('patch.7z')
 
-  Zip::File.open('patch.zip', create: true) do |zipfile|
-    files.each do |file|
-      if file.start_with?($CONFIG.yaml_dir + '/')
-        file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
+    File.open('patch.7z', 'wb') do |file|
+      SevenZipRuby::Writer.open(file, { password: password }) do |sevenzip|
+        files.each do |file|
+          if file.start_with?($CONFIG.yaml_dir + '/')
+            file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
+          end
+          sevenzip.add_file(file)
+        end
+        Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB).each do |file|
+          sevenzip.add_file(file)
+        end
       end
-      zipfile.add(file, file)
     end
-    Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB).each do |file|
-      zipfile.add(file, file)
+  else
+    File.delete('patch.zip') if File.exist?('patch.zip')
+
+    Zip::File.open('patch.zip', create: true) do |zipfile|
+      files.each do |file|
+        if file.start_with?($CONFIG.yaml_dir + '/')
+          file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
+        end
+        zipfile.add(file, file)
+      end
+      Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB).each do |file|
+        zipfile.add(file, file)
+      end
     end
   end
 end
