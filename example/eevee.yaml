@@ -23,6 +23,8 @@ backup_dir: DataBackup
 # if you do not wish to version certain .rxdata files.
 data_ignore_list:
   - "Scripts.rxdata"
+  - "PkmnAnimations.rxdata"
+  - "TilesetsTemp.rxdata"
 
 # This array specifies all .rxdata files that should be imported but not
 # exported. They'll only be exported in case the yaml file is missing.
@@ -50,7 +52,7 @@ magic_number: 77323823
 startup_map: 1
 
 # Glob mask for files that should always be included in a patch.
-patch_always: 'Scripts/*'
+patch_always: '{version,Scripts/*.rb}'
 
 # Glob mask to filter changed files for patch.
 patch_changed: '{Audio/*,Data/*,DataExport/*,Graphics/*}'

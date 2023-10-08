@@ -26,7 +26,72 @@ Support for exporting scripts was in the original project but I removed it becau
 
 ## Installation
 
-TBD, feel free to nag me about this.
+Add the following lines into your `.gitignore`:
+
+```
+/Data/*.rxdata
+!/Data/Scripts.rxdata
+!/Data/PkmnAnimations.rxdata
+/DataExport/checksums.csv
+/DataExport/*.local.yaml
+/DataBackup/*
+/timestamp.bin
+!.gitkeep
+Game.rxproj
+```
+
+If you have any of these lines in your `.gitignore` then remove them:
+
+```
+Data/Actors.rxdata
+Data/Armors.rxdata
+Data/Classes.rxdata
+Data/Enemies.rxdata
+Data/Items.rxdata
+Data/Skills.rxdata
+Data/States.rxdata
+Data/Weapons.rxdata
+Data/Troops.rxdata
+```
+
+Add `eevee.exe`, `eevee.yaml`, `eevee.rmxp.bat`, `eevee.import.bat` and `eevee.export.bat` into your game directory.
+
+Commit your changes before continuing.
+
+Create empty `DataExport` and `DataBackup` subdirectories in your game directory.
+
+Add an empty file called `.gitkeep` into `DataBackup`.
+
+Run `eevee.export.bat` and commit everything.
+
+Go into your `Data` directory, make a backup of all of these files and then delete them:
+
+```
+Actors.rxdata
+Animations.rxdata
+Armors.rxdata
+Classes.rxdata
+CommonEvents.rxdata
+Enemies.rxdata
+Items.rxdata
+Map*.rxdata
+MapInfos.rxdata
+Skills.rxdata
+States.rxdata
+System.rxdata
+Tilesets.rxdata
+TilesetsTemp.rxdata
+Troops.rxdata
+Weapons.rxdata
+```
+
+Backup and delete `Game.rxproj` from your game directory.
+
+Commit those file deletions.
+
+Optional: If you're planning to use Eevee to generate patches then adjust `patch_always` and `patch_changed` in your `eevee.yaml`.
+
+Optional: Add `ResizeEnable.dll` and `ResizeEnableRunner.exe` into your game directory.
 
 ## Docker
 
