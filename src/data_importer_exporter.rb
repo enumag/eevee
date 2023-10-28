@@ -89,6 +89,7 @@ class DataImporterExporter
       next false if match.nil?
       next maps.fetch(match[:number].to_i, nil).nil?
     end
+    now = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
     files.each do |file|
       File.rename(output_dir + '/' + file, $CONFIG.backup_dir + '/' + now + '.' + file)
       puts_verbose 'Deleted ' + file
