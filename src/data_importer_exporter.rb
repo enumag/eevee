@@ -90,7 +90,7 @@ class DataImporterExporter
       next maps.fetch(match[:number].to_i, nil).nil?
     end
     files.each do |file|
-      File.delete(output_dir + '/' + file)
+      File.rename(output_dir + '/' + file, $CONFIG.backup_dir + '/' + now + '.' + file)
       puts_verbose 'Deleted ' + file
     end
 
