@@ -40,7 +40,14 @@ class DataImporterExporter
     # Create the list of data files to export
     files = Dir.entries( input_dir )
     files = files.select { |e| File.extname(e) == '.yaml' && ! e.end_with?('.local.yaml') }
-    files.sort!
+    files.sort! do |a, b|
+      a_is_map = ! a.match(/^Map0*+(?<number>[0-9]++),*\.yaml$/).nil?
+      b_is_map = ! b.match(/^Map0*+(?<number>[0-9]++).*\.yaml$/).nil?
+      next a <=> b if a_is_map && b_is_map
+      next 1 if a_is_map
+      next -1 if b_is_map
+      next File.size(input_dir + "/" + b) <=> File.size(input_dir + "/" + a)
+    end
 
     if files.empty?
       puts_verbose "No data files to import."
@@ -172,7 +179,14 @@ class DataImporterExporter
     files -= $CONFIG.data_ignore_list
     files = files.select { |e| File.extname(e) == ".rxdata" }
     files = files.select { |e| $STARTUP_TIME.nil? || file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) }
-    files.sort!
+    files.sort! do |a, b|
+      a_is_map = ! a.match(/^Map0*+(?<number>[0-9]++)\.rxdata$/).nil?
+      b_is_map = ! b.match(/^Map0*+(?<number>[0-9]++)\.rxdata$/).nil?
+      next a <=> b if a_is_map && b_is_map
+      next 1 if a_is_map
+      next -1 if b_is_map
+      next File.size(input_dir + "/" + b) <=> File.size(input_dir + "/" + a)
+    end
 
     if files.empty?
       puts_verbose "No data files need to be exported."
