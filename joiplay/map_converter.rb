@@ -29,193 +29,6 @@ module Graphics
     self.update
   end
 end
-#Bitmap saver from Cacao
-module Zlib
-  class PngFile
-    def self.make_png(bitmap, mode = 0)
-      @bitmap, @mode = bitmap, mode
-      return make_header + make_ihdr + make_idat_and_png_data + make_iend
-    end
-    def self.make_header
-      # (HTJ)PNG(CR)(LF)(SUB)(LF), the common PNG header
-      return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].pack('C*')
-    end
-    def self.make_ihdr
-      ih_size               = [13].pack('N')
-      ih_sign               = 'IHDR'
-      ih_width              = [@bitmap.width].pack('N')
-      ih_height             = [@bitmap.height].pack('N')
-      ih_bit_depth          = [8].pack('C')
-      ih_color_type         = [6].pack('C')
-      ih_compression_method = [0].pack('C')
-      ih_filter_method      = [0].pack('C')
-      ih_interlace_method   = [0].pack('C')
-      string = ih_sign + ih_width + ih_height + ih_bit_depth + ih_color_type +
-        ih_compression_method + ih_filter_method + ih_interlace_method
-      ih_crc = [Zlib.crc32(string)].pack('N')
-      return ih_size + string + ih_crc
-    end
-    def self.make_idat_and_png_data
-      # IDAT, part of the header data
-      header  = "\x49\x44\x41\x54"
-      # Convert bitmap to PNG data
-      data    = @mode == 0 ? make_bitmap_data0 : make_bitmap_data1
-      # Compress the data
-      data    = Zlib::Deflate.deflate(data, 8)
-      # CRC32 hash for IDAT and image data
-      crc     = [Zlib.crc32(header + data)].pack('N')
-      # Size of image data
-      size    = [data.length].pack('N')
-      return size + header + data + crc
-    end
-    def self.make_bitmap_data0
-      t_Fx = 0
-      w = @bitmap.width
-      h = @bitmap.height
-      data = []
-      s = []
-      for y in 0...h
-        data.push(0)
-        for x in 0...w
-          t_Fx += 1
-          if t_Fx % 10000 == 0
-            # for every 10k pixels processed
-            Graphics.update
-            if t_Fx % 100000 == 0
-              # for every 100k pixels processed
-              s += data
-              data.clear
-            end
-          end
-          color = @bitmap.get_pixel(x, y)
-          data.push(color.red, color.green, color.blue, color.alpha)
-        end
-      end
-      s = (s+data).pack('C*')
-      data.clear
-      return s
-    end
-    def self.make_bitmap_data1
-      w = @bitmap.width
-      h = @bitmap.height
-      data = []
-      for y in 0...h
-        data.push(0)
-        for x in 0...w
-          color = @bitmap.get_pixel(x, y)
-          data.push(color.red, color.green, color.blue, color.alpha)
-        end
-      end
-      return data.pack('C*')
-    end
-    def self.make_iend
-      ie_size = [0].pack('N')
-      ie_sign = 'IEND'
-      ie_crc  = [Zlib.crc32(ie_sign)].pack('N')
-      return ie_size + ie_sign + ie_crc
-    end
-  end
-end
-
-class Bitmap
-  def make_png(name = 'like', path = '', mode = 0)
-    filepath = path + name + '.png'
-    # initialize array
-    pngdata = []
-    # get image data
-    pngdata = Zlib::PngFile.make_png(self, mode)
-    # if the thumbnail exists, delete it first
-    File.delete(filepath) unless !File.file?(filepath)
-    # create a new file, write-only and binary
-    f = File.open(filepath, 'wb')
-    # write image data to file
-    f.write(pngdata)
-    # close file writer handle
-    f.close
-    # cleanup
-    pngdata = ""
-  end
-end
-
-module RGSSAD
-  def self.decrypt(archive, outdir)
-    @@files = []
-    @@xor = 0xDEADCAFE
-    rgssad = ''
-    File.open(archive, 'rb') {|file|
-      file.read(8)
-      rgssad = file.read
-    }
-    @@xor = 0xDEADCAFE
-    new_string = ''
-    offset = 0
-    remember_offsets = []
-    remember_keys = []
-    remember_size = []
-    while rgssad[offset] != nil
-      Graphics.update
-      namesize = rgssad[offset, 4].unpack('L')[0]
-      new_string << [namesize ^ @@xor].pack('L')
-      namesize ^= @@xor
-      offset += 4
-      @@xor = (@@xor * 7 + 3) & 0xFFFFFFFF
-      filename = rgssad[offset, namesize]
-      namesize.times do |i|
-        filename[i] = filename[i] ^ @@xor & 0xFF
-        @@xor = (@@xor * 7 + 3) & 0xFFFFFFFF
-      end
-      new_string << filename
-      offset += namesize
-      datasize = rgssad[offset, 4].unpack('L')[0]
-      new_string << [datasize ^ @@xor].pack('L')
-      datasize ^= @@xor
-      remember_size << datasize
-      offset += 4
-      @@xor = (@@xor * 7 + 3) & 0xFFFFFFFF
-      data = rgssad[offset, datasize]
-      new_string << data
-      remember_offsets << offset
-      remember_keys << @@xor
-      offset += datasize
-    end
-    remember_offsets.size.times do |i|
-      Graphics.update
-      offset = remember_offsets[i]
-      @@xor = remember_keys[i]
-      size = remember_size[i]
-      data = new_string[offset, size]
-      data = data.ljust(size + (4 - size % 4)) if size % 4 != 0
-      s = ''
-      data.unpack('L' * (data.size / 4)).each do |j|
-        s << ([j ^ @@xor].pack('L'))
-        @@xor = (@@xor * 7 + 3) & 0xFFFFFFFF
-      end
-      new_string[offset, size] = s.slice(0, size)
-    end
-    rgssad = new_string
-    offset = 0
-    while rgssad[offset] != nil
-      Graphics.update
-      fn_size = rgssad[offset, 4].unpack('L')[0]
-      offset += 4
-      fn = rgssad[offset, fn_size]
-      offset += fn_size
-      fsize = rgssad[offset, 4].unpack('L')[0]
-      offset += 4
-      file = rgssad[offset, fsize]
-      offset += fsize
-      fn.gsub!('\\','/') #.force_encoding("UTF-8")
-      fn = outdir + "/" + fn
-      paths = File.dirname(fn).split('/')
-      1.upto(paths.size) do |i|
-        dir = paths.first(i).join('/')
-        Dir.mkdir(dir) unless File.exist?(dir)
-      end
-      File.open(fn, 'wb') {|wf| wf.write file }
-      Graphics.drawText(fn + " is saved.")
-    end
-  end
-end
 
 class CMap
 
@@ -364,7 +177,7 @@ class CMap
     Dir.mkdir("patch/Graphics/Tilesets") unless File.exists?("patch/Graphics/Tilesets")
 
     #Save new tileset as png
-    newtileset.make_png(@mapid, "patch/Graphics/Tilesets/")
+    newtileset.save_to_file("patch/Graphics/Tilesets/"+@mapid.to_s+".png")
   end
 
   def writeTilesets
@@ -463,7 +276,7 @@ class Scene_Converter
   def main
     @sprite = Sprite.new
     begin
-      @sprite.bitmap = Bitmap.new("Assets/background.jpg")
+      @sprite.bitmap = Bitmap.new()
     rescue
     end
 
@@ -481,7 +294,10 @@ class Scene_Converter
     end
     Graphics.freeze
     Graphics.disposeWindow
-    @sprite.bitmap.dispose
+    begin
+      @sprite.bitmap.dispose
+    rescue
+    end
     @sprite.dispose
   end
 
@@ -520,26 +336,22 @@ class Scene_Converter
     Dir.mkdir("patch") unless File.exist?("patch")
     Dir.foreach('.') do |filename|
       if filename.include?(".rgssad")
-        isEncrypted = true
-        Graphics.drawText("Encrypted archive is found.\r\nExtracting files...")
-        RGSSAD::decrypt(filename, "patch")
+        Graphics.drawText("Encrypted archive is found.\r\nPlease extract rgss archive first.\r\n\r\nPlease push Escape button to exit.")
+        loop do
+          Graphics.update
+          Input.update
+          if Input.press?(Input::B)
+            break
+          end
+        end
       else
         next
       end
     end
 
-    if isEncrypted
-      if File.exist?("patch/Data/Tilesets.rxdata")
-        converter = CMap.new("patch/Data/Tilesets.rxdata")
-        maps = converter.getMapList("patch/Data")
-      else
-        converter = CMap.new
-        maps = converter.getMapList("Data")
-      end
-    else
-      converter = CMap.new
-      maps = converter.getMapList("Data")
-    end
+    converter = CMap.new
+    maps = converter.getMapList("Data")
+
 
     mid = 0
     maps.each { |mapfile|
