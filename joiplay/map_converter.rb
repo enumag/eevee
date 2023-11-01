@@ -1,34 +1,4 @@
-module Graphics
-  @@window = nil
-  def self.createWindow
-    @@window = Window.new
-    @@window.x = 0
-    @@window.y = 0
-    @@window.z = 100
-    @@window.width = 640
-    @@window.height = 480
-    @@window.contents = Bitmap.new(640,480)
-    @@window.back_opacity = 120
-  end
-
-  def self.disposeWindow
-    @@window.dispose
-  end
-
-  def self.updateWindow
-    @@window.update
-  end
-
-  def self.drawText(text)
-    @@window.contents = Bitmap.new(640,480)
-    height = 0
-    text.split("\r\n").each{ |str|
-      @@window.contents.draw_text(120,(480/2 + height),400,height + 24,str,1)
-      height = height + 24
-    }
-    self.update
-  end
-end
+# Base version extracted from Scripts.rxdata contained in Wine version of JoiPlay's MapConverter (https://www.patreon.com/posts/36096923).
 
 class CMap
 
@@ -272,109 +242,22 @@ class CMap
   end
 end
 
-class Scene_Converter
-  def main
-    @sprite = Sprite.new
+def convertAll
+  #Loop all maps
+  Dir.mkdir("patch") unless File.exist?("patch")
+
+  converter = CMap.new
+  maps = converter.getMapList("Data")
+
+  mid = 0
+  maps.each { |mapfile|
+    mid = mid + 1
+    puts "Converting maps... "+mid.to_s+"/"+maps.length.to_s
     begin
-      @sprite.bitmap = Bitmap.new()
+      converter.convertMap(mapfile)
     rescue
+      puts "Could not convert "+mapfile
     end
-
-    Graphics.createWindow
-    Graphics.transition
-
-    Graphics.drawText("Please push Enter button to convert\r\nmaps or Escape button to exit.")
-    loop do
-      Graphics.update
-      Input.update
-      update
-      if $scene != self
-        break
-      end
-    end
-    Graphics.freeze
-    Graphics.disposeWindow
-    begin
-      @sprite.bitmap.dispose
-    rescue
-    end
-    @sprite.dispose
-  end
-
-  def update
-    Graphics.updateWindow
-    if Input.trigger?(Input::C)
-      command_convert
-    end
-    if Input.trigger?(Input::B)
-      command_exit
-    end
-  end
-
-  def command_convert
-    Graphics.drawText("Converting Maps...")
-    convertAll
-    Graphics.drawText("Maps are converted.\r\nPlease push Escape button to exit.")
-    loop do
-      Graphics.update
-      Input.update
-      if Input.press?(Input::B)
-        break
-      end
-    end
-  end
-
-  def command_exit
-    $scene = nil
-  end
-
-  def convertAll
-    #Loop all maps
-    converter = nil
-    maps = nil
-    isEncrypted = false
-    Dir.mkdir("patch") unless File.exist?("patch")
-    Dir.foreach('.') do |filename|
-      if filename.include?(".rgssad")
-        Graphics.drawText("Encrypted archive is found.\r\nPlease extract rgss archive first.\r\n\r\nPlease push Escape button to exit.")
-        loop do
-          Graphics.update
-          Input.update
-          if Input.press?(Input::B)
-            break
-          end
-        end
-      else
-        next
-      end
-    end
-
-    converter = CMap.new
-    maps = converter.getMapList("Data")
-
-
-    mid = 0
-    maps.each { |mapfile|
-      mid = mid + 1
-      Graphics.drawText("Converting maps... "+mid.to_s+"/"+maps.length.to_s)
-      begin
-        converter.convertMap(mapfile)
-      rescue
-        Graphics.drawText("Could not convert "+mapfile)
-      end
-    }
-    converter.writeTilesets
-  end
-end
-
-begin
-  Graphics.freeze
-  $scene = Scene_Converter.new
-  while $scene != nil
-    $scene.main
-  end
-  Graphics.transition(20)
-rescue Errno::ENOENT
-  filename = $!.message.sub("No such file or directory - ", "")
-  print("Unable to find file #{filename}.")
+  }
+  converter.writeTilesets
 end
