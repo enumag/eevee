@@ -134,7 +134,7 @@ class DataImporterExporter
     puts "  Data Export"
     print_separator(true)
 
-    $STARTUP_TIME = load_startup_time || Time.now
+    $STARTUP_TIME = load_startup_time
 
     # Check if the input directory exist
     if not (File.exist? input_dir and File.directory? input_dir)
@@ -171,7 +171,7 @@ class DataImporterExporter
     files = Dir.entries( input_dir )
     files -= $CONFIG.data_ignore_list
     files = files.select { |e| File.extname(e) == ".rxdata" }
-    files = files.select { |e| file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) }
+    files = files.select { |e| $STARTUP_TIME.nil? || file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) }
     files.sort!
 
     if files.empty?
