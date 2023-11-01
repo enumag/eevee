@@ -68,7 +68,8 @@ class DataImporterExporter
         str += "/"
         str += "#{files.size}".rjust(3, '0') + ")"
         str += "    #{dump_time} seconds"
-        puts str
+        puts_verbose str
+        $stdout.flush
 
         total_dump_time += dump_time
       }
@@ -195,6 +196,7 @@ class DataImporterExporter
         str += "#{files.size}".rjust(3, '0') + ")"
         str += "    #{dump_time} seconds"
         puts_verbose str
+        $stdout.flush
 
         total_dump_time += dump_time
       }
