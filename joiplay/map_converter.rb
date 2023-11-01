@@ -95,7 +95,7 @@ class Bitmap
     # get image data
     pngdata = Zlib::PngFile.make_png(self, mode)
     # if the thumbnail exists, delete it first
-    File.delete(filepath) unless !File.file?(filepath)
+    File.delete(filepath) if File.file?(filepath)
     # create a new file, write-only and binary
     f = File.open(filepath, 'wb')
     # write image data to file
@@ -109,7 +109,7 @@ end
 
 class CMap
 
-  def initialize(tpath = "Data/Tilesets.rxdata")
+  def initialize(tpath)
     @tilesetrx = tpath
     @tilesets = nil
     @ntilesets = nil
@@ -135,6 +135,7 @@ class CMap
   def addToTilesets(id, tileset)
     @ntilesets[id] = tileset
   end
+
   def tilesetCount
     return @tilesets.size
   end
@@ -246,9 +247,9 @@ class CMap
     Dir.mkdir("patch/Data") unless File.exist?("patch/Data")
     path = "patch/"+path unless path.include?("patch/")
     path.gsub!("map","Map") if path.include?("map")
-    File.delete(path) unless !File.file?(path)
+    File.delete(path) if File.file?(path)
     File.open(path, "wb"){ |f|
-      f.write(Marshal.dump(@nmap))
+      Marshal.dump(@nmap, f)
     }
     Dir.mkdir("patch/Graphics") unless File.exist?("patch/Graphics")
     Dir.mkdir("patch/Graphics/Tilesets") unless File.exist?("patch/Graphics/Tilesets")
@@ -258,11 +259,10 @@ class CMap
   end
 
   def writeTilesets
-    path = @tilesetrx
-    path = "patch/"+path unless path.include?("patch/")
-    File.delete(path) unless !File.file?(path)
+    path = "patch/"+@tilesetrx
+    File.delete(path) if File.file?(path)
     File.open(path,"wb"){ |f|
-      f.write(Marshal.dump(@ntilesets))
+      Marshal.dump(@ntilesets, f)
     }
   end
 
@@ -275,6 +275,7 @@ class CMap
       match = name.match(/^Map0*+(?<number>[0-9]++)$/)
       next ! match.nil?
     end
+    files.sort!
     return files
   end
 
@@ -356,14 +357,17 @@ def convertAll
   #Loop all maps
   Dir.mkdir("patch") unless File.exist?("patch")
 
-  converter = CMap.new
+  converter = CMap.new(File.exist?("Data/Tilesets.rxdata") ? "Data/Tilesets.rxdata" : "Data/tilesets.rxdata")
   maps = converter.getMapList("Data")
 
   mid = 0
   maps.each { |mapfile|
     mid = mid + 1
-    puts "Converting maps... "+mid.to_s+"/"+maps.length.to_s
+    puts "Converting "+mapfile+"... "+mid.to_s+"/"+maps.length.to_s
+    $stdout.flush
     converter.convertMap("Data/"+mapfile)
   }
+  puts "Writing tilesets..."
   converter.writeTilesets
+  puts "Done"
 end
