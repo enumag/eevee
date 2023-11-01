@@ -21,7 +21,7 @@ class Table
   def initialize(x, y = 0, z = 0)
     @dim = 1 + (y > 0 ? 1 : 0) + (z > 0 ? 1 : 0)
     @xsize, @ysize, @zsize = x, [y, 1].max, [z, 1].max
-    @data = Array.new(x * y * z, 0)
+    @data = Array.new(@xsize * @ysize * @zsize, 0)
   end
   def [](x, y = 0, z = 0)
     @data[x + y * @xsize + z * @xsize * @ysize]
@@ -34,8 +34,7 @@ class Table
     @data[x + y * @xsize + z * @xsize * @ysize] = v
   end
   def _dump(d = 0)
-    [@dim, @xsize, @ysize, @zsize, @xsize * @ysize * @zsize].pack('LLLLL') <<
-    @data.pack("S#{@xsize * @ysize * @zsize}")
+    [@dim, @xsize, @ysize, @zsize, @xsize * @ysize * @zsize, *@data].pack('LLLLLS*')
   end
   def self._load(s)
     size, nx, ny, nz, items = *s[0, 20].unpack('LLLLL')

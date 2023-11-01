@@ -133,6 +133,9 @@ class CMap
   end
 
   def addToTilesets(id, tileset)
+    validateTable(tileset.passages)
+    validateTable(tileset.priorities)
+    validateTable(tileset.terrain_tags)
     @ntilesets[id] = tileset
   end
 
@@ -142,6 +145,15 @@ class CMap
 
   def ntilesetCount
     return @ntilesets.size
+  end
+
+  def validateTable(table)
+    if table.data.length != table.xsize * table.ysize * table.zsize
+      raise "incorrect table data size, expected: "+table.xsize.to_s+" * "+table.ysize.to_s+" * "+table.zsize.to_s+" = "+(table.xsize * table.ysize * table.zsize).to_s+", actual "+table.data.length.to_s
+    end
+    table.data.each_with_index do |v, i| v
+      raise "nil in table index "+i if v.nil?
+    end
   end
 
   def convertMap(path)
@@ -185,7 +197,7 @@ class CMap
     npriorities = Table.new(priorities.xsize)
     nterrain_tags = Table.new(terrain_tags.xsize)
     #Copy attributes for autotiles
-    for i in 0...383
+    for i in 0...384
       npassages[i] = passages[i] unless passages[i].nil?
       npriorities[i] = priorities[i] unless priorities[i].nil?
       nterrain_tags[i] = terrain_tags[i] unless terrain_tags[i].nil?
@@ -227,12 +239,12 @@ class CMap
 
     #Create new tileset
     ntileset = tileset.clone
-    ntileset.id = self.tilesetCount + self.ntilesetCount
+    ntileset.id = self.ntilesetCount
     ntileset.name = "Map"+@mapid
     ntileset.tileset_name = @mapid
-    ntileset.priorities = npriorities.clone
-    ntileset.passages = npassages.clone
-    ntileset.terrain_tags = nterrain_tags.clone
+    ntileset.priorities = npriorities
+    ntileset.passages = npassages
+    ntileset.terrain_tags = nterrain_tags
     #Push new tileset to tilesets
     self.addToTilesets(ntileset.id, ntileset)
 
