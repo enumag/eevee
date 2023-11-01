@@ -1,5 +1,113 @@
 # Base version extracted from Scripts.rxdata contained in Wine version of JoiPlay's MapConverter (https://www.patreon.com/posts/36096923).
 
+#Bitmap saver from Cacao
+module Zlib
+  class PngFile
+    def self.make_png(bitmap, mode = 0)
+      @bitmap, @mode = bitmap, mode
+      return make_header + make_ihdr + make_idat_and_png_data + make_iend
+    end
+    def self.make_header
+      # (HTJ)PNG(CR)(LF)(SUB)(LF), the common PNG header
+      return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].pack('C*')
+    end
+    def self.make_ihdr
+      ih_size               = [13].pack('N')
+      ih_sign               = 'IHDR'
+      ih_width              = [@bitmap.width].pack('N')
+      ih_height             = [@bitmap.height].pack('N')
+      ih_bit_depth          = [8].pack('C')
+      ih_color_type         = [6].pack('C')
+      ih_compression_method = [0].pack('C')
+      ih_filter_method      = [0].pack('C')
+      ih_interlace_method   = [0].pack('C')
+      string = ih_sign + ih_width + ih_height + ih_bit_depth + ih_color_type +
+        ih_compression_method + ih_filter_method + ih_interlace_method
+      ih_crc = [Zlib.crc32(string)].pack('N')
+      return ih_size + string + ih_crc
+    end
+    def self.make_idat_and_png_data
+      # IDAT, part of the header data
+      header  = "\x49\x44\x41\x54"
+      # Convert bitmap to PNG data
+      data    = @mode == 0 ? make_bitmap_data0 : make_bitmap_data1
+      # Compress the data
+      data    = Zlib::Deflate.deflate(data, 8)
+      # CRC32 hash for IDAT and image data
+      crc     = [Zlib.crc32(header + data)].pack('N')
+      # Size of image data
+      size    = [data.length].pack('N')
+      return size + header + data + crc
+    end
+    def self.make_bitmap_data0
+      t_Fx = 0
+      w = @bitmap.width
+      h = @bitmap.height
+      data = []
+      s = []
+      for y in 0...h
+        data.push(0)
+        for x in 0...w
+          t_Fx += 1
+          if t_Fx % 10000 == 0
+            # for every 10k pixels processed
+            Graphics.update
+            if t_Fx % 100000 == 0
+              # for every 100k pixels processed
+              s += data
+              data.clear
+            end
+          end
+          color = @bitmap.get_pixel(x, y)
+          data.push(color.red, color.green, color.blue, color.alpha)
+        end
+      end
+      s = (s+data).pack('C*')
+      data.clear
+      return s
+    end
+    def self.make_bitmap_data1
+      w = @bitmap.width
+      h = @bitmap.height
+      data = []
+      for y in 0...h
+        data.push(0)
+        for x in 0...w
+          color = @bitmap.get_pixel(x, y)
+          data.push(color.red, color.green, color.blue, color.alpha)
+        end
+      end
+      return data.pack('C*')
+    end
+    def self.make_iend
+      ie_size = [0].pack('N')
+      ie_sign = 'IEND'
+      ie_crc  = [Zlib.crc32(ie_sign)].pack('N')
+      return ie_size + ie_sign + ie_crc
+    end
+  end
+end
+
+class Bitmap
+  def make_png(name = 'like', path = '', mode = 0)
+    filepath = path + name + '.png'
+    # initialize array
+    pngdata = []
+    # get image data
+    pngdata = Zlib::PngFile.make_png(self, mode)
+    # if the thumbnail exists, delete it first
+    File.delete(filepath) unless !File.file?(filepath)
+    # create a new file, write-only and binary
+    f = File.open(filepath, 'wb')
+    # write image data to file
+    f.write(pngdata)
+    # close file writer handle
+    f.close
+    # cleanup
+    pngdata = ""
+  end
+end
+
 class CMap
 
   def initialize(tpath = "Data/Tilesets.rxdata")
@@ -147,7 +255,7 @@ class CMap
     Dir.mkdir("patch/Graphics/Tilesets") unless File.exists?("patch/Graphics/Tilesets")
 
     #Save new tileset as png
-    newtileset.save_to_file("patch/Graphics/Tilesets/"+@mapid.to_s+".png")
+    newtileset.make_png(@mapid, "patch/Graphics/Tilesets/")
   end
 
   def writeTilesets
