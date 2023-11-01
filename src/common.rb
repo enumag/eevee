@@ -14,6 +14,7 @@
 require 'yaml'
 require 'tmpdir'
 require 'parallel'
+require 'fileutils'
 
 CHECKSUMS_FILE = 'checksums.csv'
 
@@ -251,7 +252,7 @@ def import_file(file, checksums, input_dir, output_dir)
   end
 
   # Create backup of .rxdata file
-  File.rename(data_file, $CONFIG.backup_dir + '/' + now + '.' + name + '.rxdata') if File.exist?(data_file)
+  FileUtils.move(data_file, $CONFIG.backup_dir + '/' + now + '.' + name + '.rxdata') if File.exist?(data_file)
 
   # Dump the data to .rxdata file
   save_rxdata(data_file, data)
@@ -327,7 +328,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
 
   # Save map yaml
   begin
-    File.rename(fixed_file, yaml_file)
+    FileUtils.move(fixed_file, yaml_file)
   rescue Errno::ENOENT
     puts "Missing file: " + fixed_file
   end

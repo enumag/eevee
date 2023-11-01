@@ -98,7 +98,7 @@ class DataImporterExporter
     end
     now = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
     files.each do |file|
-      File.rename(output_dir + '/' + file, $CONFIG.backup_dir + '/' + now + '.' + file)
+      FileUtils.move(output_dir + '/' + file, $CONFIG.backup_dir + '/' + now + '.' + file)
       puts_verbose 'Deleted ' + file
     end
 
