@@ -12,13 +12,13 @@ class Bitmap
   #  Bitmap.new(width, height)
   #
   # Loads the graphic file specified in filename or size and creates a bitmap object.
-  #
-  # Also automatically searches files included in RGSS-RTP and encrypted archives. File extensions may be omitted.
 
   def initialize(width, height=nil)
-    @entity = if width.is_a? String
+    if width.is_a? String
       filename = width
-      SDL::Surface.load(filename).display_format_alpha
+      # Original code had SDL::Surface.load(filename).display_format_alpha
+      # however this causes a segmentation fault and so far it seems unnecessary.
+      @entity = SDL::Surface.load(filename)
     else
       big_endian = ([1].pack("N") == [1].pack("L"))
       if big_endian
@@ -32,7 +32,7 @@ class Bitmap
         bmask = 0x00ff0000
         amask = 0xff000000
       end
-      SDL::Surface.new(SDL::SWSURFACE|SDL::SRCALPHA, width, height, 32, rmask, gmask, bmask, amask)
+      @entity = SDL::Surface.new(SDL::SWSURFACE|SDL::SRCALPHA, width, height, 32, rmask, gmask, bmask, amask)
     end
     @font   = Font.new
     # @text = [] ~

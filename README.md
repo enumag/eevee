@@ -104,8 +104,9 @@ docker build . --tag eevee
 In game directory:
 
 ```
-docker run -v $PWD:/app eevee import
-docker run -v $PWD:/app eevee export
+docker run -v $PWD:/app eevee ruby /eevee/eevee.rb import
+docker run -v $PWD:/app eevee ruby /eevee/eevee.rb export
+docker run -v $PWD:/app eevee ruby /eevee/optimize.rb
 ```
 
 ## Compilation

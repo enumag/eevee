@@ -51,7 +51,6 @@ module Zlib
           t_Fx += 1
           if t_Fx % 10000 == 0
             # for every 10k pixels processed
-            Graphics.update
             if t_Fx % 100000 == 0
               # for every 100k pixels processed
               s += data
@@ -193,7 +192,7 @@ class CMap
     npriorities[0] = 5
 
     #Create bitmaps
-    oldtileset = Bitmap.new("Graphics/Tilesets/"+tileset.tileset_name)
+    oldtileset = Bitmap.new("Graphics/Tilesets/"+tileset.tileset_name+".png")
     newtileset = Bitmap.new(tilesetwidth, tilesetheight)
 
     #Loop tile array to blit tiles to new tileset and
@@ -252,7 +251,7 @@ class CMap
       f.write(Marshal.dump(@nmap))
     }
     Dir.mkdir("patch/Graphics") unless File.exist?("patch/Graphics")
-    Dir.mkdir("patch/Graphics/Tilesets") unless File.exists?("patch/Graphics/Tilesets")
+    Dir.mkdir("patch/Graphics/Tilesets") unless File.exist?("patch/Graphics/Tilesets")
 
     #Save new tileset as png
     newtileset.make_png(@mapid, "patch/Graphics/Tilesets/")
@@ -269,11 +268,14 @@ class CMap
 
   #Get array of map paths
   def getMapList(dir)
-    mList = Array.new
-    Dir.foreach(dir){ |f|
-      mList.push(dir+"/"+f) if f.downcase.include?("map")
-    }
-    return mList
+    files = Dir.entries(dir)
+    files = files.select { |e| File.extname(e) == ".rxdata" }
+    files = files.select do |e|
+      name = File.basename(e, '.rxdata')
+      match = name.match(/^Map0*+(?<number>[0-9]++)$/)
+      next ! match.nil?
+    end
+    return files
   end
 
   #Get regular tiles and coordinates from Table
@@ -361,11 +363,7 @@ def convertAll
   maps.each { |mapfile|
     mid = mid + 1
     puts "Converting maps... "+mid.to_s+"/"+maps.length.to_s
-    begin
-      converter.convertMap(mapfile)
-    rescue
-      puts "Could not convert "+mapfile
-    end
+    converter.convertMap("Data/"+mapfile)
   }
   converter.writeTilesets
 end
