@@ -70,10 +70,6 @@ elsif $COMMAND == "rmxp"
   # Delete the startup timestamp
   load_startup_time(true)
 elsif $COMMAND == "patch"
-  require 'open3'
-  require 'zip'
-  require 'seven_zip_ruby'
-
   base_tag = ARGV[1] || nil
   password = ARGV[2] || nil
 

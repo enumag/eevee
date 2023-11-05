@@ -426,6 +426,8 @@ def calculate_checksum(file)
 end
 
 def generate_patch(base_tag, password)
+  require 'open3'
+
   if ! base_tag.nil?
     base_commit = get_base_commit_from_tag(base_tag)
     puts "Generating patch with changes since tag #{base_tag}."
@@ -448,6 +450,8 @@ def generate_patch(base_tag, password)
   puts "Found #{files.length} changed files."
 
   if password
+    require 'seven_zip_ruby'
+
     File.delete('patch.7z') if File.exist?('patch.7z')
 
     File.open('patch.7z', 'wb') do |file|
@@ -464,6 +468,8 @@ def generate_patch(base_tag, password)
       end
     end
   else
+    require 'zip'
+
     File.delete('patch.zip') if File.exist?('patch.zip')
 
     Zip::File.open('patch.zip', create: true) do |zipfile|
