@@ -144,6 +144,11 @@ class CMap
   end
 
   def ntilesetCount
+    # Add space for new tilesets to be added in a patch
+    if @tilesets.size == @ntilesets.size
+      return @tilesets.size.ceil(-3)
+    end
+
     return @ntilesets.size
   end
 
