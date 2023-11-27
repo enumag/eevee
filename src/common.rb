@@ -491,6 +491,8 @@ def get_base_commit_from_tag(tag)
   Open3.popen3(command) do |stdin, stdout|
     return stdout.read
   end
+  puts 'Tag does not exist: ' + tag
+  exit
 end
 
 def get_base_commit_from_config()
