@@ -54,6 +54,9 @@ startup_map: 1
 # Glob mask for files that should always be included in a patch.
 patch_always: '{version,Scripts/*.rb}'
 
+# Glob mask for files that should never be included in a patch even if they match patch_always.
+patch_never: '{Scripts/ScriptLoader.rb}'
+
 # Glob mask to filter changed files for patch.
 patch_changed: '{Audio/*,Data/*,DataExport/*,Graphics/*}'
 

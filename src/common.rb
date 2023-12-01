@@ -187,8 +187,9 @@ class Config
   attr_accessor :verbose
   attr_accessor :magic_number
   attr_accessor :startup_map
-  attr_accessor :patch_changed
   attr_accessor :patch_always
+  attr_accessor :patch_never
+  attr_accessor :patch_changed
   attr_accessor :base_tag
   attr_accessor :base_commit
 
@@ -202,6 +203,7 @@ class Config
     @magic_number     = config['magic_number']
     @startup_map      = config['startup_map']
     @patch_always     = config['patch_always']
+    @patch_never      = config['patch_never']
     @patch_changed    = config['patch_changed']
     @base_tag         = config['base_tag']
     @base_commit      = config['base_commit']
@@ -462,7 +464,8 @@ def generate_patch(base_tag, password)
           end
           sevenzip.add_file(file)
         end
-        Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB).each do |file|
+        extra_files = Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB)
+        extra_files.each do |file|
           sevenzip.add_file(file)
         end
       end
@@ -479,7 +482,8 @@ def generate_patch(base_tag, password)
         end
         zipfile.add(file, file)
       end
-      Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB).each do |file|
+      extra_files = Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB)
+      extra_files.each do |file|
         zipfile.add(file, file)
       end
     end
