@@ -432,18 +432,25 @@ def generate_patch(base_tag, password)
 
   if ! base_tag.nil?
     base_commit = get_base_commit_from_tag(base_tag)
-    puts "Generating patch with changes since tag #{base_tag}."
+    puts "Generating patch with changes since tag #{base_tag} (#{base_commit})."
   elsif $CONFIG.base_tag.nil?
     base_commit = get_base_commit_from_config
     puts "Generating patch with changes since commit #{base_commit}."
   else
     base_commit = get_base_commit_from_tag($CONFIG.base_tag)
-    puts "Generating patch with changes since tag #{$CONFIG.base_tag}."
+    puts "Generating patch with changes since tag #{$CONFIG.base_tag} (#{base_commit})."
   end
 
   command = 'git diff --exit-code --ignore-submodules --name-only --diff-filter=ACMRTUX ' + base_commit + '..HEAD'
   files = nil
-  Open3.popen3(command) do |stdin, stdout|
+  Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    if waiter.value.exitstatus != 0
+      puts 'Unable to get git diff'
+      puts stdout.read
+      puts stderr.read
+      exit(false)
+    end
+
     files = stdout.read.split("\n")
   end
 
@@ -492,17 +499,24 @@ end
 
 def get_base_commit_from_tag(tag)
   command = 'git rev-list -n 1 tags/' + tag
-  Open3.popen3(command) do |stdin, stdout|
+  Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    if waiter.value.exitstatus != 0
+      puts 'Unable to find tag: ' + tag
+      puts stdout.read
+      puts stderr.read
+      exit(false)
+    end
+
     return stdout.read
   end
-  puts 'Tag does not exist: ' + tag
-  exit
+  puts 'Unable to find tag: ' + tag
+  exit(false)
 end
 
 def get_base_commit_from_config()
   if $CONFIG.base_commit.nil? || ! $CONFIG.base_commit.match(/^[a-z0-9]+$/)
     puts 'Specify the base_tag or base_commit in eevee.yaml or pass a base tag as argument.'
-    exit
+    exit(false)
   end
 
   return $CONFIG.base_commit

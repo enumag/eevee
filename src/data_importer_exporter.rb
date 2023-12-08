@@ -34,7 +34,7 @@ class DataImporterExporter
       puts "Error: Output directory #{output_dir} does not exist."
       puts "Hint: Check that the $CONFIG.data_dir variable in paths.rb is set to the correct path."
       puts
-      exit
+      exit(false)
     end
 
     # Create the list of data files to export
@@ -147,7 +147,7 @@ class DataImporterExporter
     if not (File.exist? input_dir and File.directory? input_dir)
       puts "Error: Input directory #{input_dir} does not exist."
       puts "Hint: Check that the $CONFIG.data_dir variable in paths.rb is set to the correct path."
-      exit
+      exit(false)
     end
 
     # Create the output directory if it doesn't exist
