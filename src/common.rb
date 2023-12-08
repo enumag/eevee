@@ -498,7 +498,7 @@ def generate_patch(base_tag, password)
 end
 
 def get_base_commit_from_tag(tag)
-  command = 'git rev-list -n 1 tags/' + tag
+  command = 'git rev-list -n 1 tags/' + tag + ' --'
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
     if waiter.value.exitstatus != 0
       puts 'Unable to find tag: ' + tag
