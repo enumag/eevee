@@ -507,7 +507,7 @@ def get_base_commit_from_tag(tag)
       exit(false)
     end
 
-    return stdout.read
+    return stdout.read.strip
   end
   puts 'Unable to find tag: ' + tag
   exit(false)
