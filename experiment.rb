@@ -263,12 +263,20 @@ def dump_command_list(commands, level)
         level += 2
       end
       value += "\n"
-    when 412 # branch end
+    when 412, 413, 604 # branch end, loop end, battle end
       value += indent(level) + "),\n"
-    when 413 # loop end
-      value += indent(level) + "),\n"
-    when 301, 601..604 # RXMP battle result condition, useless for us
-      raise "RMXP Battle Processing is not supported"
+    when 301
+      value += dump_command_battle(command, level)
+      level += 2
+    when 601
+      value += dump_command_win(command, level)
+      level += 2
+    when 602
+      value += dump_command_escape(command, level)
+      level += 2
+    when 603
+      value += dump_command_lose(command, level)
+      level += 2
     else
       value += dump_command(command, level)
     end
@@ -511,6 +519,30 @@ end
 def dump_command_when_cancel(command, level)
   raise "unexpected command parameters" if command.parameters.count != 0
   value = indent(level + 1) + "cancel: [\n"
+  return value
+end
+
+def dump_command_battle(command, level)
+  value = indent(level) + "*battle(\n"
+  value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
+  return value
+end
+
+def dump_command_battle_win(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 0
+  value = indent(level + 1) + "win: [\n"
+  return value
+end
+
+def dump_command_battle_escape(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 0
+  value = indent(level + 1) + "escape: [\n"
+  return value
+end
+
+def dump_command_battle_lose(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 0
+  value = indent(level + 1) + "lose: [\n"
   return value
 end
 

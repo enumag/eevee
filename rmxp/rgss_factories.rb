@@ -361,6 +361,37 @@ def show_choices(choices:, cancellation:, choice1: [], choice2: [], choice3: [],
   return commands
 end
 
+def battle(parameters:, win: [], escape: nil, lose: [])
+  commands = []
+  commands.append command(301, *parameters)
+
+  commands.append command(601)
+  win.each do |command|
+    command.indent += 1
+    commands.append command
+  end
+  commands.append end_block
+
+  if escape != nil
+    commands.append command(602)
+    escape.each do |command|
+      command.indent += 1
+      commands.append command
+    end
+    commands.append end_block
+  end
+
+  commands.append command(603)
+  lose.each do |command|
+    command.indent += 1
+    commands.append command
+  end
+  commands.append end_block
+
+  commands.append command(604)
+  return commands
+end
+
 def move_route(character: 0, route:)
   commands = []
   commands.append command(209, character, route)
