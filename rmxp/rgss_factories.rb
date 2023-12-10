@@ -146,11 +146,20 @@ def page_condition(
   return condition
 end
 
+GRAPHIC_DIRECTION = {
+  2 => :down,
+  4 => :left,
+  6 => :right,
+  8 => :up,
+}
+
+GRAPHIC_DIRECTION_INVERSE = GRAPHIC_DIRECTION.invert
+
 def graphic(
   tile_id: 0,
   character_name: "",
   character_hue: 0,
-  direction: 2,
+  direction: :down,
   pattern: 0,
   opacity: 255,
   blend_type: 0
@@ -159,7 +168,7 @@ def graphic(
   graphic.tile_id = tile_id
   graphic.character_name = character_name
   graphic.character_hue = character_hue
-  graphic.direction = direction
+  graphic.direction = GRAPHIC_DIRECTION_INVERSE[direction]
   graphic.pattern = pattern
   graphic.opacity = opacity
   graphic.blend_type = blend_type
@@ -217,7 +226,7 @@ def screen_flash(red:, green:, blue:, alpha: 0, frames:)
   return command(224, Color.new(red, green, blue, alpha), frames)
 end
 
-TRANSFER_DIRECTIONS = {
+TRANSFER_DIRECTION = {
   0 => :retain,
   1 => :down,
   2 => :left,
@@ -225,30 +234,30 @@ TRANSFER_DIRECTIONS = {
   4 => :up,
 }
 
-TRANSFER_DIRECTIONS_INVERSE = TRANSFER_DIRECTIONS.invert
+TRANSFER_DIRECTION_INVERSE = TRANSFER_DIRECTION.invert
 
 def transfer_player(map:, x:, y:, direction:, fading:)
-  return command(201, 0, map, x, y, TRANSFER_DIRECTIONS_INVERSE[direction], fading ? 0 : 1)
+  return command(201, 0, map, x, y, TRANSFER_DIRECTION_INVERSE[direction], fading ? 0 : 1)
 end
 
 def transfer_player_variables(map:, x:, y:, direction:, fading:)
-  return command(201, 1, map, x, y, TRANSFER_DIRECTIONS_INVERSE[direction], fading ? 0 : 1)
+  return command(201, 1, map, x, y, TRANSFER_DIRECTION_INVERSE[direction], fading ? 0 : 1)
 end
 
-# TODO: lossy change - skip else block when else_commands == []
-def condition(parameters: [], then_commands: [], else_commands: nil)
+# TODO: lossy change - skip else block when args[:else] == []
+def condition(parameters: [], **args)
   commands = []
   commands.append command(111, *parameters)
 
-  then_commands.each do |command|
+  args[:then].each do |command|
     command.indent += 1
     commands.append command
   end
   commands.append end_block
 
-  if else_commands != nil
+  if args[:else] != nil
     commands.append command(411)
-    else_commands.each do |command|
+    args[:else].each do |command|
       command.indent += 1
       commands.append command
     end

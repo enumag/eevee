@@ -203,7 +203,7 @@ def dump_command_list(commands, level)
       value += dump_command_wait(command, level)
     when 111 # if
       value += dump_command_condition(command, level)
-      value += indent(level + 1) + "then_commands: ["
+      value += indent(level + 1) + "then: ["
       if commands[i + 1].code == 0
         value += "],"
         i += 1
@@ -229,7 +229,7 @@ def dump_command_list(commands, level)
       parts.unshift(command)
       value += dump_command_array('script', parts, level)
     when 411 # else
-      value += indent(level + 1) + "else_commands: ["
+      value += indent(level + 1) + "else: ["
       if commands[i + 1].code == 0
         value += "],"
         i += 1
@@ -315,7 +315,7 @@ def dump_command_transfer_player(command, level)
   parameters.append "map: " + command.parameters[1].inspect
   parameters.append "x: " + command.parameters[2].inspect
   parameters.append "y: " + command.parameters[3].inspect
-  parameters.append "direction: " + TRANSFER_DIRECTIONS[command.parameters[4]].inspect
+  parameters.append "direction: " + TRANSFER_DIRECTION[command.parameters[4]].inspect
   parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
   value += parameters.join(", ")
   value += "),\n"
@@ -347,7 +347,7 @@ def dump_graphic(graphic, level)
   value += indent(level + 1) + "tile_id: " + graphic.tile_id.inspect + ",\n" if graphic.tile_id != 0
   value += indent(level + 1) + "character_name: " + graphic.character_name.inspect + ",\n" if graphic.character_name != ""
   value += indent(level + 1) + "character_hue: " + graphic.character_hue.inspect + ",\n" if graphic.character_hue != 0
-  value += indent(level + 1) + "direction: " + graphic.direction.inspect + ",\n" if graphic.direction != 2
+  value += indent(level + 1) + "direction: " + GRAPHIC_DIRECTION[graphic.direction].inspect + ",\n" if graphic.direction != 2
   value += indent(level + 1) + "pattern: " + graphic.pattern.inspect + ",\n" if graphic.pattern != 0
   value += indent(level + 1) + "opacity: " + graphic.opacity.inspect + ",\n" if graphic.opacity != 255
   value += indent(level + 1) + "blend_type: " + graphic.blend_type.inspect + ",\n" if graphic.blend_type != 0
