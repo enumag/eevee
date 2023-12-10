@@ -12,14 +12,14 @@ def indent(level)
 end
 
 def save_rb(file, data)
-  save_yaml('map_original.yaml', data)
+  save_yaml('var/map_original.yaml', data)
   marshal = Marshal.dump(data)
   ruby = dump_rb(data, 0)
-  File.write('map.rb', ruby)
+  File.write('var/map.rb', ruby)
   # print_rb(ruby)
   reconstructed = eval(ruby)
-  save_yaml('map_tmp.yaml', reconstructed)
-  yaml_stable_ref('map_tmp.yaml', 'map.yaml')
+  save_yaml('var/map_tmp.yaml', reconstructed)
+  yaml_stable_ref('var/map_tmp.yaml', 'var/map.yaml')
   puts marshal == Marshal.dump(reconstructed)
   puts Marshal.dump(data) == Marshal.dump(reconstructed)
 end
