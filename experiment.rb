@@ -225,6 +225,8 @@ def dump_command_list(commands, level)
       value += "\n"
     when 201 # transfer player
       value += dump_command_transfer_player(command, level)
+    when 205 # change for color tone
+      value += dump_command_change_fog_tone(command, level)
     when 209 # move route
       parts = collect(commands, i + 1, 509)
       i += parts.count
@@ -233,6 +235,8 @@ def dump_command_list(commands, level)
       value += dump_command_change_tone(command, level)
     when 224 # screen flash
       value += dump_command_screen_flash(command, level)
+    when 234 # change picture tone
+      value += dump_command_change_picture_tone(command, level)
     when 132 # change battle bgm
       value += dump_command_battle_bgm(command, level)
     when 133 # change battle me
@@ -296,6 +300,31 @@ def dump_command_array(function, commands, level)
     value += indent(level + 1) + command.parameters[0].inspect + ",\n"
   end
   value += indent(level) + "),\n"
+  return value
+end
+
+def dump_command_change_picture_tone(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 3
+  value = indent(level) + "change_picture_tone("
+  value += "number: " + command.parameters[0].inspect + ", "
+  value += "red: " + command.parameters[1].red.to_i.inspect + ", "
+  value += "green: " + command.parameters[1].green.to_i.inspect + ", "
+  value += "blue: " + command.parameters[1].blue.to_i.inspect + ", "
+  value += "gray: " + command.parameters[1].gray.to_i.inspect + ", " if command.parameters[1].gray != 0.0
+  value += "frames: " + command.parameters[2].inspect
+  value += "),\n"
+  return value
+end
+
+def dump_command_change_fog_tone(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 2
+  value = indent(level) + "change_fog_tone("
+  value += "red: " + command.parameters[0].red.to_i.inspect + ", "
+  value += "green: " + command.parameters[0].green.to_i.inspect + ", "
+  value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
+  value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
+  value += "frames: " + command.parameters[1].inspect
+  value += "),\n"
   return value
 end
 

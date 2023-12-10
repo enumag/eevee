@@ -242,6 +242,14 @@ def change_tone(red:, green:, blue:, gray: 0, frames:)
   return command(223, Tone.new(red, green, blue, gray), frames)
 end
 
+def change_fog_tone(red:, green:, blue:, gray: 0, frames:)
+  return command(205, Tone.new(red, green, blue, gray), frames)
+end
+
+def change_picture_tone(number:, red:, green:, blue:, gray: 0, frames:)
+  return command(234, number, Tone.new(red, green, blue, gray), frames)
+end
+
 def screen_flash(red:, green:, blue:, alpha: 0, frames:)
   return command(224, Color.new(red, green, blue, alpha), frames)
 end
