@@ -175,6 +175,9 @@ def dump_command_list(commands, level)
     when 0 # block end
       level -= 2
       value += indent(level + 1) + "],\n"
+      # Band-aid for a rare case of two code 0 commands.
+      parts = collect(commands, i + 1, 0)
+      i += parts.count
     when 101 # text
       parts = collect(commands, i + 1, 401)
       i += parts.count
@@ -494,7 +497,9 @@ end
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
 
-(0..999).each do |id|
+range = 0..999
+
+range.each do |id|
   file = 'C:\Projects\Reborn\Reborn\Data/Map' + id.to_s.rjust(3, '0') + '.rxdata'
   if File.exist?(file)
     puts file
