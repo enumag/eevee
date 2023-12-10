@@ -3,7 +3,7 @@ require_relative 'rmxp/rgss_factories'
 require_relative 'src/common'
 
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
-data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
 
 INDENT_SIZE = 2
 
@@ -299,7 +299,6 @@ def dump_command(command, level)
   end
   value = indent(level) + "command(\n"
   value += indent(level + 1) + command.code.inspect + ",\n"
-  value += indent(level + 1) + "0,\n"
   value += indent(level + 1) + command.parameters.inspect + ",\n"
   value += indent(level) + "),\n"
   return value

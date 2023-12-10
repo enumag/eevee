@@ -83,14 +83,15 @@ end
 
 def command(
   code = 0,
-  indent = 0,
   parameters = []
 )
   raise code.inspect unless code.is_a? Integer
-  command = RPG::EventCommand.new
-  command.code = code
-  command.indent = 0
-  command.parameters = parameters
+  return RPG::EventCommand.new(code, 0, parameters)
+end
+
+def end_block()
+  command = command(0)
+  command.indent += 1
   return command
 end
 
@@ -162,31 +163,31 @@ def move(
 end
 
 def script(*parts)
-  commands = parts.map { |text| command(655, 0, [text]) }
+  commands = parts.map { |text| command(655, [text]) }
   commands[0].code = 355
   return commands
 end
 
 def text(*parts)
-  commands = parts.map { |text| command(401, 0, [text]) }
+  commands = parts.map { |text| command(401, [text]) }
   commands[0].code = 101
   return commands
 end
 
 def wait(time)
-  return command(106, 0, [time])
+  return command(106, [time])
 end
 
 def play_se(audio)
-  return command(250, 0, [audio])
+  return command(250, [audio])
 end
 
 def change_tone(red:, green:, blue:, gray: 0, time:)
-  return command(223, 0, [Tone.new(red, green, blue, gray), time])
+  return command(223, [Tone.new(red, green, blue, gray), time])
 end
 
 def screen_flash(red:, green:, blue:, alpha: 0, time:)
-  return command(224, 0, [Color.new(red, green, blue, alpha), time])
+  return command(224, [Color.new(red, green, blue, alpha), time])
 end
 
 DIRECTIONS = {
@@ -200,7 +201,6 @@ DIRECTIONS = {
 def transfer_player(map:, x:, y:, direction:, fading:)
   return command(
     201,
-    0,
     [0, map, x, y, DIRECTIONS[direction], fading ? 0 : 1]
   )
 end
@@ -208,103 +208,81 @@ end
 def transfer_player_variables(map:, x:, y:, direction:, fading:)
   return command(
     201,
-    0,
     [1, map, x, y, DIRECTIONS[direction], fading ? 0 : 1]
   )
 end
 
 def condition(parameters: [], then_commands: [], else_commands: nil)
   commands = []
-  commands.append command(111, 0, parameters)
+  commands.append command(111, parameters)
+
   then_commands.each do |command|
     command.indent += 1
     commands.append command
   end
-
-  # TODO: simplify this
-  command = command(0)
-  command.indent += 1
-  commands.append command
+  commands.append end_block
 
   if else_commands != nil
-    commands.append command(411, 0, [])
+    commands.append command(411, [])
     else_commands.each do |command|
       command.indent += 1
       commands.append command
     end
-
-    # TODO: simplify this
-    command = command(0)
-    command.indent += 1
-    commands.append command
+    commands.append end_block
   end
-  commands.append command(412, 0, [])
+
+  commands.append command(412, [])
   return commands
 end
 
 def show_choices(choices:, cancellation:, choice1: [], choice2: [], choice3: [], choice4: [], cancel: [])
   commands = []
-  commands.append command(102, 0, [choices, cancellation])
+  commands.append command(102, [choices, cancellation])
 
-  commands.append command(402, 0, [0, choices[0]])
+  commands.append command(402, [0, choices[0]])
   choice1.each do |command|
     command.indent += 1
     commands.append command
   end
-  # TODO: simplify this
-  command = command(0)
-  command.indent += 1
-  commands.append command
+  commands.append end_block
 
   if choices.count >= 2
-    commands.append command(402, 0, [1, choices[1]])
+    commands.append command(402, [1, choices[1]])
     choice2.each do |command|
       command.indent += 1
       commands.append command
     end
-    # TODO: simplify this
-    command = command(0)
-    command.indent += 1
-    commands.append command
+    commands.append end_block
   end
 
   if choices.count >= 3
-    commands.append command(402, 0, [2, choices[2]])
+    commands.append command(402, [2, choices[2]])
     choice3.each do |command|
       command.indent += 1
       commands.append command
     end
-    # TODO: simplify this
-    command = command(0)
-    command.indent += 1
-    commands.append command
+    commands.append end_block
   end
 
   if choices.count >= 4
-    commands.append command(402, 0, [3, choices[3]])
+    commands.append command(402, [3, choices[3]])
     choice4.each do |command|
       command.indent += 1
       commands.append command
     end
-    # TODO: simplify this
-    command = command(0)
-    command.indent += 1
-    commands.append command
+    commands.append end_block
   end
 
   if cancellation == 5
-    commands.append command(403, 0, [])
+    commands.append command(403, [])
     cancel.each do |command|
       command.indent += 1
       commands.append command
     end
-    # TODO: simplify this
-    command = command(0)
-    command.indent += 1
-    commands.append command
+    commands.append end_block
   end
 
-  commands.append command(404, 0, [])
+  commands.append command(404, [])
   return commands
 end
 
@@ -312,11 +290,10 @@ def move_route(character:, route:)
   commands = []
   commands.append command(
     209,
-    0,
     [character, route]
   )
   route.list.each do |move|
-    commands.append command(509, 0, [move])
+    commands.append command(509, [move])
   end
   commands.pop
   return commands
