@@ -267,6 +267,8 @@ def dump_command_list(commands, level)
       value += indent(level) + "),\n"
     when 413 # loop end
       value += indent(level) + "),\n"
+    when 301, 601..604 # RXMP battle result condition, useless for us
+      raise "RMXP Battle Processing is not supported"
     else
       value += dump_command(command, level)
     end
