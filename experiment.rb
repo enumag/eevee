@@ -2,8 +2,9 @@ require_relative 'rmxp/rgss'
 require_relative 'rmxp/rgss_factories'
 require_relative 'src/common'
 
-data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
+data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
 
 INDENT_SIZE = 2
 
@@ -211,6 +212,16 @@ def dump_command_list(commands, level)
         level += 2
       end
       value += "\n"
+    when 112 # loop
+      value += dump_command_loop(command, level)
+      value += indent(level + 1) + "commands: ["
+      if commands[i + 1].code == 0
+        value += "],"
+        i += 1
+      else
+        level += 2
+      end
+      value += "\n"
     when 201 # transfer player
       value += dump_command_transfer_player(command, level)
     when 209 # move route
@@ -221,6 +232,8 @@ def dump_command_list(commands, level)
       value += dump_command_change_tone(command, level)
     when 224 # screen flash
       value += dump_command_screen_flash(command, level)
+    when 249 # play me
+      value += dump_command_play_me(command, level)
     when 250 # play se
       value += dump_command_play_se(command, level)
     when 355 # script
@@ -238,6 +251,8 @@ def dump_command_list(commands, level)
       end
       value += "\n"
     when 412 # branch end
+      value += indent(level) + "),\n"
+    when 413 # loop end
       value += indent(level) + "),\n"
     else
       value += dump_command(command, level)
@@ -295,6 +310,14 @@ def dump_command_screen_flash(command, level)
   value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
   value += "alpha: " + command.parameters[0].alpha.to_i.inspect + ", " if command.parameters[0].alpha != 0.0
   value += "frames: " + command.parameters[1].inspect
+  value += "),\n"
+  return value
+end
+
+def dump_command_play_me(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "play_me("
+  value += dump_audio(command.parameters[0], level + 1)
   value += "),\n"
   return value
 end
@@ -382,6 +405,12 @@ end
 
 def dump_command_condition(command, level)
   value = indent(level) + "*condition(\n"
+  value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
+  return value
+end
+
+def dump_command_loop(command, level)
+  value = indent(level) + "*repeat(\n"
   value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
   return value
 end

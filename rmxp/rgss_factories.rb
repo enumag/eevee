@@ -214,6 +214,10 @@ def wait(time)
   return command(106, time)
 end
 
+def play_me(audio)
+  return command(249, audio)
+end
+
 def play_se(audio)
   return command(250, audio)
 end
@@ -265,6 +269,20 @@ def condition(parameters: [], **args)
   end
 
   commands.append command(412)
+  return commands
+end
+
+def repeat(parameters: [], **args)
+  commands = []
+  commands.append command(112, *parameters)
+
+  args[:commands].each do |command|
+    command.indent += 1
+    commands.append command
+  end
+  commands.append end_block
+
+  commands.append command(413)
   return commands
 end
 
