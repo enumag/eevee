@@ -3,20 +3,31 @@ require_relative 'rmxp/rgss_factories'
 require_relative 'src/common'
 
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
+
+INDENT_SIZE = 2
 
 def indent(level)
-  return ' ' * level * 2
+  return ' ' * level * INDENT_SIZE
 end
 
 def save_rb(file, data)
+  save_yaml('map_original.yaml', data)
   marshal = Marshal.dump(data)
   ruby = dump_rb(data, 0)
-  puts ruby
+  File.write('map.rb', ruby)
+  # print_rb(ruby)
   reconstructed = eval(ruby)
-  #save_yaml('Map006 - Department Store 11F.rb2.yaml', reconstructed)
-  #yaml_stable_ref('Map006 - Department Store 11F.rb.yaml', 'Map006 - Department Store 11F.yaml')
+  save_yaml('map_tmp.yaml', reconstructed)
+  yaml_stable_ref('map_tmp.yaml', 'map.yaml')
   puts marshal == Marshal.dump(reconstructed)
   puts Marshal.dump(data) == Marshal.dump(reconstructed)
+end
+
+def print_rb(code)
+  code.lines.each_with_index do |line, key|
+    puts key.to_s.rjust(6, ' ') + '  '+ line
+  end
 end
 
 def dump_rb(object, level)
@@ -142,16 +153,22 @@ def dump_command_list(commands, level)
       parts.unshift(command)
       value += dump_command_array('text', parts, level)
     when 106 # wait
-      value += dump_wait(command, level)
+      value += dump_command_wait(command, level)
     when 111 # if
-      value += dump_condition(command, level)
+      value += dump_command_condition(command, level)
       level += 2
     when 201 # transfer player
-      value += dump_transfer_player(command, level)
+      value += dump_command_transfer_player(command, level)
+    when 209 # move route
+      parts = collect(commands, i + 1, 509)
+      i += parts.count
+      value += dump_command_move_route(command, level)
     when 223 # change screen color tone
-      value += dump_change_tone(command, level)
+      value += dump_command_change_tone(command, level)
+    when 224 # screen flash
+      value += dump_command_screen_flash(command, level)
     when 250 # play se
-      value += dump_play_se(command, level)
+      value += dump_command_play_se(command, level)
     when 355 # script
       parts = collect(commands, i + 1, 655)
       i += parts.count
@@ -167,7 +184,7 @@ def dump_command_list(commands, level)
       value += indent(level + 1) + "],\n"
       value += indent(level) + "),\n"
     else
-      value += indent(level) + dump_command(command, level) + ",\n"
+      value += dump_command(command, level)
     end
     i += 1
   end
@@ -186,7 +203,7 @@ def collect(commands, index, code)
 end
 
 def dump_command_array(function, commands, level)
-  value = indent(level) + function + "(\n"
+  value = indent(level) + "*" + function + "(\n"
   commands.each do |command|
     raise "unexpected command parameters" if command.parameters.count != 1
     value += indent(level + 1) + command.parameters[0].inspect + ",\n"
@@ -195,7 +212,7 @@ def dump_command_array(function, commands, level)
   return value
 end
 
-def dump_change_tone(command, level)
+def dump_command_change_tone(command, level)
   raise "unexpected command parameters" if command.parameters.count != 2
   value = indent(level) + "change_tone("
   value += "red: " + command.parameters[0].red.to_i.inspect + ", "
@@ -207,7 +224,19 @@ def dump_change_tone(command, level)
   return value
 end
 
-def dump_play_se(command, level)
+def dump_command_screen_flash(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 2
+  value = indent(level) + "screen_flash(\n"
+  value += "red: " + command.parameters[0].red.to_i.inspect + ", "
+  value += "green: " + command.parameters[0].green.to_i.inspect + ", "
+  value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
+  value += "alpha: " + command.parameters[0].alpha.to_i.inspect + ", " if command.parameters[0].alpha != 0.0
+  value += "time: " + command.parameters[1].inspect
+  value += indent(level) + "),\n"
+  return value
+end
+
+def dump_command_play_se(command, level)
   raise "unexpected command parameters" if command.parameters.count != 1
   value = indent(level) + "play_se("
   value += dump_audio(command.parameters[0], level + 1)
@@ -215,7 +244,7 @@ def dump_play_se(command, level)
   return value
 end
 
-def dump_transfer_player(command, level)
+def dump_command_transfer_player(command, level)
   value = indent(level)
   value += "transfer_player(" if command.parameters[0] == 0
   value += "transfer_player_variables(" if command.parameters[0] == 1
@@ -245,7 +274,7 @@ def dump_direction(direction)
   end
 end
 
-def dump_wait(command, level)
+def dump_command_wait(command, level)
   raise "unexpected command parameters" if command.parameters.count != 1
   value = indent(level) + "wait("
   value += command.parameters[0].inspect
@@ -257,11 +286,11 @@ def dump_command(command, level)
   command.parameters.each do |parameter|
     raise "missing when for command code " + command.code.to_s if parameter.inspect.start_with?('#')
   end
-  value = "command(\n"
-  value += indent(level + 1) + "code: " + command.code.inspect + ",\n"
-  value += indent(level + 1) + "indent: " + command.indent.inspect + ",\n"
-  value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
-  value += indent(level) + ")"
+  value = indent(level) + "command(\n"
+  value += indent(level + 1) + command.code.inspect + ",\n"
+  value += indent(level + 1) + "0,\n"
+  value += indent(level + 1) + command.parameters.inspect + ",\n"
+  value += indent(level) + "),\n"
   return value
 end
 
@@ -303,10 +332,19 @@ def dump_move(move, level)
   return value
 end
 
-def dump_condition(condition, level)
-  value = "condition(\n"
-  value += indent(level + 1) + "parameters: " + condition.parameters.inspect + ",\n"
+def dump_command_condition(command, level)
+  value = indent(level) + "*condition(\n"
+  value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
   value += indent(level + 1) + "then_commands: [\n"
+  return value
+end
+
+def dump_command_move_route(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 2
+  value = indent(level) + "*move_route(\n"
+  value += indent(level + 1) + "character: " + command.parameters[0].inspect + ",\n"
+  value += indent(level + 1) + "route: " + dump_route(command.parameters[1], level + 1) + ",\n"
+  value += indent(level) + "),\n"
   return value
 end
 

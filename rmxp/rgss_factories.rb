@@ -88,7 +88,7 @@ def command(
 )
   command = RPG::EventCommand.new
   command.code = code
-  command.indent = indent
+  command.indent = 0
   command.parameters = parameters
   return command
 end
@@ -184,6 +184,10 @@ def change_tone(red:, green:, blue:, gray: 0, time:)
   return command(223, 0, [Tone.new(red, green, blue, gray), time])
 end
 
+def screen_flash(red:, green:, blue:, alpha: 0, time:)
+  return command(224, 0, [Color.new(red, green, blue, alpha), time])
+end
+
 DIRECTIONS = {
   retain: 0,
   down: 1,
@@ -210,18 +214,31 @@ end
 
 def condition(parameters: [], then_commands: [], else_commands: [])
   commands = []
-  commands.append(command(111, 0, parameters))
+  commands.append command(111, 0, parameters)
   then_commands.each do |command|
     command.indent += 1
-    commands.append(command)
+    commands.append command
   end
   if else_commands != []
-    commands.append(command(411, 0, parameters))
+    commands.append command(411, 0, [])
     else_commands.each do |command|
       command.indent += 1
-      commands.append(command)
+      commands.append command
     end
   end
-  commands.append(command(412, 0, parameters))
+  commands.append command(412, 0, [])
+  return commands
+end
+
+def move_route(character:, route:)
+  commands = []
+  commands.append command(
+    209,
+    0,
+    [character, route]
+  )
+  route.list.each do |move|
+    commands.append command(509, 0, [move])
+  end
   return commands
 end
