@@ -130,7 +130,7 @@ def dump_page(page, level)
   value = "page(\n"
   value += indent(level + 1) + "condition: " + dump_page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
   value += indent(level + 1) + "graphic: " + dump_graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
-  value += indent(level + 1) + "move_type: " + page.move_type.inspect + ",\n" if page.move_type != 0
+  value += indent(level + 1) + "move_type: " + EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
   value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
   value += indent(level + 1) + "move_frequency: " + page.move_frequency.inspect + ",\n" if page.move_frequency != 3
   value += indent(level + 1) + "move_route: " + dump_route(page.move_route, level + 1) + ",\n" if Marshal.dump(page.move_route) != DEFAULT_ROUTE
@@ -139,7 +139,7 @@ def dump_page(page, level)
   value += indent(level + 1) + "direction_fix: " + page.direction_fix.inspect + ",\n" if page.direction_fix != false
   value += indent(level + 1) + "through: " + page.through.inspect + ",\n" if page.through != false
   value += indent(level + 1) + "always_on_top: " + page.always_on_top.inspect + ",\n" if page.always_on_top != false
-  value += indent(level + 1) + "trigger: " + page.trigger.inspect + ",\n" if page.trigger != 0
+  value += indent(level + 1) + "trigger: " + EVENT_TRIGGER[page.trigger].inspect + ",\n" if page.trigger != 0
   commands = page.list.clone
   last = commands.pop
   raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
@@ -315,26 +315,11 @@ def dump_command_transfer_player(command, level)
   parameters.append "map: " + command.parameters[1].inspect
   parameters.append "x: " + command.parameters[2].inspect
   parameters.append "y: " + command.parameters[3].inspect
-  parameters.append "direction: " + dump_direction(command.parameters[4])
+  parameters.append "direction: " + TRANSFER_DIRECTIONS[command.parameters[4]].inspect
   parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
   value += parameters.join(", ")
   value += "),\n"
   return value
-end
-
-def dump_direction(direction)
-  case direction
-  when 0
-    return ':retain'
-  when 1
-    return ':down'
-  when 2
-    return ':left'
-  when 3
-    return ':right'
-  when 4
-    return ':up'
-  end
 end
 
 def dump_command_wait(command, level)

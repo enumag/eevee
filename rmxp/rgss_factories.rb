@@ -49,10 +49,29 @@ def table(x:, y: 0, z: 0, data: [])
   return table
 end
 
+EVENT_MOVE_TYPE = {
+  0 => :fixed,
+  1 => :random,
+  2 => :approach,
+  3 => :custom,
+}
+
+EVENT_MOVE_TYPE_INVERSE = EVENT_MOVE_TYPE.invert
+
+EVENT_TRIGGER = {
+  0 => :action,
+  1 => :player_touch,
+  2 => :event_touch,
+  3 => :autorun,
+  4 => :parallel,
+}
+
+EVENT_TRIGGER_INVERSE = EVENT_TRIGGER.invert
+
 def page(
   condition: RPG::Event::Page::Condition.new,
   graphic: RPG::Event::Page::Graphic.new,
-  move_type: 0,
+  move_type: :fixed,
   move_speed: 3,
   move_frequency: 3,
   move_route: RPG::MoveRoute.new,
@@ -61,13 +80,13 @@ def page(
   direction_fix: false,
   through: false,
   always_on_top: false,
-  trigger: 0,
+  trigger: :action,
   list: []
 )
   page = RPG::Event::Page.new
   page.condition = condition
   page.graphic = graphic
-  page.move_type = move_type
+  page.move_type = EVENT_MOVE_TYPE_INVERSE[move_type]
   page.move_speed = move_speed
   page.move_frequency = move_frequency
   page.move_route = move_route
@@ -76,7 +95,7 @@ def page(
   page.direction_fix = direction_fix
   page.through = through
   page.always_on_top = always_on_top
-  page.trigger = trigger
+  page.trigger = EVENT_TRIGGER_INVERSE[trigger]
   list.append RPG::EventCommand.new
   page.list = list.flatten
   return page
@@ -95,6 +114,14 @@ def end_block()
   return command
 end
 
+# TODO: lossy change - simplify page_condition to
+# page_condition(
+#   switch1: switch(id),
+#   switch2: switch(id),
+#   variable: variable(id),
+#   variable_at_least: value,
+#   self_switch: "A",
+# )
 def page_condition(
   switch1_valid: false,
   switch2_valid: false,
@@ -191,21 +218,24 @@ def screen_flash(red:, green:, blue:, alpha: 0, frames:)
 end
 
 TRANSFER_DIRECTIONS = {
-  retain: 0,
-  down: 1,
-  left: 2,
-  right: 3,
-  up: 4,
+  0 => :retain,
+  1 => :down,
+  2 => :left,
+  3 => :right,
+  4 => :up,
 }
 
+TRANSFER_DIRECTIONS_INVERSE = TRANSFER_DIRECTIONS.invert
+
 def transfer_player(map:, x:, y:, direction:, fading:)
-  return command(201, 0, map, x, y, TRANSFER_DIRECTIONS[direction], fading ? 0 : 1)
+  return command(201, 0, map, x, y, TRANSFER_DIRECTIONS_INVERSE[direction], fading ? 0 : 1)
 end
 
 def transfer_player_variables(map:, x:, y:, direction:, fading:)
-  return command(201, 1, map, x, y, TRANSFER_DIRECTIONS[direction], fading ? 0 : 1)
+  return command(201, 1, map, x, y, TRANSFER_DIRECTIONS_INVERSE[direction], fading ? 0 : 1)
 end
 
+# TODO: lossy change - skip else block when else_commands == []
 def condition(parameters: [], then_commands: [], else_commands: nil)
   commands = []
   commands.append command(111, *parameters)
