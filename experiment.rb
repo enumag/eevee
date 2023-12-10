@@ -3,7 +3,7 @@ require_relative 'rmxp/rgss_factories'
 require_relative 'src/common'
 
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
-# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
+data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
 
 INDENT_SIZE = 2
 
@@ -12,7 +12,8 @@ def indent(level)
 end
 
 def save_rb(file, data)
-  save_yaml('var/map_original.yaml', data)
+  save_yaml('var/map_original_tmp.yaml', data)
+  yaml_stable_ref('var/map_original_tmp.yaml', 'var/map_original.yaml')
   marshal = Marshal.dump(data)
   ruby = dump_rb(data, 0)
   File.write('var/map.rb', ruby)
@@ -22,6 +23,7 @@ def save_rb(file, data)
   yaml_stable_ref('var/map_tmp.yaml', 'var/map.yaml')
   puts marshal == Marshal.dump(reconstructed)
   puts Marshal.dump(data) == Marshal.dump(reconstructed)
+  puts File.read('var/map_original.yaml') == File.read('var/map.yaml')
 end
 
 def print_rb(code)
@@ -147,11 +149,24 @@ def dump_command_list(commands, level)
   while i < commands.count
     command = commands[i]
     case command.code
+    when 0 # block end
+      level -= 2
+      value += indent(level + 1) + "],\n"
     when 101 # text
       parts = collect(commands, i + 1, 401)
       i += parts.count
       parts.unshift(command)
       value += dump_command_array('text', parts, level)
+    when 102 # show choices
+      value += dump_command_show_choices(command, level)
+    when 402 # show choices - when
+      value += dump_command_when(command, level)
+      level += 2
+    when 403 # show choices - when cancel
+      value += dump_command_when_cancel(command, level)
+      level += 2
+    when 404 # show choices - end
+      value += indent(level) + "),\n"
     when 106 # wait
       value += dump_command_wait(command, level)
     when 111 # if
@@ -175,13 +190,9 @@ def dump_command_list(commands, level)
       parts.unshift(command)
       value += dump_command_array('script', parts, level)
     when 411 # else
-      level -= 2
-      value += indent(level + 1) + "],\n"
       value += indent(level + 1) + "else_commands: [\n"
       level += 2
     when 412 # branch end
-      level -= 2
-      value += indent(level + 1) + "],\n"
       value += indent(level) + "),\n"
     else
       value += dump_command(command, level)
@@ -336,6 +347,25 @@ def dump_command_condition(command, level)
   value = indent(level) + "*condition(\n"
   value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
   value += indent(level + 1) + "then_commands: [\n"
+  return value
+end
+
+def dump_command_show_choices(command, level)
+  value = indent(level) + "*show_choices(\n"
+  value += indent(level + 1) + "choices: " + command.parameters[0].inspect + ",\n"
+  value += indent(level + 1) + "cancellation: " + command.parameters[1].inspect + ",\n"
+  return value
+end
+
+def dump_command_when(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 2
+  value = indent(level + 1) + "choice" + (command.parameters[0] + 1).to_s + ": [\n"
+  return value
+end
+
+def dump_command_when_cancel(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 0
+  value = indent(level + 1) + "cancel: [\n"
   return value
 end
 

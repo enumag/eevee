@@ -86,6 +86,7 @@ def command(
   indent = 0,
   parameters = []
 )
+  raise code.inspect unless code.is_a? Integer
   command = RPG::EventCommand.new
   command.code = code
   command.indent = 0
@@ -151,8 +152,8 @@ def route(
 end
 
 def move(
-  code = 0,
-  parameters = []
+  code: 0,
+  parameters: []
 )
   move = RPG::MoveCommand.new
   move.code = code
@@ -212,21 +213,98 @@ def transfer_player_variables(map:, x:, y:, direction:, fading:)
   )
 end
 
-def condition(parameters: [], then_commands: [], else_commands: [])
+def condition(parameters: [], then_commands: [], else_commands: nil)
   commands = []
   commands.append command(111, 0, parameters)
   then_commands.each do |command|
     command.indent += 1
     commands.append command
   end
-  if else_commands != []
+
+  # TODO: simplify this
+  command = command(0)
+  command.indent += 1
+  commands.append command
+
+  if else_commands != nil
     commands.append command(411, 0, [])
     else_commands.each do |command|
       command.indent += 1
       commands.append command
     end
+
+    # TODO: simplify this
+    command = command(0)
+    command.indent += 1
+    commands.append command
   end
   commands.append command(412, 0, [])
+  return commands
+end
+
+def show_choices(choices:, cancellation:, choice1: [], choice2: [], choice3: [], choice4: [], cancel: [])
+  commands = []
+  commands.append command(102, 0, [choices, cancellation])
+
+  commands.append command(402, 0, [0, choices[0]])
+  choice1.each do |command|
+    command.indent += 1
+    commands.append command
+  end
+  # TODO: simplify this
+  command = command(0)
+  command.indent += 1
+  commands.append command
+
+  if choices.count >= 2
+    commands.append command(402, 0, [1, choices[1]])
+    choice2.each do |command|
+      command.indent += 1
+      commands.append command
+    end
+    # TODO: simplify this
+    command = command(0)
+    command.indent += 1
+    commands.append command
+  end
+
+  if choices.count >= 3
+    commands.append command(402, 0, [2, choices[2]])
+    choice3.each do |command|
+      command.indent += 1
+      commands.append command
+    end
+    # TODO: simplify this
+    command = command(0)
+    command.indent += 1
+    commands.append command
+  end
+
+  if choices.count >= 4
+    commands.append command(402, 0, [3, choices[3]])
+    choice4.each do |command|
+      command.indent += 1
+      commands.append command
+    end
+    # TODO: simplify this
+    command = command(0)
+    command.indent += 1
+    commands.append command
+  end
+
+  if cancellation == 5
+    commands.append command(403, 0, [])
+    cancel.each do |command|
+      command.indent += 1
+      commands.append command
+    end
+    # TODO: simplify this
+    command = command(0)
+    command.indent += 1
+    commands.append command
+  end
+
+  commands.append command(404, 0, [])
   return commands
 end
 
@@ -240,5 +318,6 @@ def move_route(character:, route:)
   route.list.each do |move|
     commands.append command(509, 0, [move])
   end
+  commands.pop
   return commands
 end
