@@ -13,25 +13,34 @@ def save_rb(file, data)
   yaml_stable_ref('var/map_original_tmp.yaml', 'var/map_original.yaml')
   marshal = Marshal.dump(data)
 
-  ruby = nil
-
   measure do
-    puts 'dump ruby'
+    print 'dump ruby '
     ruby = dump_rb(data, 0)
     File.write('var/map.rb', ruby)
   end
 
+  reconstructed = nil
+  measure do
+    print 'load ruby '
+    reconstructed = eval(File.read('var/map.rb'))
+  end
+
   # print_rb(ruby)
-  reconstructed = eval(ruby)
 
   measure do
-    puts 'dump yaml'
+    print 'dump yaml '
     save_yaml('var/map_tmp.yaml', reconstructed)
     yaml_stable_ref('var/map_tmp.yaml', 'var/map.yaml')
   end
 
+  yaml = nil
+  measure do
+    print 'load yaml '
+    yaml = load_yaml('var/map.yaml')
+  end
+
   puts marshal == Marshal.dump(reconstructed)
-  puts Marshal.dump(data) == Marshal.dump(reconstructed)
+  puts Marshal.dump(yaml) == Marshal.dump(reconstructed)
   match = File.read('var/map_original.yaml') == File.read('var/map.yaml')
   puts match
   exit unless match
@@ -134,11 +143,26 @@ def dump_table(table, level)
   # value += indent(level + 1) + "],\n"
 
   # Method 4 - speed still fine, result without padding
+  # value += indent(level + 1) + "data: [\n"
+  # start = 0
+  # (0...table.zsize).each do
+  #   (0...table.ysize).each do
+  #     value += indent(level + 2) + "*" + table.data[start, table.xsize].inspect + ",\n"
+  #     start += table.xsize
+  #   end
+  #   value += "\n"
+  # end
+  # value += indent(level + 1) + "],\n"
+
+  # Method 5 - optimized speed, result with padding
   value += indent(level + 1) + "data: [\n"
   start = 0
   (0...table.zsize).each do
     (0...table.ysize).each do
-      value += indent(level + 2) + "*" + table.data[start, table.xsize].inspect + ",\n"
+      value += (indent(level + 2) + table.data[start, table.xsize].inspect[1..-2] + ',').
+        gsub(/ ([0-9]{1}),/, "    \\1,").
+        gsub(/ ([0-9]{2}),/, "   \\1,").
+        gsub(/ ([0-9]{3}),/, "  \\1,") + "\n"
       start += table.xsize
     end
     value += "\n"
