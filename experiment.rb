@@ -12,17 +12,37 @@ def save_rb(file, data)
   save_yaml('var/map_original_tmp.yaml', data)
   yaml_stable_ref('var/map_original_tmp.yaml', 'var/map_original.yaml')
   marshal = Marshal.dump(data)
-  ruby = dump_rb(data, 0)
-  File.write('var/map.rb', ruby)
+
+  ruby = nil
+
+  measure do
+    puts 'dump ruby'
+    ruby = dump_rb(data, 0)
+    File.write('var/map.rb', ruby)
+  end
+
   # print_rb(ruby)
   reconstructed = eval(ruby)
-  save_yaml('var/map_tmp.yaml', reconstructed)
-  yaml_stable_ref('var/map_tmp.yaml', 'var/map.yaml')
+
+  measure do
+    puts 'dump yaml'
+    save_yaml('var/map_tmp.yaml', reconstructed)
+    yaml_stable_ref('var/map_tmp.yaml', 'var/map.yaml')
+  end
+
   puts marshal == Marshal.dump(reconstructed)
   puts Marshal.dump(data) == Marshal.dump(reconstructed)
   match = File.read('var/map_original.yaml') == File.read('var/map.yaml')
   puts match
   exit unless match
+end
+
+def measure(&block)
+  start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  block.call
+  finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  elapsed = finish - start
+  puts elapsed
 end
 
 def print_rb(code)
@@ -82,24 +102,49 @@ def dump_table(table, level)
   value += indent(level + 1) + "x: " + table.xsize.inspect + ",\n"
   value += indent(level + 1) + "y: " + table.ysize.inspect + ",\n" if table.ysize > 1
   value += indent(level + 1) + "z: " + table.zsize.inspect + ",\n" if table.zsize > 1
+
+  # Method 1 - fastest solution but not pretty
+  # value += indent(level + 1) + "data: " + table.data.inspect + ",\n"
+
+  # Method 2 - very slow but nice result
+  # value += indent(level + 1) + "data: [\n"
+  # i = 0
+  # table.data.each do |cell|
+  #   i += 1
+  #   if i % table.xsize == 1
+  #     value += indent(level + 2)
+  #   end
+  #   value += cell.to_s.rjust(4) + ","
+  #   if i % table.xsize == 0
+  #     value += "\n"
+  #     if i % (table.xsize * table.ysize) == 0
+  #       value += "\n" if i != table.data.count
+  #     end
+  #   else
+  #     value += " "
+  #   end
+  # end
+  # value += indent(level + 1) + "],\n"
+
+  # Method 3 - still fast, at least it's separated by layer
+  # value += indent(level + 1) + "data: [\n"
+  # (0...table.zsize).each do |z|
+  #   value += indent(level + 2) + "*" + table.data[z * table.xsize * table.ysize, table.xsize * table.ysize].inspect + ",\n"
+  # end
+  # value += indent(level + 1) + "],\n"
+
+  # Method 4 - speed still fine, result without padding
   value += indent(level + 1) + "data: [\n"
-  i = 0
-  table.data.each do |cell|
-    i += 1
-    if i % table.xsize == 1
-      value += indent(level + 2)
+  start = 0
+  (0...table.zsize).each do
+    (0...table.ysize).each do
+      value += indent(level + 2) + "*" + table.data[start, table.xsize].inspect + ",\n"
+      start += table.xsize
     end
-    value += cell.to_s.rjust(4) + ","
-    if i % table.xsize == 0
-      value += "\n"
-      if i % (table.xsize * table.ysize) == 0
-        value += "\n" if i != table.data.count
-      end
-    else
-      value += " "
-    end
+    value += "\n"
   end
   value += indent(level + 1) + "],\n"
+
   value += indent(level) + ")"
   return value
 end
@@ -561,6 +606,7 @@ data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Facto
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
 
 range = 0..999
+range = [150]
 
 range.each do |id|
   file = 'C:\Projects\Reborn\Reborn\Data/Map' + id.to_s.rjust(3, '0') + '.rxdata'
