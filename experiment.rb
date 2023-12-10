@@ -46,6 +46,7 @@ DEFAULT_GRAPHIC = Marshal.dump(RPG::Event::Page::Graphic.new)
 DEFAULT_COMMAND = Marshal.dump(RPG::EventCommand.new)
 DEFAULT_ROUTE = Marshal.dump(RPG::MoveRoute.new)
 DEFAULT_MOVE = Marshal.dump(RPG::MoveCommand.new)
+DEFAULT_PAGE = Marshal.dump(RPG::Event::Page.new)
 
 def dump_map(map, level)
   value = "map(\n"
@@ -82,7 +83,24 @@ def dump_table(table, level)
   value += indent(level + 1) + "x: " + table.xsize.inspect + ",\n"
   value += indent(level + 1) + "y: " + table.ysize.inspect + ",\n" if table.ysize > 1
   value += indent(level + 1) + "z: " + table.zsize.inspect + ",\n" if table.zsize > 1
-  value += indent(level + 1) + "data: " + table.data.inspect + ",\n"
+  value += indent(level + 1) + "data: [\n"
+  i = 0
+  table.data.each do |cell|
+    i += 1
+    if i % table.xsize == 1
+      value += indent(level + 2)
+    end
+    value += cell.inspect.rjust(4) + ","
+    if i % table.xsize == 0
+      value += "\n"
+      if i % (table.xsize * table.ysize) == 0
+        value += "\n" if i != table.data.count
+      end
+    else
+      value += " "
+    end
+  end
+  value += indent(level + 1) + "],\n"
   value += indent(level) + ")"
   return value
 end
@@ -93,16 +111,22 @@ def dump_event(event, level)
   value += indent(level + 1) + "name: " + event.name.inspect + ",\n"
   value += indent(level + 1) + "x: " + event.x.inspect + ",\n"
   value += indent(level + 1) + "y: " + event.y.inspect + ",\n"
-  value += indent(level + 1) + "pages: [\n"
-  event.pages.each do |page|
-    value += indent(level + 2) + dump_page(page, level + 2) + ",\n"
+
+  if event.pages.count > 1 || Marshal.dump(event.pages[0]) != DEFAULT_PAGE
+    value += indent(level + 1) + "pages: [\n"
+    event.pages.each do |page|
+      value += indent(level + 2) + dump_page(page, level + 2) + ",\n"
+    end
+    value += indent(level + 1) + "],\n"
   end
-  value += indent(level + 1) + "],\n"
+
   value += indent(level) + ")"
   return value
 end
 
 def dump_page(page, level)
+  return "page()" if Marshal.dump(page) == DEFAULT_PAGE
+
   value = "page(\n"
   value += indent(level + 1) + "condition: " + dump_page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
   value += indent(level + 1) + "graphic: " + dump_graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
@@ -119,7 +143,7 @@ def dump_page(page, level)
   commands = page.list.clone
   last = commands.pop
   raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
-  if page.list.count != 0
+  if page.list.count > 1
     value += indent(level + 1) + "list: [\n"
     value += dump_command_list(commands, level + 2)
     value += indent(level + 1) + "],\n"
@@ -160,18 +184,33 @@ def dump_command_list(commands, level)
     when 102 # show choices
       value += dump_command_show_choices(command, level)
     when 402 # show choices - when
-      value += dump_command_when(command, level)
-      level += 2
+      if commands[i + 1].code == 0
+        i += 1
+      else
+        value += dump_command_when(command, level)
+        level += 2
+      end
     when 403 # show choices - when cancel
-      value += dump_command_when_cancel(command, level)
-      level += 2
+      if commands[i + 1].code == 0
+        i += 1
+      else
+        value += dump_command_when_cancel(command, level)
+        level += 2
+      end
     when 404 # show choices - end
       value += indent(level) + "),\n"
     when 106 # wait
       value += dump_command_wait(command, level)
     when 111 # if
       value += dump_command_condition(command, level)
-      level += 2
+      value += indent(level + 1) + "then_commands: ["
+      if commands[i + 1].code == 0
+        value += "],"
+        i += 1
+      else
+        level += 2
+      end
+      value += "\n"
     when 201 # transfer player
       value += dump_command_transfer_player(command, level)
     when 209 # move route
@@ -190,8 +229,14 @@ def dump_command_list(commands, level)
       parts.unshift(command)
       value += dump_command_array('script', parts, level)
     when 411 # else
-      value += indent(level + 1) + "else_commands: [\n"
-      level += 2
+      value += indent(level + 1) + "else_commands: ["
+      if commands[i + 1].code == 0
+        value += "],"
+        i += 1
+      else
+        level += 2
+      end
+      value += "\n"
     when 412 # branch end
       value += indent(level) + "),\n"
     else
@@ -214,6 +259,13 @@ def collect(commands, index, code)
 end
 
 def dump_command_array(function, commands, level)
+  if commands.count == 1
+    value = indent(level) + "*" + function + "("
+    raise "unexpected command parameters" if commands[0].parameters.count != 1
+    value += commands[0].parameters[0].inspect + "),\n"
+    return value
+  end
+
   value = indent(level) + "*" + function + "(\n"
   commands.each do |command|
     raise "unexpected command parameters" if command.parameters.count != 1
@@ -230,20 +282,20 @@ def dump_command_change_tone(command, level)
   value += "green: " + command.parameters[0].green.to_i.inspect + ", "
   value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
   value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
-  value += "time: " + command.parameters[1].inspect
+  value += "frames: " + command.parameters[1].inspect
   value += "),\n"
   return value
 end
 
 def dump_command_screen_flash(command, level)
   raise "unexpected command parameters" if command.parameters.count != 2
-  value = indent(level) + "screen_flash(\n"
+  value = indent(level) + "screen_flash("
   value += "red: " + command.parameters[0].red.to_i.inspect + ", "
   value += "green: " + command.parameters[0].green.to_i.inspect + ", "
   value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
   value += "alpha: " + command.parameters[0].alpha.to_i.inspect + ", " if command.parameters[0].alpha != 0.0
-  value += "time: " + command.parameters[1].inspect
-  value += indent(level) + "),\n"
+  value += "frames: " + command.parameters[1].inspect
+  value += "),\n"
   return value
 end
 
@@ -297,10 +349,11 @@ def dump_command(command, level)
   command.parameters.each do |parameter|
     raise "missing when for command code " + command.code.to_s if parameter.inspect.start_with?('#')
   end
-  value = indent(level) + "command(\n"
-  value += indent(level + 1) + command.code.inspect + ",\n"
-  value += indent(level + 1) + command.parameters.inspect + ",\n"
-  value += indent(level) + "),\n"
+  value = indent(level) + "command(" + command.code.inspect
+  command.parameters.each do |parameter|
+    value += ", " + parameter.inspect
+  end
+  value += "),\n"
   return value
 end
 
@@ -319,22 +372,22 @@ end
 
 def dump_route(route, level)
   value = "route(\n"
-  value += indent(level + 1) + "repeat: " + route.repeat.inspect + ",\n" if route.repeat != true
-  value += indent(level + 1) + "skippable: " + route.skippable.inspect + ",\n" if route.skippable != false
   last = route.list.pop
   raise "unexpected last route command" if Marshal.dump(last) != DEFAULT_MOVE
-  if route.list.count != 0
-    value += indent(level + 1) + "list: [\n"
-    route.list.each do |command|
-      value += indent(level + 2) + dump_move(command, level + 2) + ",\n"
-    end
-    value += indent(level + 1) + "],\n"
+  route.list.each do |command|
+    value += indent(level + 1) + dump_move(command, level + 1) + ",\n"
   end
+  value += indent(level + 1) + "repeat: " + route.repeat.inspect + ",\n" if route.repeat != true
+  value += indent(level + 1) + "skippable: " + route.skippable.inspect + ",\n" if route.skippable != false
   value += indent(level) + ")"
   return value
 end
 
 def dump_move(move, level)
+  if move.parameters.count == 0
+    return "move(code: " + move.code.inspect + ")"
+  end
+
   value = "move(\n"
   value += indent(level + 1) + "code: " + move.code.inspect + ",\n"
   value += indent(level + 1) + "parameters: " + move.parameters.inspect + ",\n"
@@ -345,7 +398,6 @@ end
 def dump_command_condition(command, level)
   value = indent(level) + "*condition(\n"
   value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
-  value += indent(level + 1) + "then_commands: [\n"
   return value
 end
 
@@ -371,7 +423,7 @@ end
 def dump_command_move_route(command, level)
   raise "unexpected command parameters" if command.parameters.count != 2
   value = indent(level) + "*move_route(\n"
-  value += indent(level + 1) + "character: " + command.parameters[0].inspect + ",\n"
+  value += indent(level + 1) + "character: " + command.parameters[0].inspect + ",\n" if command.parameters[0] != 0
   value += indent(level + 1) + "route: " + dump_route(command.parameters[1], level + 1) + ",\n"
   value += indent(level) + "),\n"
   return value
