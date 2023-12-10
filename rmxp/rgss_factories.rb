@@ -214,6 +214,22 @@ def wait(time)
   return command(106, time)
 end
 
+def battle_bgm(audio)
+  return command(132, audio)
+end
+
+def battle_me(audio)
+  return command(133, audio)
+end
+
+def play_bgm(audio)
+  return command(241, audio)
+end
+
+def play_bgs(audio)
+  return command(245, audio)
+end
+
 def play_me(audio)
   return command(249, audio)
 end
@@ -232,10 +248,10 @@ end
 
 TRANSFER_DIRECTION = {
   0 => :retain,
-  1 => :down,
-  2 => :left,
-  3 => :right,
-  4 => :up,
+  2 => :down,
+  4 => :left,
+  6 => :right,
+  8 => :up,
 }
 
 TRANSFER_DIRECTION_INVERSE = TRANSFER_DIRECTION.invert

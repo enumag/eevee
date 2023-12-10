@@ -2,10 +2,6 @@ require_relative 'rmxp/rgss'
 require_relative 'rmxp/rgss_factories'
 require_relative 'src/common'
 
-# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
-# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
-data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
-
 INDENT_SIZE = 2
 
 def indent(level)
@@ -24,7 +20,9 @@ def save_rb(file, data)
   yaml_stable_ref('var/map_tmp.yaml', 'var/map.yaml')
   puts marshal == Marshal.dump(reconstructed)
   puts Marshal.dump(data) == Marshal.dump(reconstructed)
-  puts File.read('var/map_original.yaml') == File.read('var/map.yaml')
+  match = File.read('var/map_original.yaml') == File.read('var/map.yaml')
+  puts match
+  exit unless match
 end
 
 def print_rb(code)
@@ -91,7 +89,7 @@ def dump_table(table, level)
     if i % table.xsize == 1
       value += indent(level + 2)
     end
-    value += cell.inspect.rjust(4) + ","
+    value += cell.to_s.rjust(4) + ","
     if i % table.xsize == 0
       value += "\n"
       if i % (table.xsize * table.ysize) == 0
@@ -232,6 +230,14 @@ def dump_command_list(commands, level)
       value += dump_command_change_tone(command, level)
     when 224 # screen flash
       value += dump_command_screen_flash(command, level)
+    when 132 # change battle bgm
+      value += dump_command_battle_bgm(command, level)
+    when 133 # change battle me
+      value += dump_command_battle_me(command, level)
+    when 241 # play bgm
+      value += dump_command_play_bgm(command, level)
+    when 245 # play bgs
+      value += dump_command_play_bgs(command, level)
     when 249 # play me
       value += dump_command_play_me(command, level)
     when 250 # play se
@@ -314,9 +320,41 @@ def dump_command_screen_flash(command, level)
   return value
 end
 
+def dump_command_play_bgm(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "play_bgm("
+  value += dump_audio(command.parameters[0], level + 1)
+  value += "),\n"
+  return value
+end
+
+def dump_command_play_bgs(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "play_bgs("
+  value += dump_audio(command.parameters[0], level + 1)
+  value += "),\n"
+  return value
+end
+
 def dump_command_play_me(command, level)
   raise "unexpected command parameters" if command.parameters.count != 1
   value = indent(level) + "play_me("
+  value += dump_audio(command.parameters[0], level + 1)
+  value += "),\n"
+  return value
+end
+
+def dump_command_battle_bgm(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "battle_bgm("
+  value += dump_audio(command.parameters[0], level + 1)
+  value += "),\n"
+  return value
+end
+
+def dump_command_battle_me(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 1
+  value = indent(level) + "battle_me("
   value += dump_audio(command.parameters[0], level + 1)
   value += "),\n"
   return value
@@ -396,6 +434,14 @@ def dump_move(move, level)
     return "move(code: " + move.code.inspect + ")"
   end
 
+  if move.code == 44
+    return "move(code: 44, parameters: [" + dump_audio(move.parameters[0], level) + "])"
+  end
+
+  move.parameters.each do |parameter|
+    raise "missing if for move code " + move.code.to_s if parameter.inspect.start_with?('#')
+  end
+
   value = "move(\n"
   value += indent(level + 1) + "code: " + move.code.inspect + ",\n"
   value += indent(level + 1) + "parameters: " + move.parameters.inspect + ",\n"
@@ -443,4 +489,18 @@ def dump_command_move_route(command, level)
   return value
 end
 
-save_rb('Map006 - Department Store 11F.rb', data)
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
+data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
+data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
+
+(0..999).each do |id|
+  file = 'C:\Projects\Reborn\Reborn\Data/Map' + id.to_s.rjust(3, '0') + '.rxdata'
+  if File.exist?(file)
+    puts file
+    data = load_rxdata(file)
+    save_rb('', data)
+  else
+    puts 'skip ' + id.to_s
+  end
+end
