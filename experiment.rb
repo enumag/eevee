@@ -85,12 +85,12 @@ def dump_map(map, level)
   value += indent(level + 1) + "bgs: " + dump_audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
   raise "non-empty map encounter_list" if map.encounter_list != []
   value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
-  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1) + ",\n"
   value += indent(level + 1) + "events: [\n\n"
   map.events.each do |key, event|
     value += indent(level + 2) + dump_event(event, level + 2) + ",\n\n"
   end
   value += indent(level + 1) + "],\n"
+  value += indent(level + 1) + "data: " + dump_table(map.data, level + 1) + ",\n"
   value += indent(level) + ")"
   return value
 end
