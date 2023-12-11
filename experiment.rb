@@ -226,11 +226,11 @@ def dump_page_condition(condition, level)
   value += indent(level + 1) + "switch2_valid: " + condition.switch2_valid.inspect + ",\n" if condition.switch2_valid != false
   value += indent(level + 1) + "variable_valid: " + condition.variable_valid.inspect + ",\n" if condition.variable_valid != false
   value += indent(level + 1) + "self_switch_valid: " + condition.self_switch_valid.inspect + ",\n" if condition.self_switch_valid != false
-  value += indent(level + 1) + "switch1_id: " + condition.switch1_id.inspect + ",\n" if condition.switch1_id != 1
-  value += indent(level + 1) + "switch2_id: " + condition.switch2_id.inspect + ",\n" if condition.switch2_id != 1
-  value += indent(level + 1) + "variable_id: " + condition.variable_id.inspect + ",\n" if condition.variable_id != 1
-  value += indent(level + 1) + "variable_value: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
-  value += indent(level + 1) + "self_switch_ch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A"
+  value += indent(level + 1) + "switch1: switch(" + condition.switch1_id.inspect + "),\n" if condition.switch1_id != 1
+  value += indent(level + 1) + "switch2: switch(" + condition.switch2_id.inspect + "),\n" if condition.switch2_id != 1
+  value += indent(level + 1) + "variable: variable(" + condition.variable_id.inspect + "),\n" if condition.variable_id != 1
+  value += indent(level + 1) + "variable_at_least: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
+  value += indent(level + 1) + "self_switch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A"
   value += indent(level) + ")"
   return value
 end

@@ -26,6 +26,14 @@ def map(
   return map
 end
 
+def variable(id)
+  return id
+end
+
+def switch(id)
+  return id
+end
+
 def audio(
   name: "",
   volume: 100,
@@ -127,22 +135,22 @@ def page_condition(
   switch2_valid: false,
   variable_valid: false,
   self_switch_valid: false,
-  switch1_id: 1,
-  switch2_id: 1,
-  variable_id: 1,
-  variable_value: 0,
-  self_switch_ch: "A"
+  switch1: 1,
+  switch2: 1,
+  variable: 1,
+  variable_at_least: 0,
+  self_switch: "A"
 )
   condition = RPG::Event::Page::Condition.new
   condition.switch1_valid = switch1_valid
   condition.switch2_valid = switch2_valid
   condition.variable_valid = variable_valid
   condition.self_switch_valid = self_switch_valid
-  condition.switch1_id = switch1_id
-  condition.switch2_id = switch2_id
-  condition.variable_id = variable_id
-  condition.variable_value = variable_value
-  condition.self_switch_ch = self_switch_ch
+  condition.switch1_id = switch1
+  condition.switch2_id = switch2
+  condition.variable_id = variable
+  condition.variable_value = variable_at_least
+  condition.self_switch_ch = self_switch
   return condition
 end
 
