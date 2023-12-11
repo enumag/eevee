@@ -268,8 +268,6 @@ def dump_command_list(commands, level)
         value += dump_command_when_cancel(command, level)
         level += 2
       end
-    when 404 # show choices - end
-      value += indent(level) + "),\n"
     when 106 # wait
       value += dump_command_wait(command, level)
     when 111 # if
@@ -332,7 +330,7 @@ def dump_command_list(commands, level)
         level += 2
       end
       value += "\n"
-    when 412, 413, 604 # branch end, loop end, battle end
+    when 404, 412, 413, 604 # show choices end, branch end, loop end, battle end
       value += indent(level) + "),\n"
     when 301
       value += dump_command_battle(command, level)
