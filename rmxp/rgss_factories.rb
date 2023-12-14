@@ -418,7 +418,6 @@ end
 # Loop parameters
 # Move route commands
 # Useful commands
-# Transfer player should use variable()
 # Consider adding variable and switch name comments
 # Consider map() function and a name comment
 # Consider event() function and a name comment but not in CommonEvents

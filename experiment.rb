@@ -479,12 +479,18 @@ end
 
 def dump_command_transfer_player(command, level)
   value = indent(level)
-  value += "transfer_player(" if command.parameters[0] == 0
-  value += "transfer_player_variables(" if command.parameters[0] == 1
   parameters = []
-  parameters.append "map: " + command.parameters[1].inspect
-  parameters.append "x: " + command.parameters[2].inspect
-  parameters.append "y: " + command.parameters[3].inspect
+  if command.parameters[0] == 0
+    value += "transfer_player("
+    parameters.append "map: " + command.parameters[1].inspect
+    parameters.append "x: " + command.parameters[2].inspect
+    parameters.append "y: " + command.parameters[3].inspect
+  else
+    value += "transfer_player_variables("
+    parameters.append "map: variable(" + command.parameters[1].inspect + ")"
+    parameters.append "x: variable(" + command.parameters[2].inspect + ")"
+    parameters.append "y: variable(" + command.parameters[3].inspect + ")"
+  end
   parameters.append "direction: " + TRANSFER_DIRECTION[command.parameters[4]].inspect
   parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
   value += parameters.join(", ")
