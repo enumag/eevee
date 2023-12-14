@@ -419,5 +419,5 @@ end
 # Move route commands
 # Useful commands
 # Consider adding variable and switch name comments
-# Consider map() function and a name comment
+# Consider map() function and a name comment - is map referenced outside of transfer player?
 # Consider event() function and a name comment but not in CommonEvents
