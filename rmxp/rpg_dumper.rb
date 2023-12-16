@@ -2,7 +2,7 @@ class RPGDumper
   def dump_ruby(object)
     case object
     when RPG::Map
-      return dump_map(object, 0)
+      return map(object, 0)
     end
   end
 
@@ -15,26 +15,26 @@ class RPGDumper
   DEFAULT_MOVE = Marshal.dump(RPG::MoveCommand.new)
   DEFAULT_PAGE = Marshal.dump(RPG::Event::Page.new)
 
-  def dump_map(map, level)
+  def map(map, level)
     value = "map(\n"
     value += indent(level + 1) + "tileset_id: " + map.tileset_id.inspect + ",\n" if map.tileset_id != 1
     value += indent(level + 1) + "autoplay_bgm: " + map.autoplay_bgm.inspect + ",\n" if map.autoplay_bgm != false
-    value += indent(level + 1) + "bgm: " + dump_audio(map.bgm, level + 1) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
+    value += indent(level + 1) + "bgm: " + audio(map.bgm, level + 1) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
     value += indent(level + 1) + "autoplay_bgs: " + map.autoplay_bgs.inspect + ",\n" if map.autoplay_bgs != false
-    value += indent(level + 1) + "bgs: " + dump_audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
+    value += indent(level + 1) + "bgs: " + audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
     raise "non-empty map encounter_list" if map.encounter_list != []
     value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
     value += indent(level + 1) + "events: [\n\n"
     map.events.each do |key, event|
-      value += indent(level + 2) + dump_event(event, level + 2) + ",\n\n"
+      value += indent(level + 2) + event(event, level + 2) + ",\n\n"
     end
     value += indent(level + 1) + "],\n"
-    value += indent(level + 1) + "data: " + dump_table(map.data, level + 1) + ",\n"
+    value += indent(level + 1) + "data: " + table(map.data, level + 1) + ",\n"
     value += indent(level) + ")"
     return value
   end
 
-  def dump_audio(audio, level)
+  def audio(audio, level)
     value = "audio("
     parameters = []
     parameters.append "name: " + audio.name.inspect if audio.name != ""
@@ -45,7 +45,7 @@ class RPGDumper
     return value
   end
 
-  def dump_table(table, level)
+  def table(table, level)
     value = "table(\n"
     value += indent(level + 1) + "x: " + table.xsize.inspect + ",\n"
     value += indent(level + 1) + "y: " + table.ysize.inspect + ",\n" if table.ysize > 1
@@ -112,7 +112,7 @@ class RPGDumper
     return value
   end
 
-  def dump_event(event, level)
+  def event(event, level)
     value = "event(\n"
     value += indent(level + 1) + "id: " + event.id.inspect + ",\n"
     value += indent(level + 1) + "name: " + event.name.inspect + ",\n"
@@ -122,7 +122,7 @@ class RPGDumper
     if event.pages.count > 1 || Marshal.dump(event.pages[0]) != DEFAULT_PAGE
       value += indent(level + 1) + "pages: [\n"
       event.pages.each do |page|
-        value += indent(level + 2) + dump_page(page, level + 2) + ",\n"
+        value += indent(level + 2) + page(page, level + 2) + ",\n"
       end
       value += indent(level + 1) + "],\n"
     end
@@ -131,16 +131,16 @@ class RPGDumper
     return value
   end
 
-  def dump_page(page, level)
+  def page(page, level)
     return "page()" if Marshal.dump(page) == DEFAULT_PAGE
 
     value = "page(\n"
-    value += indent(level + 1) + "condition: " + dump_page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
-    value += indent(level + 1) + "graphic: " + dump_graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
+    value += indent(level + 1) + "condition: " + page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
+    value += indent(level + 1) + "graphic: " + graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
     value += indent(level + 1) + "move_type: " + RPGFactory::EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
     value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
     value += indent(level + 1) + "move_frequency: " + page.move_frequency.inspect + ",\n" if page.move_frequency != 3
-    value += indent(level + 1) + "move_route: " + dump_route(page.move_route, level + 1) + ",\n" if Marshal.dump(page.move_route) != DEFAULT_ROUTE
+    value += indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n" if Marshal.dump(page.move_route) != DEFAULT_ROUTE
     value += indent(level + 1) + "walk_anime: " + page.walk_anime.inspect + ",\n" if page.walk_anime != true
     value += indent(level + 1) + "step_anime: " + page.step_anime.inspect + ",\n" if page.step_anime != false
     value += indent(level + 1) + "direction_fix: " + page.direction_fix.inspect + ",\n" if page.direction_fix != false
@@ -152,14 +152,14 @@ class RPGDumper
     raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
     if page.list.count > 1
       value += indent(level + 1) + "list: [\n"
-      value += dump_command_list(commands, level + 2)
+      value += command_list(commands, level + 2)
       value += indent(level + 1) + "],\n"
     end
     value += indent(level) + ")"
     return value
   end
 
-  def dump_page_condition(condition, level)
+  def page_condition(condition, level)
     value = "page_condition(\n"
     value += indent(level + 1) + "switch1_valid: " + condition.switch1_valid.inspect + ",\n" if condition.switch1_valid != false
     value += indent(level + 1) + "switch2_valid: " + condition.switch2_valid.inspect + ",\n" if condition.switch2_valid != false
@@ -174,7 +174,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_list(commands, level)
+  def command_list(commands, level)
     value = ""
     i = 0
     while i < commands.count
@@ -190,27 +190,27 @@ class RPGDumper
         parts = collect(commands, i + 1, 401)
         i += parts.count
         parts.unshift(command)
-        value += dump_command_array('text', parts, level)
+        value += command_array('text', parts, level)
       when 102 # show choices
-        value += dump_command_show_choices(command, level)
+        value += command_show_choices(command, level)
       when 402 # show choices - when
         if commands[i + 1].code == 0
           i += 1
         else
-          value += dump_command_when(command, level)
+          value += command_when(command, level)
           level += 2
         end
       when 403 # show choices - when cancel
         if commands[i + 1].code == 0
           i += 1
         else
-          value += dump_command_when_cancel(command, level)
+          value += command_when_cancel(command, level)
           level += 2
         end
       when 106 # wait
-        value += dump_command_wait(command, level)
+        value += command_wait(command, level)
       when 111 # if
-        value += dump_command_condition(command, level)
+        value += command_condition(command, level)
         value += indent(level + 1) + "then: ["
         if commands[i + 1].code == 0
           value += "],"
@@ -220,7 +220,7 @@ class RPGDumper
         end
         value += "\n"
       when 112 # loop
-        value += dump_command_loop(command, level)
+        value += command_loop(command, level)
         value += indent(level + 1) + "commands: ["
         if commands[i + 1].code == 0
           value += "],"
@@ -230,36 +230,36 @@ class RPGDumper
         end
         value += "\n"
       when 201 # transfer player
-        value += dump_command_transfer_player(command, level)
+        value += command_transfer_player(command, level)
       when 205 # change for color tone
-        value += dump_command_change_fog_tone(command, level)
+        value += command_change_fog_tone(command, level)
       when 209 # move route
         parts = collect(commands, i + 1, 509)
         i += parts.count
-        value += dump_command_move_route(command, level)
+        value += command_move_route(command, level)
       when 223 # change screen color tone
-        value += dump_command_change_tone(command, level)
+        value += command_change_tone(command, level)
       when 224 # screen flash
-        value += dump_command_screen_flash(command, level)
+        value += command_screen_flash(command, level)
       when 234 # change picture tone
-        value += dump_command_change_picture_tone(command, level)
+        value += command_change_picture_tone(command, level)
       when 132 # change battle bgm
-        value += dump_command_battle_bgm(command, level)
+        value += command_battle_bgm(command, level)
       when 133 # change battle me
-        value += dump_command_battle_me(command, level)
+        value += command_battle_me(command, level)
       when 241 # play bgm
-        value += dump_command_play_bgm(command, level)
+        value += command_play_bgm(command, level)
       when 245 # play bgs
-        value += dump_command_play_bgs(command, level)
+        value += command_play_bgs(command, level)
       when 249 # play me
-        value += dump_command_play_me(command, level)
+        value += command_play_me(command, level)
       when 250 # play se
-        value += dump_command_play_se(command, level)
+        value += command_play_se(command, level)
       when 355 # script
         parts = collect(commands, i + 1, 655)
         i += parts.count
         parts.unshift(command)
-        value += dump_command_array('script', parts, level)
+        value += command_array('script', parts, level)
       when 411 # else
         value += indent(level + 1) + "else: ["
         if commands[i + 1].code == 0
@@ -272,19 +272,19 @@ class RPGDumper
       when 404, 412, 413, 604 # show choices end, branch end, loop end, battle end
         value += indent(level) + "),\n"
       when 301
-        value += dump_command_battle(command, level)
+        value += command_battle(command, level)
         level += 2
       when 601
-        value += dump_command_win(command, level)
+        value += command_win(command, level)
         level += 2
       when 602
-        value += dump_command_escape(command, level)
+        value += command_escape(command, level)
         level += 2
       when 603
-        value += dump_command_lose(command, level)
+        value += command_lose(command, level)
         level += 2
       else
-        value += dump_command(command, level)
+        value += command(command, level)
       end
       i += 1
     end
@@ -302,7 +302,7 @@ class RPGDumper
     return parts
   end
 
-  def dump_command_array(function, commands, level)
+  def command_array(function, commands, level)
     if commands.count == 1
       value = indent(level) + "*" + function + "("
       raise "unexpected command parameters" if commands[0].parameters.count != 1
@@ -319,7 +319,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_change_picture_tone(command, level)
+  def command_change_picture_tone(command, level)
     raise "unexpected command parameters" if command.parameters.count != 3
     value = indent(level) + "change_picture_tone("
     value += "number: " + command.parameters[0].inspect + ", "
@@ -332,7 +332,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_change_fog_tone(command, level)
+  def command_change_fog_tone(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "change_fog_tone("
     value += "red: " + command.parameters[0].red.to_i.inspect + ", "
@@ -344,7 +344,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_change_tone(command, level)
+  def command_change_tone(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "change_tone("
     value += "red: " + command.parameters[0].red.to_i.inspect + ", "
@@ -356,7 +356,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_screen_flash(command, level)
+  def command_screen_flash(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "screen_flash("
     value += "red: " + command.parameters[0].red.to_i.inspect + ", "
@@ -368,55 +368,55 @@ class RPGDumper
     return value
   end
 
-  def dump_command_play_bgm(command, level)
+  def command_play_bgm(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "play_bgm("
-    value += dump_audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
   end
 
-  def dump_command_play_bgs(command, level)
+  def command_play_bgs(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "play_bgs("
-    value += dump_audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
   end
 
-  def dump_command_play_me(command, level)
+  def command_play_me(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "play_me("
-    value += dump_audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
   end
 
-  def dump_command_battle_bgm(command, level)
+  def command_battle_bgm(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "battle_bgm("
-    value += dump_audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
   end
 
-  def dump_command_battle_me(command, level)
+  def command_battle_me(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "battle_me("
-    value += dump_audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
   end
 
-  def dump_command_play_se(command, level)
+  def command_play_se(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "play_se("
-    value += dump_audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
   end
 
-  def dump_command_transfer_player(command, level)
+  def command_transfer_player(command, level)
     value = indent(level)
     parameters = []
     if command.parameters[0] == 0
@@ -437,7 +437,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_wait(command, level)
+  def command_wait(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "wait("
     value += command.parameters[0].inspect
@@ -445,7 +445,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command(command, level)
+  def command(command, level)
     command.parameters.each do |parameter|
       raise "missing when for command code " + command.code.to_s if parameter.inspect.start_with?('#')
     end
@@ -457,7 +457,7 @@ class RPGDumper
     return value
   end
 
-  def dump_graphic(graphic, level)
+  def graphic(graphic, level)
     value = "graphic(\n"
     value += indent(level + 1) + "tile_id: " + graphic.tile_id.inspect + ",\n" if graphic.tile_id != 0
     value += indent(level + 1) + "character_name: " + graphic.character_name.inspect + ",\n" if graphic.character_name != ""
@@ -470,12 +470,12 @@ class RPGDumper
     return value
   end
 
-  def dump_route(route, level)
+  def route(route, level)
     value = "route(\n"
     last = route.list.pop
     raise "unexpected last route command" if Marshal.dump(last) != DEFAULT_MOVE
     route.list.each do |command|
-      value += indent(level + 1) + dump_move(command, level + 1) + ",\n"
+      value += indent(level + 1) + move(command, level + 1) + ",\n"
     end
     value += indent(level + 1) + "repeat: " + route.repeat.inspect + ",\n" if route.repeat != true
     value += indent(level + 1) + "skippable: " + route.skippable.inspect + ",\n" if route.skippable != false
@@ -483,13 +483,13 @@ class RPGDumper
     return value
   end
 
-  def dump_move(move, level)
+  def move(move, level)
     if move.parameters.count == 0
       return "move(code: " + move.code.inspect + ")"
     end
 
     if move.code == 44
-      return "move(code: 44, parameters: [" + dump_audio(move.parameters[0], level) + "])"
+      return "move(code: 44, parameters: [" + audio(move.parameters[0], level) + "])"
     end
 
     move.parameters.each do |parameter|
@@ -503,7 +503,7 @@ class RPGDumper
     return value
   end
 
-  def dump_command_condition(command, level)
+  def command_condition(command, level)
     value = indent(level) + "*condition(\n"
     type = RPGFactory::CONDITION_TYPE[command.parameters[0]]
 
@@ -526,7 +526,7 @@ class RPGDumper
       value += indent(level + 1) + "self_switch: " + command.parameters[1].inspect + ",\n"
       value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
     when :character
-      value += indent(level + 1) + "character: " + dump_event_reference(command.parameters[1]) + ",\n"
+      value += indent(level + 1) + "character: " + event_reference(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "facing: " + RPGFactory::DIRECTION[command.parameters[2]].inspect + ",\n"
     when :script
       raise "unexpected command parameters" if command.parameters.count != 2
@@ -541,66 +541,66 @@ class RPGDumper
     return value
   end
 
-  def dump_event_reference(id)
+  def event_reference(id)
     return "player()" if id == -1
     return "this()" if id == 0
     return "character(" +  id+ ")"
   end
 
-  def dump_command_loop(command, level)
+  def command_loop(command, level)
     raise "unexpected command parameters" if command.parameters.count != 0
     value = indent(level) + "*repeat(\n"
     return value
   end
 
-  def dump_command_show_choices(command, level)
+  def command_show_choices(command, level)
     value = indent(level) + "*show_choices(\n"
     value += indent(level + 1) + "choices: " + command.parameters[0].inspect + ",\n"
     value += indent(level + 1) + "cancellation: " + command.parameters[1].inspect + ",\n"
     return value
   end
 
-  def dump_command_when(command, level)
+  def command_when(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level + 1) + "choice" + (command.parameters[0] + 1).to_s + ": [\n"
     return value
   end
 
-  def dump_command_when_cancel(command, level)
+  def command_when_cancel(command, level)
     raise "unexpected command parameters" if command.parameters.count != 0
     value = indent(level + 1) + "cancel: [\n"
     return value
   end
 
-  def dump_command_battle(command, level)
+  def command_battle(command, level)
     value = indent(level) + "*battle(\n"
     value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
     return value
   end
 
-  def dump_command_battle_win(command, level)
+  def command_battle_win(command, level)
     raise "unexpected command parameters" if command.parameters.count != 0
     value = indent(level + 1) + "win: [\n"
     return value
   end
 
-  def dump_command_battle_escape(command, level)
+  def command_battle_escape(command, level)
     raise "unexpected command parameters" if command.parameters.count != 0
     value = indent(level + 1) + "escape: [\n"
     return value
   end
 
-  def dump_command_battle_lose(command, level)
+  def command_battle_lose(command, level)
     raise "unexpected command parameters" if command.parameters.count != 0
     value = indent(level + 1) + "lose: [\n"
     return value
   end
 
-  def dump_command_move_route(command, level)
+  def command_move_route(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "*move_route(\n"
     value += indent(level + 1) + "character: " + command.parameters[0].inspect + ",\n" if command.parameters[0] != 0
-    value += indent(level + 1) + "route: " + dump_route(command.parameters[1], level + 1) + ",\n"
+    value += indent(level + 1) + "route: " + route(command.parameters[1], level + 1) + ",\n"
     value += indent(level) + "),\n"
     return value
   end
