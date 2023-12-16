@@ -266,6 +266,8 @@ class RPGDumper
         value += command_wait(command, level)
       when 121 # control switches
         value += command_switch(command, level)
+        #when 122 # control variables
+        #value += command_variable(command, level)
       when 123 # control self switch
         value += command_self_switch(command, level)
       when 201 # transfer player
@@ -456,6 +458,18 @@ class RPGDumper
   end
 
   def command_switch(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value = indent(level) + "control_switches("
+    value += "switch(" + command.parameters[0].inspect
+    if command.parameters[0] != command.parameters[1]
+      value += ".." + command.parameters[1].inspect
+    end
+    value += "), " + command.parameters[2].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_variable(command, level)
     raise "unexpected command parameters" if command.parameters.count != 3
     value = indent(level) + "control_switches("
     value += "switch(" + command.parameters[0].inspect
