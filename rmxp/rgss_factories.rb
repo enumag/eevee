@@ -304,9 +304,9 @@ def condition(parameters: [], **args)
   return commands
 end
 
-def repeat(parameters: [], **args)
+def repeat(**args)
   commands = []
-  commands.append command(112, *parameters)
+  commands.append command(112)
 
   args[:commands].each do |command|
     command.indent += 1
@@ -415,7 +415,6 @@ end
 # adjust generic move() or command() to either both or neither to use named arguments
 # consider changing multiline strings and scripts to heredoc
 # Condition parameters
-# Loop parameters
 # Move route commands
 # Useful commands
 # Consider adding variable and switch name comments

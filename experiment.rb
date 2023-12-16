@@ -571,8 +571,8 @@ def dump_command_condition(command, level)
 end
 
 def dump_command_loop(command, level)
+  raise "unexpected command parameters" if command.parameters.count != 0
   value = indent(level) + "*repeat(\n"
-  value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
   return value
 end
 
