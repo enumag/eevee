@@ -213,6 +213,10 @@ class RPGFactory
     return commands
   end
 
+  def input_number(variable, digits: )
+    return command(106, variable, digits)
+  end
+
   def wait(time)
     return command(106, time)
   end

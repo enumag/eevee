@@ -262,6 +262,8 @@ class RPGDumper
         value += command_move_route(command, level)
 
       # Other commands
+      when 103 # input number
+        value += command_input_number(command, level)
       when 106 # wait
         value += command_wait(command, level)
       when 210 # wait for move's completion
@@ -466,6 +468,15 @@ class RPGDumper
     parameters.append "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
     value += parameters.join(", ")
+    value += "),\n"
+    return value
+  end
+
+  def command_input_number(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "input_number("
+    value += "variable(" + command.parameters[0].inspect + "), "
+    value += "digits: " + command.parameters[1].inspect
     value += "),\n"
     return value
   end
