@@ -447,21 +447,19 @@ class RPGDumper
   def command_transfer_player(command, level)
     raise "unexpected command parameters" if command.parameters.count != 6
     value = indent(level)
-    parameters = []
     if command.parameters[0] == 0
       value += "transfer_player("
-      parameters.append "map: " + command.parameters[1].inspect
-      parameters.append "x: " + command.parameters[2].inspect
-      parameters.append "y: " + command.parameters[3].inspect
+      value += "map: " + command.parameters[1].inspect + ", "
+      value += "x: " + command.parameters[2].inspect + ", "
+      value += "y: " + command.parameters[3].inspect + ", "
     else
       value += "transfer_player_variables("
-      parameters.append "map: variable(" + command.parameters[1].inspect + ")"
-      parameters.append "x: variable(" + command.parameters[2].inspect + ")"
-      parameters.append "y: variable(" + command.parameters[3].inspect + ")"
+      value += "map: variable(" + command.parameters[1].inspect + "), "
+      value += "x: variable(" + command.parameters[2].inspect + "), "
+      value += "y: variable(" + command.parameters[3].inspect + "), "
     end
-    parameters.append "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
-    parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
-    value += parameters.join(", ")
+    value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect + ", "
+    value += "fading: " + (command.parameters[5] == 0 ? 'true' : 'false') + ", "
     value += "),\n"
     return value
   end
@@ -747,8 +745,8 @@ class RPGDumper
   def command_move_route(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "*move_route(\n"
-    value += indent(level + 1) + "character: " + character(command.parameters[0]) + ",\n"
-    value += indent(level + 1) + "route: " + route(command.parameters[1], level + 1) + ",\n"
+    value += indent(level + 1) + character(command.parameters[0]) + ",\n"
+    value += indent(level + 1) + route(command.parameters[1], level + 1) + ",\n"
     value += indent(level) + "),\n"
     return value
   end

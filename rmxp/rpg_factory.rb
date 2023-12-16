@@ -514,7 +514,7 @@ class RPGFactory
     return commands
   end
 
-  def move_route(character: 0, route:)
+  def move_route(character, route)
     commands = []
     commands.append command(209, character, route)
     route.list.each do |move|
