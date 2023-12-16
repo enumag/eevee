@@ -130,7 +130,7 @@ class RPGDumper
   end
 
   def page(page, level)
-    return "page()" if Marshal.dump(page) == DEFAULT_PAGE
+    return "page" if Marshal.dump(page) == DEFAULT_PAGE
 
     value = "page(\n"
 
@@ -480,7 +480,7 @@ class RPGDumper
 
   def command_wait_completion(command, level)
     raise "unexpected command parameters" if command.parameters.count != 0
-    value = indent(level) + "wait_completion(),\n"
+    value = indent(level) + "wait_completion,\n"
     return value
   end
 
@@ -634,8 +634,8 @@ class RPGDumper
   end
 
   def character(id)
-    return "player()" if id == -1
-    return "this()" if id == 0
+    return "player" if id == -1
+    return "this" if id == 0
     return "character(" + id.to_s + ")"
   end
 
