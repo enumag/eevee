@@ -262,7 +262,7 @@ def screen_flash(red:, green:, blue:, alpha: 0, frames:)
   return command(224, Color.new(red, green, blue, alpha), frames)
 end
 
-TRANSFER_DIRECTION = {
+DIRECTION = {
   0 => :retain,
   2 => :down,
   4 => :left,
@@ -270,14 +270,14 @@ TRANSFER_DIRECTION = {
   8 => :up,
 }
 
-TRANSFER_DIRECTION_INVERSE = TRANSFER_DIRECTION.invert
+DIRECTION_INVERSE = DIRECTION.invert
 
 def transfer_player(map:, x:, y:, direction:, fading:)
-  return command(201, 0, map, x, y, TRANSFER_DIRECTION_INVERSE[direction], fading ? 0 : 1)
+  return command(201, 0, map, x, y, DIRECTION_INVERSE[direction], fading ? 0 : 1)
 end
 
 def transfer_player_variables(map:, x:, y:, direction:, fading:)
-  return command(201, 1, map, x, y, TRANSFER_DIRECTION_INVERSE[direction], fading ? 0 : 1)
+  return command(201, 1, map, x, y, DIRECTION_INVERSE[direction], fading ? 0 : 1)
 end
 
 CONDITION_TYPE = {
@@ -298,10 +298,35 @@ CONDITION_TYPE = {
 
 CONDITION_TYPE_INVERSE = CONDITION_TYPE.invert
 
+CONDITION_OPERATION = {
+  0 => "==",
+  1 => ">=",
+  2 => "<=",
+  3 => ">",
+  4 => "<",
+  5 => "!=",
+}
+
+CONDITION_OPERATION_INVERSE = CONDITION_OPERATION.invert
+
 # TODO: lossy change - skip else block when args[:else] == []
-def condition(type: ,parameters: [], **args)
+def condition(**args)
   commands = []
-  commands.append command(111, CONDITION_TYPE_INVERSE[type], *parameters)
+  if args[:parameters] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[args[:type]], *args[:parameters])
+  elsif args[:switch] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[:switch], args[:switch], args[:value])
+  elsif args[:self_switch] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[:self_switch], args[:self_switch], args[:value])
+  elsif args[:variable] != nil && args[:constant] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 0, args[:constant], CONDITION_OPERATION_INVERSE[args[:operation]])
+  elsif args[:variable] != nil && args[:other_variable] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 1, args[:other_variable], CONDITION_OPERATION_INVERSE[args[:operation]])
+  elsif args[:character] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[:character], args[:character], DIRECTION_INVERSE[args[:facing]])
+  elsif args[:script] != nil
+    commands.append command(111, CONDITION_TYPE_INVERSE[:script], args[:script])
+  end
 
   args[:then].each do |command|
     command.indent += 1
@@ -320,6 +345,18 @@ def condition(type: ,parameters: [], **args)
 
   commands.append command(412)
   return commands
+end
+
+def player()
+  return -1
+end
+
+def this()
+  return 0
+end
+
+def character(id)
+  return id
 end
 
 def repeat(**args)
@@ -432,9 +469,8 @@ end
 # CommonEvents, MapInfos and other rxdata
 # adjust generic move() or command() to either both or neither to use named arguments
 # consider changing multiline strings and scripts to heredoc
-# Condition parameters
 # Move route commands
 # Useful commands
 # Consider adding variable and switch name comments
 # Consider map() function and a name comment - is map referenced outside of transfer player?
-# Consider event() function and a name comment but not in CommonEvents
+# Consider character() function and a name comment but not in CommonEvents

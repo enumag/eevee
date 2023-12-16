@@ -491,7 +491,7 @@ def dump_command_transfer_player(command, level)
     parameters.append "x: variable(" + command.parameters[2].inspect + ")"
     parameters.append "y: variable(" + command.parameters[3].inspect + ")"
   end
-  parameters.append "direction: " + TRANSFER_DIRECTION[command.parameters[4]].inspect
+  parameters.append "direction: " + DIRECTION[command.parameters[4]].inspect
   parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
   value += parameters.join(", ")
   value += "),\n"
@@ -566,9 +566,46 @@ end
 
 def dump_command_condition(command, level)
   value = indent(level) + "*condition(\n"
-  value += indent(level + 1) + "type: " + CONDITION_TYPE[command.parameters[0]].inspect + ",\n"
-  value += indent(level + 1) + "parameters: " + command.parameters[1..].inspect + ",\n"
+  type = CONDITION_TYPE[command.parameters[0]]
+
+  case type
+  when :switch
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value += indent(level + 1) + "switch: switch(" + command.parameters[1].inspect + "),\n"
+    value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
+  when :variable
+    raise "unexpected command parameters" if command.parameters.count != 5
+    value += indent(level + 1) + "variable: variable(" + command.parameters[1].inspect + "),\n"
+    value += indent(level + 1) + "operation: " + CONDITION_OPERATION[command.parameters[4]].inspect + ",\n"
+    if command.parameters[2] == 0
+      value += indent(level + 1) + "constant: " + command.parameters[3].inspect + ",\n"
+    else
+      value += indent(level + 1) + "other_variable: variable(" + command.parameters[3].inspect + "),\n"
+    end
+  when :self_switch
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value += indent(level + 1) + "self_switch: " + command.parameters[1].inspect + ",\n"
+    value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
+  when :character
+    value += indent(level + 1) + "character: " + dump_event_reference(command.parameters[1]) + ",\n"
+    value += indent(level + 1) + "facing: " + DIRECTION[command.parameters[2]].inspect + ",\n"
+  when :script
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value += indent(level + 1) + "script: " + command.parameters[1].inspect + ",\n"
+  else
+    # TODO print a warning that this condition type isn't supported
+    raise "unexpected condition type " + type.to_s
+    value += indent(level + 1) + "type: " + type.inspect + ",\n"
+    value += indent(level + 1) + "parameters: " + command.parameters[1..].inspect + ",\n"
+  end
+
   return value
+end
+
+def dump_event_reference(id)
+  return "player()" if id == -1
+  return "this()" if id == 0
+  return "character(" +  id+ ")"
 end
 
 def dump_command_loop(command, level)
