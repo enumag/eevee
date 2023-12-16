@@ -41,8 +41,24 @@ def save_rb(file, data)
     yaml = load_yaml('var/map.yaml')
   end
 
+  # measure do
+  #   print 'dump rxdata '
+  #   File.open('var/map.rxdata', "wb") { |f|
+  #     Marshal.dump(reconstructed, f)
+  #   }
+  # end
+
+  # load = nil
+  # measure do
+  #   print 'load rxdata '
+  #   File.open( 'var/map.rxdata', "r+" ) do |f|
+  #     load = Marshal.load(f)
+  #   end
+  # end
+
   puts marshal == Marshal.dump(reconstructed)
   puts Marshal.dump(yaml) == Marshal.dump(reconstructed)
+  # puts Marshal.dump(yaml) == Marshal.dump(load)
   match = File.read('var/map_original.yaml') == File.read('var/map.yaml')
   puts match
   exit unless match
