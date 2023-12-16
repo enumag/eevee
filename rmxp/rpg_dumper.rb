@@ -426,6 +426,7 @@ class RPGDumper
   end
 
   def command_transfer_player(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 6
     value = indent(level)
     parameters = []
     if command.parameters[0] == 0
