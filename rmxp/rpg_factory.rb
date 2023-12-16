@@ -461,6 +461,69 @@ class RPGFactory
     return commands
   end
 
+  OPERATION = {
+    0 => "=",
+    1 => "+=",
+    2 => "-=",
+    3 => "*=",
+    4 => "/=",
+    5 => "%=",
+  }
+
+  OPERATION_INVERSE = OPERATION.invert
+
+  CHARACTER_PROPERTY = {
+    0 => :map_x,
+    1 => :map_y,
+    2 => :direction,
+    3 => :screen_x,
+    4 => :screen_y,
+    5 => :terrain_tag,
+  }
+
+  CHARACTER_PROPERTY_INVERSE = CHARACTER_PROPERTY.invert
+
+  OTHER_PROPERTY = {
+    0 => :map_id,
+    1 => :party_members,
+    2 => :gold,
+    3 => :steps,
+    4 => :play_time,
+    5 => :timer,
+    6 => :save_count,
+  }
+
+  OTHER_PROPERTY_INVERSE = OTHER_PROPERTY.invert
+
+  def control_variables(variables, operation, **args)
+    if variables.is_a?(Range)
+      parameters = [variables.begin, variables.end]
+    else
+      parameters = [variables, variables]
+    end
+    parameters.append OPERATION_INVERSE[operation]
+
+    if args[:constant] != nil
+      parameters.append 0, args[:constant]
+    elsif args[:variable] != nil
+      parameters.append 1, args[:variable]
+    elsif args[:random] != nil
+      parameters.append 2, args[:random].begin, args[:random].end
+    elsif args[:item] != nil
+      parameters.append 3, *args[:item]
+    elsif args[:actor] != nil
+      parameters.append 4, *args[:actor]
+    elsif args[:enemy] != nil
+      parameters.append 5, *args[:enemy]
+    elsif args[:character] != nil
+      parameters.append 6, args[:character], CHARACTER_PROPERTY_INVERSE[args[:property]]
+    elsif args[:property] != nil
+      parameters.append 6, OTHER_PROPERTY_INVERSE[args[:property]]
+    end
+
+    return command(122, *parameters)
+  end
+
   def control_switches(switches, value)
     if switches.is_a?(Range)
       return command(121, switches.begin, switches.end, value)

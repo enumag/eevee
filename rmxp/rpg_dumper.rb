@@ -266,8 +266,8 @@ class RPGDumper
         value += command_wait(command, level)
       when 121 # control switches
         value += command_switch(command, level)
-        #when 122 # control variables
-        #value += command_variable(command, level)
+      when 122 # control variables
+        value += command_variable(command, level)
       when 123 # control self switch
         value += command_self_switch(command, level)
       when 201 # transfer player
@@ -470,13 +470,34 @@ class RPGDumper
   end
 
   def command_variable(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 3
-    value = indent(level) + "control_switches("
-    value += "switch(" + command.parameters[0].inspect
+    value = indent(level) + "control_variables("
+    value += "variable(" + command.parameters[0].inspect
     if command.parameters[0] != command.parameters[1]
       value += ".." + command.parameters[1].inspect
     end
-    value += "), " + command.parameters[2].inspect
+    value += "), "
+    value += RPGFactory::OPERATION[command.parameters[2]].inspect + ", "
+
+    case command.parameters[3]
+    when 0
+      value += "constant: " + command.parameters[4].inspect
+    when 1
+      value += "variable: variable(" + command.parameters[4].inspect + ")"
+    when 2
+      value += "random: " + command.parameters[4].inspect + ".." + command.parameters[5].inspect
+    when 3
+      value += "item: " + command.parameters[4..].inspect
+    when 4
+      value += "actor: " + command.parameters[4..].inspect
+    when 5
+      value += "enemy: " + command.parameters[4..].inspect
+    when 6
+      value += "character: " + character(command.parameters[4]) + ", "
+      value += "property: " + RPGFactory::CHARACTER_PROPERTY[command.parameters[5]].inspect
+    when 7
+      value += "property: " + RPGFactory::OTHER_PROPERTY[command.parameters[4]].inspect
+    end
+
     value += "),\n"
     return value
   end
