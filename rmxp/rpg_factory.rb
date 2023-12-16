@@ -321,6 +321,7 @@ class RPGFactory
       commands.append command(111, CONDITION_TYPE_INVERSE[:script], args[:script])
     end
 
+    args[:then] = [] if args[:then] == nil
     args[:then].each do |command|
       command.indent += 1
       commands.append command

@@ -203,14 +203,12 @@ class RPGDumper
         end
       when 111 # if
         value += command_condition(command, level)
-        value += indent(level + 1) + "then: ["
         if commands[i + 1].code == 0
-          value += "],"
           i += 1
         else
+          value += indent(level + 1) + "then: [\n"
           level += 2
         end
-        value += "\n"
       when 112 # loop
         value += command_loop(command, level)
         value += indent(level + 1) + "commands: ["
