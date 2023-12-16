@@ -280,10 +280,28 @@ def transfer_player_variables(map:, x:, y:, direction:, fading:)
   return command(201, 1, map, x, y, TRANSFER_DIRECTION_INVERSE[direction], fading ? 0 : 1)
 end
 
+CONDITION_TYPE = {
+  0 => :switch,
+  1 => :variable,
+  2 => :self_switch,
+  3 => :timer,
+  4 => :actor,
+  5 => :enemy,
+  6 => :character,
+  7 => :gold,
+  8 => :item,
+  9 => :weapon,
+  10 => :armor,
+  11 => :button,
+  12 => :script,
+}
+
+CONDITION_TYPE_INVERSE = CONDITION_TYPE.invert
+
 # TODO: lossy change - skip else block when args[:else] == []
-def condition(parameters: [], **args)
+def condition(type: ,parameters: [], **args)
   commands = []
-  commands.append command(111, *parameters)
+  commands.append command(111, CONDITION_TYPE_INVERSE[type], *parameters)
 
   args[:then].each do |command|
     command.indent += 1

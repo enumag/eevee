@@ -566,7 +566,8 @@ end
 
 def dump_command_condition(command, level)
   value = indent(level) + "*condition(\n"
-  value += indent(level + 1) + "parameters: " + command.parameters.inspect + ",\n"
+  value += indent(level + 1) + "type: " + CONDITION_TYPE[command.parameters[0]].inspect + ",\n"
+  value += indent(level + 1) + "parameters: " + command.parameters[1..].inspect + ",\n"
   return value
 end
 
