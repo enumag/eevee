@@ -264,6 +264,8 @@ class RPGDumper
       # Other commands
       when 106 # wait
         value += command_wait(command, level)
+      when 210 # wait for move's completion
+        value += command_wait_completion(command, level)
       when 121 # control switches
         value += command_switch(command, level)
       when 122 # control variables
@@ -454,6 +456,12 @@ class RPGDumper
     value = indent(level) + "wait("
     value += command.parameters[0].inspect
     value += "),\n"
+    return value
+  end
+
+  def command_wait_completion(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 0
+    value = indent(level) + "wait_completion(),\n"
     return value
   end
 

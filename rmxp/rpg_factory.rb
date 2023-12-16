@@ -216,6 +216,10 @@ class RPGFactory
     return command(106, time)
   end
 
+  def wait_completion()
+    return command(210)
+  end
+
   def battle_bgm(audio)
     return command(132, audio)
   end
