@@ -292,7 +292,7 @@ class RPGFactory
 
   CONDITION_TYPE_INVERSE = CONDITION_TYPE.invert
 
-  CONDITION_OPERATION = {
+  COMPARISON = {
     0 => "==",
     1 => ">=",
     2 => "<=",
@@ -301,7 +301,7 @@ class RPGFactory
     5 => "!=",
   }
 
-  CONDITION_OPERATION_INVERSE = CONDITION_OPERATION.invert
+  COMPARISON_INVERSE = COMPARISON.invert
 
   # TODO: lossy change - skip else block is empty
   # TODO: skip then block if empty
@@ -314,9 +314,9 @@ class RPGFactory
     elsif args[:self_switch] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:self_switch], args[:self_switch], args[:value])
     elsif args[:variable] != nil && args[:constant] != nil
-      commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 0, args[:constant], CONDITION_OPERATION_INVERSE[args[:operation]])
+      commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 0, args[:constant], COMPARISON_INVERSE[args[:operation]])
     elsif args[:variable] != nil && args[:other_variable] != nil
-      commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 1, args[:other_variable], CONDITION_OPERATION_INVERSE[args[:operation]])
+      commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 1, args[:other_variable], COMPARISON_INVERSE[args[:operation]])
     elsif args[:character] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:character], args[:character], DIRECTION_INVERSE[args[:facing]])
     elsif args[:script] != nil

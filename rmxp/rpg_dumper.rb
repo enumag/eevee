@@ -545,7 +545,7 @@ class RPGDumper
     when :variable
       raise "unexpected command parameters" if command.parameters.count != 5
       value += indent(level + 1) + "variable: variable(" + command.parameters[1].inspect + "),\n"
-      value += indent(level + 1) + "operation: " + RPGFactory::CONDITION_OPERATION[command.parameters[4]].inspect + ",\n"
+      value += indent(level + 1) + "operation: " + RPGFactory::COMPARISON[command.parameters[4]].inspect + ",\n"
       if command.parameters[2] == 0
         value += indent(level + 1) + "constant: " + command.parameters[3].inspect + ",\n"
       else
