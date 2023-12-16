@@ -128,7 +128,7 @@ class RPGFactory
   #   switch1: switch(id),
   #   switch2: switch(id),
   #   variable: variable(id),
-  #   variable_at_least: value,
+  #   at_least: value,
   #   self_switch: "A",
   # )
   def page_condition(
@@ -139,7 +139,7 @@ class RPGFactory
     switch1: 1,
     switch2: 1,
     variable: 1,
-    variable_at_least: 0,
+    at_least: 0,
     self_switch: "A"
   )
     condition = RPG::Event::Page::Condition.new
@@ -150,7 +150,7 @@ class RPGFactory
     condition.switch1_id = switch1
     condition.switch2_id = switch2
     condition.variable_id = variable
-    condition.variable_value = variable_at_least
+    condition.variable_value = at_least
     condition.self_switch_ch = self_switch
     return condition
   end
@@ -456,6 +456,17 @@ class RPGFactory
     end
     commands.pop
     return commands
+  end
+
+  def control_switches(switches, value)
+    if switches.is_a?(Range)
+      return command(121, switches.begin, switches.end, value)
+    end
+    return command(121, switches, switches, value)
+  end
+
+  def control_self_switch(switch, value)
+    return command(123, switch, value)
   end
 
   def evaluate(script)

@@ -168,8 +168,8 @@ class RPGDumper
     value += indent(level + 1) + "switch1: switch(" + condition.switch1_id.inspect + "),\n" if condition.switch1_id != 1
     value += indent(level + 1) + "switch2: switch(" + condition.switch2_id.inspect + "),\n" if condition.switch2_id != 1
     value += indent(level + 1) + "variable: variable(" + condition.variable_id.inspect + "),\n" if condition.variable_id != 1
-    value += indent(level + 1) + "variable_at_least: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
-    value += indent(level + 1) + "self_switch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A"
+    value += indent(level + 1) + "at_least: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
+    value += indent(level + 1) + "self_switch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A" || condition.self_switch_valid
     value += indent(level) + ")"
     return value
   end
@@ -269,6 +269,10 @@ class RPGDumper
       # Other commands
       when 106 # wait
         value += command_wait(command, level)
+      when 121 # control switches
+        value += command_switch(command, level)
+      when 123 # control self switch
+        value += command_self_switch(command, level)
       when 201 # transfer player
         value += command_transfer_player(command, level)
       when 205 # change for color tone
@@ -451,6 +455,26 @@ class RPGDumper
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "wait("
     value += command.parameters[0].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_switch(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value = indent(level) + "control_switches("
+    value += "switch(" + command.parameters[0].inspect
+    if command.parameters[0] != command.parameters[1]
+      value += ".." + command.parameters[1].inspect
+    end
+    value += "), " + command.parameters[2].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_self_switch(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "control_self_switch("
+    value += command.parameters[0].inspect + ", " + command.parameters[1].inspect
     value += "),\n"
     return value
   end
