@@ -1,3 +1,5 @@
+class RPGFactories
+
 def map(
   data:,
   events:,
@@ -154,15 +156,6 @@ def page_condition(
   return condition
 end
 
-GRAPHIC_DIRECTION = {
-  2 => :down,
-  4 => :left,
-  6 => :right,
-  8 => :up,
-}
-
-GRAPHIC_DIRECTION_INVERSE = GRAPHIC_DIRECTION.invert
-
 def graphic(
   tile_id: 0,
   character_name: "",
@@ -176,7 +169,7 @@ def graphic(
   graphic.tile_id = tile_id
   graphic.character_name = character_name
   graphic.character_hue = character_hue
-  graphic.direction = GRAPHIC_DIRECTION_INVERSE[direction]
+  graphic.direction = DIRECTION_INVERSE[direction]
   graphic.pattern = pattern
   graphic.opacity = opacity
   graphic.blend_type = blend_type
@@ -463,6 +456,11 @@ def move_route(character: 0, route:)
   end
   commands.pop
   return commands
+end
+
+def evaluate(script)
+  return eval(script)
+end
 end
 
 # TODO:

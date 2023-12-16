@@ -22,7 +22,8 @@ def save_rb(file, data)
   reconstructed = nil
   measure do
     print 'load ruby '
-    reconstructed = eval(File.read('var/map.rb'))
+    ruby = File.read('var/map.rb')
+    reconstructed = (RPGFactories.new).evaluate(ruby)
   end
 
   # print_rb(ruby)
@@ -198,7 +199,7 @@ def dump_page(page, level)
   value = "page(\n"
   value += indent(level + 1) + "condition: " + dump_page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
   value += indent(level + 1) + "graphic: " + dump_graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
-  value += indent(level + 1) + "move_type: " + EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
+  value += indent(level + 1) + "move_type: " + RPGFactories::EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
   value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
   value += indent(level + 1) + "move_frequency: " + page.move_frequency.inspect + ",\n" if page.move_frequency != 3
   value += indent(level + 1) + "move_route: " + dump_route(page.move_route, level + 1) + ",\n" if Marshal.dump(page.move_route) != DEFAULT_ROUTE
@@ -207,7 +208,7 @@ def dump_page(page, level)
   value += indent(level + 1) + "direction_fix: " + page.direction_fix.inspect + ",\n" if page.direction_fix != false
   value += indent(level + 1) + "through: " + page.through.inspect + ",\n" if page.through != false
   value += indent(level + 1) + "always_on_top: " + page.always_on_top.inspect + ",\n" if page.always_on_top != false
-  value += indent(level + 1) + "trigger: " + EVENT_TRIGGER[page.trigger].inspect + ",\n" if page.trigger != 0
+  value += indent(level + 1) + "trigger: " + RPGFactories::EVENT_TRIGGER[page.trigger].inspect + ",\n" if page.trigger != 0
   commands = page.list.clone
   last = commands.pop
   raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
@@ -491,7 +492,7 @@ def dump_command_transfer_player(command, level)
     parameters.append "x: variable(" + command.parameters[2].inspect + ")"
     parameters.append "y: variable(" + command.parameters[3].inspect + ")"
   end
-  parameters.append "direction: " + DIRECTION[command.parameters[4]].inspect
+  parameters.append "direction: " + RPGFactories::DIRECTION[command.parameters[4]].inspect
   parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
   value += parameters.join(", ")
   value += "),\n"
@@ -523,7 +524,7 @@ def dump_graphic(graphic, level)
   value += indent(level + 1) + "tile_id: " + graphic.tile_id.inspect + ",\n" if graphic.tile_id != 0
   value += indent(level + 1) + "character_name: " + graphic.character_name.inspect + ",\n" if graphic.character_name != ""
   value += indent(level + 1) + "character_hue: " + graphic.character_hue.inspect + ",\n" if graphic.character_hue != 0
-  value += indent(level + 1) + "direction: " + GRAPHIC_DIRECTION[graphic.direction].inspect + ",\n" if graphic.direction != 2
+  value += indent(level + 1) + "direction: " + RPGFactories::DIRECTION[graphic.direction].inspect + ",\n" if graphic.direction != 2
   value += indent(level + 1) + "pattern: " + graphic.pattern.inspect + ",\n" if graphic.pattern != 0
   value += indent(level + 1) + "opacity: " + graphic.opacity.inspect + ",\n" if graphic.opacity != 255
   value += indent(level + 1) + "blend_type: " + graphic.blend_type.inspect + ",\n" if graphic.blend_type != 0
@@ -566,7 +567,7 @@ end
 
 def dump_command_condition(command, level)
   value = indent(level) + "*condition(\n"
-  type = CONDITION_TYPE[command.parameters[0]]
+  type = RPGFactories::CONDITION_TYPE[command.parameters[0]]
 
   case type
   when :switch
@@ -576,7 +577,7 @@ def dump_command_condition(command, level)
   when :variable
     raise "unexpected command parameters" if command.parameters.count != 5
     value += indent(level + 1) + "variable: variable(" + command.parameters[1].inspect + "),\n"
-    value += indent(level + 1) + "operation: " + CONDITION_OPERATION[command.parameters[4]].inspect + ",\n"
+    value += indent(level + 1) + "operation: " + RPGFactories::CONDITION_OPERATION[command.parameters[4]].inspect + ",\n"
     if command.parameters[2] == 0
       value += indent(level + 1) + "constant: " + command.parameters[3].inspect + ",\n"
     else
@@ -588,7 +589,7 @@ def dump_command_condition(command, level)
     value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
   when :character
     value += indent(level + 1) + "character: " + dump_event_reference(command.parameters[1]) + ",\n"
-    value += indent(level + 1) + "facing: " + DIRECTION[command.parameters[2]].inspect + ",\n"
+    value += indent(level + 1) + "facing: " + RPGFactories::DIRECTION[command.parameters[2]].inspect + ",\n"
   when :script
     raise "unexpected command parameters" if command.parameters.count != 2
     value += indent(level + 1) + "script: " + command.parameters[1].inspect + ",\n"
