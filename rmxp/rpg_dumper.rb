@@ -180,17 +180,14 @@ class RPGDumper
     while i < commands.count
       command = commands[i]
       case command.code
+
+      # Flow control commands
       when 0 # block end
         level -= 2
         value += indent(level + 1) + "],\n"
         # Band-aid for a rare case of two code 0 commands.
         parts = collect(commands, i + 1, 0)
         i += parts.count
-      when 101 # text
-        parts = collect(commands, i + 1, 401)
-        i += parts.count
-        parts.unshift(command)
-        value += command_array('text', parts, level)
       when 102 # show choices
         value += command_show_choices(command, level)
       when 402 # show choices - when
@@ -207,8 +204,6 @@ class RPGDumper
           value += command_when_cancel(command, level)
           level += 2
         end
-      when 106 # wait
-        value += command_wait(command, level)
       when 111 # if
         value += command_condition(command, level)
         value += indent(level + 1) + "then: ["
@@ -229,14 +224,55 @@ class RPGDumper
           level += 2
         end
         value += "\n"
-      when 201 # transfer player
-        value += command_transfer_player(command, level)
-      when 205 # change for color tone
-        value += command_change_fog_tone(command, level)
+      when 411 # else
+        value += indent(level + 1) + "else: ["
+        if commands[i + 1].code == 0
+          value += "],"
+          i += 1
+        else
+          level += 2
+        end
+        value += "\n"
+      when 404, 412, 413, 604 # show choices end, branch end, loop end, battle end
+        value += indent(level) + "),\n"
+
+      # Control flow battle commands
+      when 301
+        value += command_battle(command, level)
+        level += 2
+      when 601
+        value += command_win(command, level)
+        level += 2
+      when 602
+        value += command_escape(command, level)
+        level += 2
+      when 603
+        value += command_lose(command, level)
+        level += 2
+
+      # Command groups
+      when 101 # text
+        parts = collect(commands, i + 1, 401)
+        i += parts.count
+        parts.unshift(command)
+        value += command_array('text', parts, level)
+      when 355 # script
+        parts = collect(commands, i + 1, 655)
+        i += parts.count
+        parts.unshift(command)
+        value += command_array('script', parts, level)
       when 209 # move route
         parts = collect(commands, i + 1, 509)
         i += parts.count
         value += command_move_route(command, level)
+
+      # Other commands
+      when 106 # wait
+        value += command_wait(command, level)
+      when 201 # transfer player
+        value += command_transfer_player(command, level)
+      when 205 # change for color tone
+        value += command_change_fog_tone(command, level)
       when 223 # change screen color tone
         value += command_change_tone(command, level)
       when 224 # screen flash
@@ -255,34 +291,8 @@ class RPGDumper
         value += command_play_me(command, level)
       when 250 # play se
         value += command_play_se(command, level)
-      when 355 # script
-        parts = collect(commands, i + 1, 655)
-        i += parts.count
-        parts.unshift(command)
-        value += command_array('script', parts, level)
-      when 411 # else
-        value += indent(level + 1) + "else: ["
-        if commands[i + 1].code == 0
-          value += "],"
-          i += 1
-        else
-          level += 2
-        end
-        value += "\n"
-      when 404, 412, 413, 604 # show choices end, branch end, loop end, battle end
-        value += indent(level) + "),\n"
-      when 301
-        value += command_battle(command, level)
-        level += 2
-      when 601
-        value += command_win(command, level)
-        level += 2
-      when 602
-        value += command_escape(command, level)
-        level += 2
-      when 603
-        value += command_lose(command, level)
-        level += 2
+
+      # Unknown command
       else
         value += command(command, level)
       end
