@@ -294,6 +294,8 @@ class RPGDumper
         value += command_simple("change_windowskin", 1, command, level)
       when 201 # transfer player
         value += command_transfer_player(command, level)
+      when 202 # set event location
+        value += command_event_location(command, level)
       when 203 # scroll map
         value += command_scroll_map(command, level)
       when 205 # change for color tone
@@ -460,6 +462,29 @@ class RPGDumper
     parameters.append "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     parameters.append "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
     value += parameters.join(", ")
+    value += "),\n"
+    return value
+  end
+
+  def command_event_location(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 5
+    value = indent(level)
+    if command.parameters[1] == 0
+      value += "event_location("
+      value += character(command.parameters[0]) + ", "
+      value += "x: " + command.parameters[2].inspect + ", "
+      value += "y: " + command.parameters[3].inspect + ", "
+    elsif command.parameters[1] == 1
+      value += "event_location_variables("
+      value += character(command.parameters[0]) + ", "
+      value += "x: variable(" + command.parameters[2].inspect + "), "
+      value += "y: variable(" + command.parameters[3].inspect + "), "
+    else
+      value += "event_location_swap("
+      value += character(command.parameters[0]) + ", "
+      value += "target: " + character(command.parameters[0]) + ", "
+    end
+    value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     value += "),\n"
     return value
   end

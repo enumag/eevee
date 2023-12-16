@@ -316,6 +316,18 @@ class RPGFactory
     return command(201, 1, map, x, y, DIRECTION_INVERSE[direction], fading ? 0 : 1)
   end
 
+  def event_location(character, x:, y:, direction:)
+    return command(202, character, 0, x, y, DIRECTION_INVERSE[direction])
+  end
+
+  def event_location_variables(character, x:, y:, direction:)
+    return command(202, character, 1, x, y, DIRECTION_INVERSE[direction])
+  end
+
+  def event_location_swap(character, target:, direction:)
+    return command(202, character, 2, target, 0, DIRECTION_INVERSE[direction])
+  end
+
   CONDITION_TYPE = {
     0 => :switch,
     1 => :variable,
