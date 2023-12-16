@@ -107,3 +107,5 @@ end
 # Consider map() function and a name comment - is map referenced outside of transfer player?
 # Consider character() function and a name comment but not in CommonEvents
 # Consider nesting reduction by changing "pages:[ page(" to "page1: page("
+# Consider comments with common event name
+# Use Change encounter command in agate city raid, but careful with fly

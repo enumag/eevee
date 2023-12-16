@@ -264,24 +264,42 @@ class RPGDumper
       # Other commands
       when 103 # input number
         value += command_input_number(command, level)
+      when 104 # change text options
+        value += command_simple("change_text_options", 2, command, level)
+      when 105 # button input processing
+        value += command_button_input_processing(command, level)
       when 106 # wait
         value += command_simple("wait", 1, command, level)
+      when 113 # break loop
+        value += command_simple("break_loop", 0, command, level)
+      when 115 # break loop
+        value += command_simple("exit_event_processing", 0, command, level)
+      when 116 # erase event
+        value += command_simple("erase_event", 0, command, level)
+      when 117 # call common event
+        value += command_simple("call_common_event", 1, command, level)
       when 118 # label
         value += command_simple("label", 1, command, level)
       when 119 # jump to label
         value += command_simple("jump_label", 1, command, level)
-      when 210 # wait for move's completion
-        value += command_simple("wait_completion", 0, command, level)
       when 121 # control switches
         value += command_switch(command, level)
       when 122 # control variables
         value += command_variable(command, level)
       when 123 # control self switch
         value += command_self_switch(command, level)
+      when 125 # change gold
+        value += command_change_gold(command, level)
+      when 131 # change windowskin
+        value += command_simple("change_windowskin", 1, command, level)
       when 201 # transfer player
         value += command_transfer_player(command, level)
+      when 203 # scroll map
+        value += command_scroll_map(command, level)
       when 205 # change for color tone
         value += command_change_fog_tone(command, level)
+      when 210 # wait for move's completion
+        value += command_simple("wait_completion", 0, command, level)
       when 223 # change screen color tone
         value += command_change_tone(command, level)
       when 224 # screen flash
@@ -289,17 +307,17 @@ class RPGDumper
       when 234 # change picture tone
         value += command_change_picture_tone(command, level)
       when 132 # change battle bgm
-        value += command_battle_bgm(command, level)
+        value += command_audio("battle_bgm", command, level)
       when 133 # change battle me
-        value += command_battle_me(command, level)
+        value += command_audio("battle_me", command, level)
       when 241 # play bgm
-        value += command_play_bgm(command, level)
+        value += command_audio("play_bgm", command, level)
       when 245 # play bgs
-        value += command_play_bgs(command, level)
+        value += command_audio("play_bgs", command, level)
       when 249 # play me
-        value += command_play_me(command, level)
+        value += command_audio("play_me", command, level)
       when 250 # play se
-        value += command_play_se(command, level)
+        value += command_audio("play_se", command, level)
 
       # Unknown command
       else
@@ -357,6 +375,16 @@ class RPGDumper
     return value
   end
 
+  def command_scroll_map(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value = indent(level) + "scroll_map("
+    value += "direction: " + RPGFactory::DIRECTION[command.parameters[0]].inspect + ", "
+    value += "distance: " + command.parameters[1].inspect + ", "
+    value += "speed: " + command.parameters[2].inspect
+    value += "),\n"
+    return value
+  end
+
   def command_change_picture_tone(command, level)
     raise "unexpected command parameters" if command.parameters.count != 3
     value = indent(level) + "change_picture_tone("
@@ -406,49 +434,9 @@ class RPGDumper
     return value
   end
 
-  def command_play_bgm(command, level)
+  def command_audio(function, command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "play_bgm("
-    value += audio(command.parameters[0], level + 1)
-    value += "),\n"
-    return value
-  end
-
-  def command_play_bgs(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "play_bgs("
-    value += audio(command.parameters[0], level + 1)
-    value += "),\n"
-    return value
-  end
-
-  def command_play_me(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "play_me("
-    value += audio(command.parameters[0], level + 1)
-    value += "),\n"
-    return value
-  end
-
-  def command_battle_bgm(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "battle_bgm("
-    value += audio(command.parameters[0], level + 1)
-    value += "),\n"
-    return value
-  end
-
-  def command_battle_me(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "battle_me("
-    value += audio(command.parameters[0], level + 1)
-    value += "),\n"
-    return value
-  end
-
-  def command_play_se(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "play_se("
+    value = indent(level) + function + "("
     value += audio(command.parameters[0], level + 1)
     value += "),\n"
     return value
@@ -481,6 +469,14 @@ class RPGDumper
     value = indent(level) + "input_number("
     value += "variable(" + command.parameters[0].inspect + "), "
     value += "digits: " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_button_input_processing(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "button_input_processing("
+    value += "variable(" + command.parameters[0].inspect + ")"
     value += "),\n"
     return value
   end
@@ -549,6 +545,22 @@ class RPGDumper
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "control_self_switch("
     value += command.parameters[0].inspect + ", " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_change_gold(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value = indent(level) + "change_gold("
+    value += RPGFactory::GOLD_OPERATION[command.parameters[0]].inspect + ", "
+
+    case command.parameters[1]
+    when 0
+      value += "constant: " + command.parameters[2].inspect
+    when 1
+      value += "variable: variable(" + command.parameters[2].inspect + ")"
+    end
+
     value += "),\n"
     return value
   end
@@ -636,6 +648,9 @@ class RPGDumper
     when :character
       value += indent(level + 1) + "character: " + character(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "facing: " + RPGFactory::DIRECTION[command.parameters[2]].inspect + ",\n"
+    when :gold
+      value += indent(level + 1) + "gold: " + command.parameters[1].inspect + ",\n"
+      value += indent(level + 1) + "operation: " + RPGFactory::GOLD_COMPARISON[command.parameters[2]].inspect + ",\n"
     when :script
       raise "unexpected command parameters" if command.parameters.count != 2
       value += indent(level + 1) + "script: " + command.parameters[1].inspect + ",\n"

@@ -214,7 +214,16 @@ class RPGFactory
   end
 
   def input_number(variable, digits: )
-    return command(106, variable, digits)
+    return command(103, variable, digits)
+  end
+
+  # TODO: this can use enums for improved serialization but it's rarely used
+  def change_text_options(position, window)
+    return command(104, position, window)
+  end
+
+  def button_input_processing(variable, digits: )
+    return command(105, variable)
   end
 
   def wait(time)
@@ -223,6 +232,22 @@ class RPGFactory
 
   def wait_completion()
     return command(210)
+  end
+
+  def break_loop()
+    return command(113)
+  end
+
+  def exit_event_processing()
+    return command(115)
+  end
+
+  def erase_event()
+    return command(116)
+  end
+
+  def call_common_event(id)
+    return command(117, id)
   end
 
   def label(name)
@@ -320,6 +345,13 @@ class RPGFactory
 
   COMPARISON_INVERSE = COMPARISON.invert
 
+  GOLD_COMPARISON = {
+    0 => ">=",
+    1 => "<=",
+  }
+
+  GOLD_COMPARISON_INVERSE = GOLD_COMPARISON.invert
+
   # TODO: lossy change - skip else block is empty
   # TODO: skip then block if empty
   def condition(**args)
@@ -336,6 +368,8 @@ class RPGFactory
       commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 1, args[:other_variable], COMPARISON_INVERSE[args[:operation]])
     elsif args[:character] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:character], args[:character], DIRECTION_INVERSE[args[:facing]])
+    elsif args[:gold] != nil
+      commands.append command(111, CONDITION_TYPE_INVERSE[:gold], args[:gold], GOLD_COMPARISON_INVERSE[args[:operation]])
     elsif args[:script] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:script], args[:script])
     end
@@ -550,6 +584,33 @@ class RPGFactory
 
   def control_self_switch(switch, value)
     return command(123, switch, value)
+  end
+
+  GOLD_OPERATION = {
+    0 => "+=",
+    1 => "-=",
+  }
+
+  GOLD_OPERATION_INVERSE = GOLD_OPERATION.invert
+
+  def change_gold(operation, **args)
+    parameters = [GOLD_OPERATION_INVERSE[operation]]
+
+    if args[:constant] != nil
+      parameters.append 0, args[:constant]
+    elsif args[:variable] != nil
+      parameters.append 1, args[:variable]
+    end
+
+    return command(125, *parameters)
+  end
+
+  def scroll_map(direction:, distance:, speed:)
+    return command(203, DIRECTION_INVERSE[direction], distance, speed)
+  end
+
+  def change_windowskin(name)
+    return command(131, name)
   end
 
   def evaluate(script)
