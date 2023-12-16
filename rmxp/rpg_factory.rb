@@ -225,6 +225,14 @@ class RPGFactory
     return command(210)
   end
 
+  def label(name)
+    return command(118, name)
+  end
+
+  def jump_label(name)
+    return command(119, name)
+  end
+
   def battle_bgm(audio)
     return command(132, audio)
   end

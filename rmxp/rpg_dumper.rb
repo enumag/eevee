@@ -265,9 +265,13 @@ class RPGDumper
       when 103 # input number
         value += command_input_number(command, level)
       when 106 # wait
-        value += command_wait(command, level)
+        value += command_simple("wait", 1, command, level)
+      when 118 # label
+        value += command_simple("label", 1, command, level)
+      when 119 # jump to label
+        value += command_simple("jump_label", 1, command, level)
       when 210 # wait for move's completion
-        value += command_wait_completion(command, level)
+        value += command_simple("wait_completion", 0, command, level)
       when 121 # control switches
         value += command_switch(command, level)
       when 122 # control variables
@@ -481,17 +485,18 @@ class RPGDumper
     return value
   end
 
-  def command_wait(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "wait("
-    value += command.parameters[0].inspect
-    value += "),\n"
-    return value
-  end
-
-  def command_wait_completion(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 0
-    value = indent(level) + "wait_completion,\n"
+  def command_simple(function, count, command, level)
+    raise "unexpected command parameters" if command.parameters.count != count
+    value = indent(level) + function
+    unless count == 0
+      value += "("
+      (0...count).each do |i|
+        value += ", " unless i == 0
+        value += command.parameters[i].inspect
+      end
+      value += ")"
+    end
+    value += ",\n"
     return value
   end
 
