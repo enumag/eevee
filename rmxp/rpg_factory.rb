@@ -201,12 +201,14 @@ class RPGFactory
   def script(*parts)
     commands = parts.map { |text| command(655, text) }
     commands[0].code = 355
+    return commands[0] if commands.length == 1
     return commands
   end
 
   def text(*parts)
     commands = parts.map { |text| command(401, text) }
     commands[0].code = 101
+    return commands[0] if commands.length == 1
     return commands
   end
 

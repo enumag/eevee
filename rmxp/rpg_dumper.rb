@@ -313,7 +313,7 @@ class RPGDumper
 
   def command_array(function, commands, level)
     if commands.count == 1
-      value = indent(level) + "*" + function + "("
+      value = indent(level) + function + "("
       raise "unexpected command parameters" if commands[0].parameters.count != 1
       value += commands[0].parameters[0].inspect + "),\n"
       return value
