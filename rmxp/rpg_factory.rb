@@ -198,8 +198,9 @@ class RPGFactory
     return move
   end
 
-  def script(*parts)
-    commands = parts.map { |text| command(655, text) }
+  def script(script)
+    parts = script.lines
+    commands = parts.map { |text| command(655, text.chomp) }
     commands[0].code = 355
     return commands[0] if commands.length == 1
     return commands

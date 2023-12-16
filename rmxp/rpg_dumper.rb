@@ -250,12 +250,12 @@ class RPGDumper
         parts = collect(commands, i + 1, 401)
         i += parts.count
         parts.unshift(command)
-        value += command_array('text', parts, level)
+        value += command_text(parts, level)
       when 355 # script
         parts = collect(commands, i + 1, 655)
         i += parts.count
         parts.unshift(command)
-        value += command_array('script', parts, level)
+        value += command_script(parts, level)
       when 209 # move route
         parts = collect(commands, i + 1, 509)
         i += parts.count
@@ -315,19 +315,38 @@ class RPGDumper
     return parts
   end
 
-  def command_array(function, commands, level)
+  def command_text(commands, level)
     if commands.count == 1
-      value = indent(level) + function + "("
+      value = indent(level) + "text("
       raise "unexpected command parameters" if commands[0].parameters.count != 1
       value += commands[0].parameters[0].inspect + "),\n"
       return value
     end
 
-    value = indent(level) + "*" + function + "(\n"
+    value = indent(level) + "*text(\n"
     commands.each do |command|
       raise "unexpected command parameters" if command.parameters.count != 1
       value += indent(level + 1) + command.parameters[0].inspect + ",\n"
     end
+    value += indent(level) + "),\n"
+    return value
+  end
+
+  def command_script(commands, level)
+    if commands.count == 1
+      value = indent(level) + "script("
+      raise "unexpected command parameters" if commands[0].parameters.count != 1
+      value += commands[0].parameters[0].inspect + "),\n"
+      return value
+    end
+
+    value = indent(level) + "*script(\n"
+    value += indent(level + 1) + "<<~CODE\n"
+      commands.each do |command|
+      raise "unexpected command parameters" if command.parameters.count != 1
+      value += indent(level + 1) + command.parameters[0] + "\n"
+    end
+    value += indent(level + 1) + "CODE\n"
     value += indent(level) + "),\n"
     return value
   end
