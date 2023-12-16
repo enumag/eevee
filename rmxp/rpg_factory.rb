@@ -301,7 +301,8 @@ class RPGFactory
 
   CONDITION_OPERATION_INVERSE = CONDITION_OPERATION.invert
 
-  # TODO: lossy change - skip else block when args[:else] == []
+  # TODO: lossy change - skip else block is empty
+  # TODO: skip then block if empty
   def condition(**args)
     commands = []
     if args[:parameters] != nil
