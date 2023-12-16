@@ -133,7 +133,19 @@ class RPGDumper
     return "page()" if Marshal.dump(page) == DEFAULT_PAGE
 
     value = "page(\n"
-    value += indent(level + 1) + "condition: " + page_condition(page.condition, level + 1) + ",\n" if Marshal.dump(page.condition) != DEFAULT_CONDITION
+
+    if Marshal.dump(page.condition) != DEFAULT_CONDITION
+      value += indent(level + 1) + "switch1_valid: " + page.condition.switch1_valid.inspect + ",\n" if page.condition.switch1_valid != false
+      value += indent(level + 1) + "switch1: switch(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_id != 1
+      value += indent(level + 1) + "switch2_valid: " + page.condition.switch2_valid.inspect + ",\n" if page.condition.switch2_valid != false
+      value += indent(level + 1) + "switch2: switch(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_id != 1
+      value += indent(level + 1) + "variable_valid: " + page.condition.variable_valid.inspect + ",\n" if page.condition.variable_valid != false
+      value += indent(level + 1) + "variable: variable(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_id != 1
+      value += indent(level + 1) + "at_least: " + page.condition.variable_value.inspect + ",\n" if page.condition.variable_value != 0
+      value += indent(level + 1) + "self_switch_valid: " + page.condition.self_switch_valid.inspect + ",\n" if page.condition.self_switch_valid != false
+      value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_ch != "A" || page.condition.self_switch_valid
+    end
+
     value += indent(level + 1) + "graphic: " + graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
     value += indent(level + 1) + "move_type: " + RPGFactory::EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
     value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
@@ -145,6 +157,7 @@ class RPGDumper
     value += indent(level + 1) + "through: " + page.through.inspect + ",\n" if page.through != false
     value += indent(level + 1) + "always_on_top: " + page.always_on_top.inspect + ",\n" if page.always_on_top != false
     value += indent(level + 1) + "trigger: " + RPGFactory::EVENT_TRIGGER[page.trigger].inspect + ",\n" if page.trigger != 0
+
     commands = page.list.clone
     last = commands.pop
     raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
@@ -153,21 +166,7 @@ class RPGDumper
       value += command_list(commands, level + 2)
       value += indent(level + 1) + "],\n"
     end
-    value += indent(level) + ")"
-    return value
-  end
 
-  def page_condition(condition, level)
-    value = "page_condition(\n"
-    value += indent(level + 1) + "switch1_valid: " + condition.switch1_valid.inspect + ",\n" if condition.switch1_valid != false
-    value += indent(level + 1) + "switch1: switch(" + condition.switch1_id.inspect + "),\n" if condition.switch1_id != 1
-    value += indent(level + 1) + "switch2_valid: " + condition.switch2_valid.inspect + ",\n" if condition.switch2_valid != false
-    value += indent(level + 1) + "switch2: switch(" + condition.switch2_id.inspect + "),\n" if condition.switch2_id != 1
-    value += indent(level + 1) + "variable_valid: " + condition.variable_valid.inspect + ",\n" if condition.variable_valid != false
-    value += indent(level + 1) + "variable: variable(" + condition.variable_id.inspect + "),\n" if condition.variable_id != 1
-    value += indent(level + 1) + "at_least: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
-    value += indent(level + 1) + "self_switch_valid: " + condition.self_switch_valid.inspect + ",\n" if condition.self_switch_valid != false
-    value += indent(level + 1) + "self_switch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A" || condition.self_switch_valid
     value += indent(level) + ")"
     return value
   end

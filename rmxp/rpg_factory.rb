@@ -82,8 +82,24 @@ class RPGFactory
 
   EVENT_TRIGGER_INVERSE = EVENT_TRIGGER.invert
 
+  # TODO: lossy change - simplify conditions to this:
+  # page(
+  #   switch1: switch(id),
+  #   switch2: switch(id),
+  #   variable: variable(id),
+  #   at_least: value,
+  #   self_switch: "A",
+  # )
   def page(
-    condition: RPG::Event::Page::Condition.new,
+    switch1_valid: false,
+    switch2_valid: false,
+    variable_valid: false,
+    self_switch_valid: false,
+    switch1: 1,
+    switch2: 1,
+    variable: 1,
+    at_least: 0,
+    self_switch: "A",
     graphic: RPG::Event::Page::Graphic.new,
     move_type: :fixed,
     move_speed: 3,
@@ -97,6 +113,17 @@ class RPGFactory
     trigger: :action,
     list: []
   )
+    condition = RPG::Event::Page::Condition.new
+    condition.switch1_valid = switch1_valid
+    condition.switch2_valid = switch2_valid
+    condition.variable_valid = variable_valid
+    condition.self_switch_valid = self_switch_valid
+    condition.switch1_id = switch1
+    condition.switch2_id = switch2
+    condition.variable_id = variable
+    condition.variable_value = at_least
+    condition.self_switch_ch = self_switch
+
     page = RPG::Event::Page.new
     page.condition = condition
     page.graphic = graphic
@@ -126,38 +153,6 @@ class RPGFactory
     command = command(0)
     command.indent += 1
     return command
-  end
-
-  # TODO: lossy change - simplify page_condition to
-  # page_condition(
-  #   switch1: switch(id),
-  #   switch2: switch(id),
-  #   variable: variable(id),
-  #   at_least: value,
-  #   self_switch: "A",
-  # )
-  def page_condition(
-    switch1_valid: false,
-    switch2_valid: false,
-    variable_valid: false,
-    self_switch_valid: false,
-    switch1: 1,
-    switch2: 1,
-    variable: 1,
-    at_least: 0,
-    self_switch: "A"
-  )
-    condition = RPG::Event::Page::Condition.new
-    condition.switch1_valid = switch1_valid
-    condition.switch2_valid = switch2_valid
-    condition.variable_valid = variable_valid
-    condition.self_switch_valid = self_switch_valid
-    condition.switch1_id = switch1
-    condition.switch2_id = switch2
-    condition.variable_id = variable
-    condition.variable_value = at_least
-    condition.self_switch_ch = self_switch
-    return condition
   end
 
   def graphic(
