@@ -1,4 +1,4 @@
-class RPGFactories
+class RPGFactory
   def map(
     data:,
     events:,
@@ -461,13 +461,3 @@ class RPGFactories
     return eval(script)
   end
 end
-
-# TODO:
-# CommonEvents, MapInfos and other rxdata
-# adjust generic move() or command() to either both or neither to use named arguments
-# consider changing multiline strings and scripts to heredoc
-# Move route commands
-# Useful commands
-# Consider adding variable and switch name comments
-# Consider map() function and a name comment - is map referenced outside of transfer player?
-# Consider character() function and a name comment but not in CommonEvents
