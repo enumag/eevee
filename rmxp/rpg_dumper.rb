@@ -476,7 +476,7 @@ class RPGDumper
       value += ".." + command.parameters[1].inspect
     end
     value += "), "
-    value += RPGFactory::OPERATION[command.parameters[2]].inspect + ", "
+    value += RPGFactory::OPERATION[command.parameters[2]].inspect + ", " if command.parameters[2] != 0
 
     case command.parameters[3]
     when 0

@@ -495,7 +495,7 @@ class RPGFactory
 
   OTHER_PROPERTY_INVERSE = OTHER_PROPERTY.invert
 
-  def control_variables(variables, operation, **args)
+  def control_variables(variables, operation = "=", **args)
     if variables.is_a?(Range)
       parameters = [variables.begin, variables.end]
     else
