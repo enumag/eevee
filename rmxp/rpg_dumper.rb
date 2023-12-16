@@ -120,11 +120,9 @@ class RPGDumper
     value += indent(level + 1) + "y: " + event.y.inspect + ",\n"
 
     if event.pages.count > 1 || Marshal.dump(event.pages[0]) != DEFAULT_PAGE
-      value += indent(level + 1) + "pages: [\n"
-      event.pages.each do |page|
-        value += indent(level + 2) + page(page, level + 2) + ",\n"
+      event.pages.each_with_index do |page, i|
+        value += indent(level + 1) + "page_" + i.to_s + ": " + page(page, level + 1) + ",\n"
       end
-      value += indent(level + 1) + "],\n"
     end
 
     value += indent(level) + ")"
@@ -162,13 +160,13 @@ class RPGDumper
   def page_condition(condition, level)
     value = "page_condition(\n"
     value += indent(level + 1) + "switch1_valid: " + condition.switch1_valid.inspect + ",\n" if condition.switch1_valid != false
-    value += indent(level + 1) + "switch2_valid: " + condition.switch2_valid.inspect + ",\n" if condition.switch2_valid != false
-    value += indent(level + 1) + "variable_valid: " + condition.variable_valid.inspect + ",\n" if condition.variable_valid != false
-    value += indent(level + 1) + "self_switch_valid: " + condition.self_switch_valid.inspect + ",\n" if condition.self_switch_valid != false
     value += indent(level + 1) + "switch1: switch(" + condition.switch1_id.inspect + "),\n" if condition.switch1_id != 1
+    value += indent(level + 1) + "switch2_valid: " + condition.switch2_valid.inspect + ",\n" if condition.switch2_valid != false
     value += indent(level + 1) + "switch2: switch(" + condition.switch2_id.inspect + "),\n" if condition.switch2_id != 1
+    value += indent(level + 1) + "variable_valid: " + condition.variable_valid.inspect + ",\n" if condition.variable_valid != false
     value += indent(level + 1) + "variable: variable(" + condition.variable_id.inspect + "),\n" if condition.variable_id != 1
     value += indent(level + 1) + "at_least: " + condition.variable_value.inspect + ",\n" if condition.variable_value != 0
+    value += indent(level + 1) + "self_switch_valid: " + condition.self_switch_valid.inspect + ",\n" if condition.self_switch_valid != false
     value += indent(level + 1) + "self_switch: " + condition.self_switch_ch.inspect + ",\n" if condition.self_switch_ch != "A" || condition.self_switch_valid
     value += indent(level) + ")"
     return value

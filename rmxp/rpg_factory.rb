@@ -43,10 +43,15 @@ class RPGFactory
     return RPG::AudioFile.new(name, volume, pitch)
   end
 
-  def event(id:, name:, x:, y:, pages: [])
+  def event(id:, name:, x:, y:, **args)
     event = RPG::Event.new(x, y)
     event.id = id
     event.name = name
+    pages = []
+    args.each do |name, page|
+      next unless name.start_with?("page")
+      pages.append page
+    end
     pages.append page() if pages == []
     event.pages = pages
     return event
