@@ -560,7 +560,7 @@ class RPGDumper
       value += indent(level + 1) + "self_switch: " + command.parameters[1].inspect + ",\n"
       value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
     when :character
-      value += indent(level + 1) + "character: " + event_reference(command.parameters[1]) + ",\n"
+      value += indent(level + 1) + "character: " + character(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "facing: " + RPGFactory::DIRECTION[command.parameters[2]].inspect + ",\n"
     when :script
       raise "unexpected command parameters" if command.parameters.count != 2
@@ -575,10 +575,10 @@ class RPGDumper
     return value
   end
 
-  def event_reference(id)
+  def character(id)
     return "player()" if id == -1
     return "this()" if id == 0
-    return "character(" +  id+ ")"
+    return "character(" + id.to_s + ")"
   end
 
   def command_loop(command, level)
@@ -633,7 +633,7 @@ class RPGDumper
   def command_move_route(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "*move_route(\n"
-    value += indent(level + 1) + "character: " + command.parameters[0].inspect + ",\n" if command.parameters[0] != 0
+    value += indent(level + 1) + "character: " + character(command.parameters[0]) + ",\n"
     value += indent(level + 1) + "route: " + route(command.parameters[1], level + 1) + ",\n"
     value += indent(level) + "),\n"
     return value
