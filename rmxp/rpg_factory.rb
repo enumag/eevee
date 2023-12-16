@@ -91,15 +91,15 @@ class RPGFactory
   #   self_switch: "A",
   # )
   def page(
-    switch1_valid: false,
-    switch2_valid: false,
-    variable_valid: false,
-    self_switch_valid: false,
+    switch1_valid: nil,
+    switch2_valid: nil,
+    variable_valid: nil,
+    self_switch_valid: nil,
     switch1: 1,
     switch2: 1,
     variable: 1,
     at_least: 0,
-    self_switch: "A",
+    self_switch: nil,
     graphic: RPG::Event::Page::Graphic.new,
     move_type: :fixed,
     move_speed: 3,
@@ -114,15 +114,15 @@ class RPGFactory
     list: []
   )
     condition = RPG::Event::Page::Condition.new
-    condition.switch1_valid = switch1_valid
-    condition.switch2_valid = switch2_valid
-    condition.variable_valid = variable_valid
-    condition.self_switch_valid = self_switch_valid
+    condition.switch1_valid = switch1_valid == nil ? switch1 != 1 : switch1_valid
+    condition.switch2_valid = switch2_valid == nil ? switch2 != 1 : switch2_valid
+    condition.variable_valid = variable_valid == nil ? variable != 1 : variable_valid
+    condition.self_switch_valid = self_switch_valid == nil ? self_switch != nil : self_switch_valid
     condition.switch1_id = switch1
     condition.switch2_id = switch2
     condition.variable_id = variable
     condition.variable_value = at_least
-    condition.self_switch_ch = self_switch
+    condition.self_switch_ch = self_switch != nil ? self_switch : "A"
 
     page = RPG::Event::Page.new
     page.condition = condition
