@@ -289,6 +289,14 @@ class RPGFactory
     return command(250, audio)
   end
 
+  def fade_out_bgm(seconds:)
+    return command(242, seconds)
+  end
+
+  def fade_out_bgs(seconds:)
+    return command(246, seconds)
+  end
+
   def change_tone(red:, green:, blue:, gray: 0, frames:)
     return command(223, Tone.new(red, green, blue, gray), frames)
   end

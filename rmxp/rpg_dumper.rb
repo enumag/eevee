@@ -329,6 +329,10 @@ class RPGDumper
         value += command_audio("play_me", command, level)
       when 250 # play se
         value += command_audio("play_se", command, level)
+      when 242 # fade out bgm
+        value += command_fade_out_bgm(command, level)
+      when 246 # fade out bgs
+        value += command_fade_out_bgs(command, level)
 
       # Unknown command
       else
@@ -485,6 +489,22 @@ class RPGDumper
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + function + "("
     value += audio(command.parameters[0], level + 1)
+    value += "),\n"
+    return value
+  end
+
+  def command_fade_out_bgm(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 1
+    value = indent(level) + "fade_out_bgm("
+    value += "seconds: " + command.parameters[0].inspect + ", "
+    value += "),\n"
+    return value
+  end
+
+  def command_fade_out_bgs(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 1
+    value = indent(level) + "fade_out_bgs("
+    value += "seconds: " + command.parameters[0].inspect + ", "
     value += "),\n"
     return value
   end
