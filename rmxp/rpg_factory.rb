@@ -213,6 +213,13 @@ class RPGFactory
     return commands
   end
 
+  def comment(*parts)
+    commands = parts.map { |text| command(408, text) }
+    commands[0].code = 108
+    return commands[0] if commands.length == 1
+    return commands
+  end
+
   def input_number(variable, digits: )
     return command(103, variable, digits)
   end

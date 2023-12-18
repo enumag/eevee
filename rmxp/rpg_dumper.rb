@@ -251,6 +251,11 @@ class RPGDumper
         i += parts.count
         parts.unshift(command)
         value += command_text(parts, level)
+      when 108 # comment
+        parts = collect(commands, i + 1, 408)
+        i += parts.count
+        parts.unshift(command)
+        value += command_comment(parts, level)
       when 355 # script
         parts = collect(commands, i + 1, 655)
         i += parts.count
@@ -352,6 +357,23 @@ class RPGDumper
     end
 
     value = indent(level) + "*text(\n"
+    commands.each do |command|
+      raise "unexpected command parameters" if command.parameters.count != 1
+      value += indent(level + 1) + command.parameters[0].inspect + ",\n"
+    end
+    value += indent(level) + "),\n"
+    return value
+  end
+
+  def command_comment(commands, level)
+    if commands.count == 1
+      value = indent(level) + "comment("
+      raise "unexpected command parameters" if commands[0].parameters.count != 1
+      value += commands[0].parameters[0].inspect + "),\n"
+      return value
+    end
+
+    value = indent(level) + "*comment(\n"
     commands.each do |command|
       raise "unexpected command parameters" if command.parameters.count != 1
       value += indent(level + 1) + command.parameters[0].inspect + ",\n"
