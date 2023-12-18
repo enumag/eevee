@@ -625,6 +625,14 @@ class RPGFactory
     return command(131, name)
   end
 
+  def show_animation(character, animation)
+    return command(207, character, animation)
+  end
+
+  def anim(id)
+    return id
+  end
+
   def evaluate(script)
     return eval(script)
   end

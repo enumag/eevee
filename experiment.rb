@@ -108,3 +108,4 @@ end
 # Consider comments with common event name
 # Use Change encounter command in agate city raid, but careful with fly
 # Consider removing route( from move_route( to reduce nesting
+# Consider function and name comment for animations

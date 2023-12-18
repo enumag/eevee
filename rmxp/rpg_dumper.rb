@@ -300,6 +300,8 @@ class RPGDumper
         value += command_scroll_map(command, level)
       when 205 # change for color tone
         value += command_change_fog_tone(command, level)
+      when 207 # show animation
+        value += command_show_animation(command, level)
       when 210 # wait for move's completion
         value += command_simple("wait_completion", 0, command, level)
       when 223 # change screen color tone
@@ -432,6 +434,15 @@ class RPGDumper
     value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
     value += "alpha: " + command.parameters[0].alpha.to_i.inspect + ", " if command.parameters[0].alpha != 0.0
     value += "frames: " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_show_animation(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "show_animation("
+    value += character(command.parameters[0]) + ", "
+    value += "anim(" + command.parameters[1].inspect + ")"
     value += "),\n"
     return value
   end
