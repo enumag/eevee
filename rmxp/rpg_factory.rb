@@ -305,6 +305,10 @@ class RPGFactory
     return command(224, Color.new(red, green, blue, alpha), frames)
   end
 
+  def screen_shake(power:, speed:, frames:)
+    return command(225, power, speed, frames)
+  end
+
   DIRECTION = {
     0 => :retain,
     2 => :down,

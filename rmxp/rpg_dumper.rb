@@ -313,6 +313,8 @@ class RPGDumper
         value += command_change_tone(command, level)
       when 224 # screen flash
         value += command_screen_flash(command, level)
+      when 225 # screen shake
+        value += command_screen_shake(command, level)
       when 234 # change picture tone
         value += command_change_picture_tone(command, level)
       when 132 # change battle bgm
@@ -456,6 +458,16 @@ class RPGDumper
     value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
     value += "alpha: " + command.parameters[0].alpha.to_i.inspect + ", " if command.parameters[0].alpha != 0.0
     value += "frames: " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_screen_shake(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value = indent(level) + "screen_shake("
+    value += "power: " + command.parameters[0].inspect + ", "
+    value += "speed: " + command.parameters[1].inspect + ", "
+    value += "frames: " + command.parameters[2].inspect
     value += "),\n"
     return value
   end
