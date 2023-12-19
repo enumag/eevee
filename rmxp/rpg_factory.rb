@@ -95,9 +95,9 @@ class RPGFactory
     switch2_valid: nil,
     variable_valid: nil,
     self_switch_valid: nil,
-    switch1: 1,
-    switch2: 1,
-    variable: 1,
+    switch1: nil,
+    switch2: nil,
+    variable: nil,
     at_least: 0,
     self_switch: nil,
     graphic: RPG::Event::Page::Graphic.new,
@@ -114,13 +114,13 @@ class RPGFactory
     list: []
   )
     condition = RPG::Event::Page::Condition.new
-    condition.switch1_valid = switch1_valid == nil ? switch1 != 1 : switch1_valid
-    condition.switch2_valid = switch2_valid == nil ? switch2 != 1 : switch2_valid
-    condition.variable_valid = variable_valid == nil ? variable != 1 : variable_valid
+    condition.switch1_valid = switch1_valid == nil ? switch1 != nil : switch1_valid
+    condition.switch2_valid = switch2_valid == nil ? switch2 != nil : switch2_valid
+    condition.variable_valid = variable_valid == nil ? variable != nil : variable_valid
     condition.self_switch_valid = self_switch_valid == nil ? self_switch != nil : self_switch_valid
-    condition.switch1_id = switch1
-    condition.switch2_id = switch2
-    condition.variable_id = variable
+    condition.switch1_id = switch1 != nil ? switch1 : 1
+    condition.switch2_id = switch2 != nil ? switch2 : 1
+    condition.variable_id = variable != nil ? variable : 1
     condition.variable_value = at_least
     condition.self_switch_ch = self_switch != nil ? self_switch : "A"
 
@@ -220,7 +220,7 @@ class RPGFactory
     return commands
   end
 
-  def input_number(variable, digits: )
+  def input_number(variable, digits:)
     return command(103, variable, digits)
   end
 
@@ -229,7 +229,7 @@ class RPGFactory
     return command(104, position, window)
   end
 
-  def button_input_processing(variable, digits: )
+  def button_input_processing(variable)
     return command(105, variable)
   end
 
@@ -600,7 +600,7 @@ class RPGFactory
     elsif args[:character] != nil
       parameters.append 6, args[:character], CHARACTER_PROPERTY_INVERSE[args[:property]]
     elsif args[:property] != nil
-      parameters.append 6, OTHER_PROPERTY_INVERSE[args[:property]]
+      parameters.append 7, OTHER_PROPERTY_INVERSE[args[:property]]
     end
 
     return command(122, *parameters)

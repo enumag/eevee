@@ -136,11 +136,11 @@ class RPGDumper
 
     if Marshal.dump(page.condition) != DEFAULT_CONDITION
       value += indent(level + 1) + "switch1_valid: " + page.condition.switch1_valid.inspect + ",\n" if page.condition.switch1_valid == false && page.condition.switch1_id != 1
-      value += indent(level + 1) + "switch1: switch(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_id != 1
+      value += indent(level + 1) + "switch1: switch(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_id != 1 || page.condition.switch1_valid
       value += indent(level + 1) + "switch2_valid: " + page.condition.switch2_valid.inspect + ",\n" if page.condition.switch2_valid == false && page.condition.switch2_id != 1
-      value += indent(level + 1) + "switch2: switch(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_id != 1
+      value += indent(level + 1) + "switch2: switch(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_id != 1 || page.condition.switch2_valid
       value += indent(level + 1) + "variable_valid: " + page.condition.variable_valid.inspect + ",\n" if page.condition.variable_valid == false && page.condition.variable_id != 1
-      value += indent(level + 1) + "variable: variable(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_id != 1
+      value += indent(level + 1) + "variable: variable(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_id != 1 || page.condition.variable_valid
       value += indent(level + 1) + "at_least: " + page.condition.variable_value.inspect + ",\n" if page.condition.variable_value != 0
       value += indent(level + 1) + "self_switch_valid: " + page.condition.self_switch_valid.inspect + ",\n" if page.condition.self_switch_valid == false && page.condition.self_switch_ch != "A"
       value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_ch != "A" || page.condition.self_switch_valid
@@ -401,7 +401,7 @@ class RPGDumper
     end
 
     value = indent(level) + "*script(\n"
-    value += indent(level + 1) + "<<~CODE\n"
+    value += indent(level + 1) + "<<~'CODE'\n"
       commands.each do |command|
       raise "unexpected command parameters" if command.parameters.count != 1
       value += indent(level + 1) + command.parameters[0] + "\n"
@@ -500,7 +500,7 @@ class RPGDumper
   def command_fade_out_bgm(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "fade_out_bgm("
-    value += "seconds: " + command.parameters[0].inspect + ", "
+    value += "seconds: " + command.parameters[0].inspect
     value += "),\n"
     return value
   end
@@ -508,7 +508,7 @@ class RPGDumper
   def command_fade_out_bgs(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "fade_out_bgs("
-    value += "seconds: " + command.parameters[0].inspect + ", "
+    value += "seconds: " + command.parameters[0].inspect
     value += "),\n"
     return value
   end
@@ -566,7 +566,7 @@ class RPGDumper
   end
 
   def command_button_input_processing(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
+    raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "button_input_processing("
     value += "variable(" + command.parameters[0].inspect + ")"
     value += "),\n"
