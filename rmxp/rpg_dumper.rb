@@ -303,6 +303,8 @@ class RPGDumper
         value += command_event_location(command, level)
       when 203 # scroll map
         value += command_scroll_map(command, level)
+      when 204 # change map settings
+        value += command_change_map_settings(command, level)
       when 205 # change for color tone
         value += command_change_fog_tone(command, level)
       when 207 # show animation
@@ -815,6 +817,32 @@ class RPGDumper
     value += indent(level + 1) + character(command.parameters[0]) + ",\n"
     value += indent(level + 1) + route(command.parameters[1], level + 1) + ",\n"
     value += indent(level) + "),\n"
+    return value
+  end
+
+  def command_change_map_settings(command, level)
+    value = indent(level)
+    if command.parameters[0] == 0
+      raise "unexpected command parameters" if command.parameters.count != 3
+      value += "change_panorama("
+      value += "graphic: " + command.parameters[1].inspect + ", "
+      value += "hue: " + command.parameters[2].inspect
+      value += "),\n"
+    elsif command.parameters[0] == 1
+      raise "unexpected command parameters" if command.parameters.count != 8
+      value += "change_fog(\n"
+      value += indent(level + 1) + "graphic: " + command.parameters[1].inspect + ",\n"
+      value += indent(level + 1) + "hue: " + command.parameters[2].inspect + ",\n"
+      value += indent(level + 1) + "opacity: " + command.parameters[3].inspect + ",\n"
+      value += indent(level + 1) + "blending: " + RPGFactory::BLENDING[command.parameters[4]].inspect + ",\n"
+      value += indent(level + 1) + "zoom: " + command.parameters[5].inspect + ",\n"
+      value += indent(level + 1) + "sx: " + command.parameters[6].inspect + ",\n" unless command.parameters[6] == 0
+      value += indent(level + 1) + "sy: " + command.parameters[7].inspect + ",\n" unless command.parameters[7] == 0
+      value += indent(level) + "),\n"
+    else
+      raise "unexpected command parameters" if command.parameters.count != 2
+      value += "change_battleback(graphic:" + command.parameters[1].inspect + "),\n"
+    end
     return value
   end
 end

@@ -656,6 +656,26 @@ class RPGFactory
     return command(314, party)
   end
 
+  BLENDING = {
+    0 => :normal,
+    1 => :add,
+    2 => :subtract,
+  }
+
+  BLENDING_INVERSE = BLENDING.invert
+
+  def change_panorama(graphic:, hue: 0)
+    return command(204, 0, graphic, hue)
+  end
+
+  def change_fog(graphic:, hue: 0, opacity: 0, blending:, zoom:, sx: 0, sy: 0)
+    return command(204, 1, graphic, hue, opacity, BLENDING_INVERSE[blending], zoom, sx, sy)
+  end
+
+  def change_battleback(graphic:)
+    return command(204, 2, graphic)
+  end
+
   def evaluate(script)
     return eval(script)
   end
