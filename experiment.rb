@@ -84,7 +84,6 @@ data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Facto
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
 
 range = 0..999
-range = [150]
 
 range.each do |id|
   file = 'C:\Projects\Reborn\Reborn\Data/Map' + id.to_s.rjust(3, '0') + '.rxdata'
@@ -92,6 +91,8 @@ range.each do |id|
     puts file
     data = load_rxdata(file)
     save_rb('', data)
+
+    FileUtils.cp('var/map.rb', 'C:\Projects\Reborn\Reborn\DataRuby/Map' + id.to_s.rjust(3, '0') + '.rb')
   else
     puts 'skip ' + id.to_s
   end
