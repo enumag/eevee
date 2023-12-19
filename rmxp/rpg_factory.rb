@@ -652,6 +652,10 @@ class RPGFactory
     return id
   end
 
+  def recover_all(party)
+    return command(314, party)
+  end
+
   def evaluate(script)
     return eval(script)
   end

@@ -333,6 +333,8 @@ class RPGDumper
         value += command_fade_out_bgm(command, level)
       when 246 # fade out bgs
         value += command_fade_out_bgs(command, level)
+      when 314 # recover all
+        value += command_simple("recover_all", 1, command, level)
 
       # Unknown command
       else
