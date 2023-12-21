@@ -317,8 +317,16 @@ class RPGDumper
         value += command_screen_flash(command, level)
       when 225 # screen shake
         value += command_screen_shake(command, level)
+      when 231 # show picture
+        value += command_show_picture(command, level)
+      when 232 # move picture
+        value += command_move_picture(command, level)
+      when 233 # rotate picture
+        value += command_rotate_picture(command, level)
       when 234 # change picture tone
         value += command_change_picture_tone(command, level)
+      when 235 # erase picture
+        value += command_erase_picture(command, level)
       when 132 # change battle bgm
         value += command_audio("battle_bgm", command, level)
       when 133 # change battle me
@@ -843,6 +851,75 @@ class RPGDumper
       raise "unexpected command parameters" if command.parameters.count != 2
       value += "change_battleback(graphic:" + command.parameters[1].inspect + "),\n"
     end
+    return value
+  end
+
+  def command_show_picture(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 10
+    value = indent(level)
+    if command.parameters[3] == 0
+      value += "show_picture(\n"
+    else
+      value += "show_picture_variables(\n"
+    end
+    value += indent(level + 1) + "number: " + command.parameters[0].inspect + ",\n"
+    value += indent(level + 1) + "graphic: " + command.parameters[1].inspect + ",\n"
+    value += indent(level + 1) + "origin: " + RPGFactory::ORIGIN[command.parameters[2]].inspect + ",\n"
+    if command.parameters[3] == 0
+      value += indent(level + 1) + "x: " + command.parameters[4].inspect + ",\n" if command.parameters[4] != 0
+      value += indent(level + 1) + "y: " + command.parameters[5].inspect + ",\n" if command.parameters[5] != 0
+    else
+      value += indent(level + 1) + "x: variable(" + command.parameters[4].inspect + "),\n"
+      value += indent(level + 1) + "y: variable(" + command.parameters[5].inspect + "),\n"
+    end
+    value += indent(level + 1) + "zoom_x: " + command.parameters[6].inspect + ",\n" if command.parameters[6] != 100
+    value += indent(level + 1) + "zoom_y: " + command.parameters[7].inspect + ",\n" if command.parameters[7] != 100
+    value += indent(level + 1) + "opacity: " + command.parameters[8].inspect + ",\n" if command.parameters[8] != 255
+    value += indent(level + 1) + "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect + ",\n"
+    value += indent(level) + "),\n"
+    return value
+  end
+
+  def command_move_picture(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 10
+    value = indent(level)
+    if command.parameters[3] == 0
+      value += "move_picture(\n"
+    else
+      value += "move_picture_variables(\n"
+    end
+    value += indent(level + 1) + "number: " + command.parameters[0].inspect + ",\n"
+    value += indent(level + 1) + "frames: " + command.parameters[1].inspect + ",\n"
+    value += indent(level + 1) + "origin: " + RPGFactory::ORIGIN[command.parameters[2]].inspect + ",\n"
+    if command.parameters[3] == 0
+      value += indent(level + 1) + "x: " + command.parameters[4].inspect + ",\n" if command.parameters[4] != 0
+      value += indent(level + 1) + "y: " + command.parameters[5].inspect + ",\n" if command.parameters[5] != 0
+    else
+      value += indent(level + 1) + "x: variable(" + command.parameters[4].inspect + "),\n"
+      value += indent(level + 1) + "y: variable(" + command.parameters[5].inspect + "),\n"
+    end
+    value += indent(level + 1) + "zoom_x: " + command.parameters[6].inspect + ",\n" if command.parameters[6] != 100
+    value += indent(level + 1) + "zoom_y: " + command.parameters[7].inspect + ",\n" if command.parameters[7] != 100
+    value += indent(level + 1) + "opacity: " + command.parameters[8].inspect + ",\n" if command.parameters[8] != 255
+    value += indent(level + 1) + "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect + ",\n"
+    value += indent(level) + "),\n"
+    return value
+  end
+
+  def command_rotate_picture(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "rotate_picture("
+    value += "number: " + command.parameters[0].inspect + ", "
+    value += "speed: " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_erase_picture(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "erase_picture("
+    value += "number: " + command.parameters[0].inspect
+    value += "),\n"
     return value
   end
 end

@@ -676,6 +676,37 @@ class RPGFactory
     return command(204, 2, graphic)
   end
 
+  ORIGIN = {
+    0 => :upper_left,
+    1 => :center,
+  }
+
+  ORIGIN_INVERSE = ORIGIN.invert
+
+  def show_picture(number:, graphic:, origin:, x: 0, y: 0, zoom_x: 100, zoom_y: 100, opacity: 255, blending:)
+    return command(231, number, graphic, ORIGIN_INVERSE[origin], 0, x, y, zoom_x, zoom_y, opacity, BLENDING_INVERSE[blending])
+  end
+
+  def show_picture_variables(number:, graphic:, origin:, x: 0, y: 0, zoom_x: 100, zoom_y: 100, opacity: 255, blending:)
+    return command(231, number, graphic, ORIGIN_INVERSE[origin], 1, x, y, zoom_x, zoom_y, opacity, BLENDING_INVERSE[blending])
+  end
+
+  def move_picture(number:, frames:, origin:, x: 0, y: 0, zoom_x: 100, zoom_y: 100, opacity: 255, blending:)
+    return command(232, number, frames, ORIGIN_INVERSE[origin], 0, x, y, zoom_x, zoom_y, opacity, BLENDING_INVERSE[blending])
+  end
+
+  def move_picture_variables(number:, frames:, origin:, x: 0, y: 0, zoom_x: 100, zoom_y: 100, opacity: 255, blending:)
+    return command(232, number, frames, ORIGIN_INVERSE[origin], 1, x, y, zoom_x, zoom_y, opacity, BLENDING_INVERSE[blending])
+  end
+
+  def rotate_picture(number:, speed:)
+    return command(233, number, speed)
+  end
+
+  def erase_picture(number:)
+    return command(235, number)
+  end
+
   def evaluate(script)
     return eval(script)
   end
