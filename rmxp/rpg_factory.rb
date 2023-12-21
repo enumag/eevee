@@ -289,6 +289,10 @@ class RPGFactory
     return command(250, audio)
   end
 
+  def stop_se
+    return command(251)
+  end
+
   def fade_out_bgm(seconds:)
     return command(242, seconds)
   end
@@ -303,6 +307,10 @@ class RPGFactory
 
   def change_fog_tone(red:, green:, blue:, gray: 0, frames:)
     return command(205, Tone.new(red, green, blue, gray), frames)
+  end
+
+  def change_fog_opacity(opacity:, frames:)
+    return command(206, opacity, frames)
   end
 
   def change_picture_tone(number:, red:, green:, blue:, gray: 0, frames:)
@@ -705,6 +713,81 @@ class RPGFactory
 
   def erase_picture(number:)
     return command(235, number)
+  end
+
+  WEATHER = {
+    0 => :none,
+    1 => :rain,
+    2 => :storm,
+    3 => :snow,
+  }
+
+  WEATHER_INVERSE = WEATHER.invert
+
+  def weather_effect(weather:, power:, frames:)
+    return command(236, WEATHER_INVERSE[weather], power, frames)
+  end
+
+  TRANSPARENT_FLAG = {
+    0 => :transparent,
+    1 => :normal,
+  }
+
+  TRANSPARENT_FLAG_INVERSE = TRANSPARENT_FLAG.invert
+
+  def change_transparent_flag(flag)
+    return command(208, TRANSPARENT_FLAG_INVERSE[flag])
+  end
+
+  ACCESS = {
+    0 => :disable,
+    1 => :enable,
+  }
+
+  ACCESS_INVERSE = ACCESS.invert
+
+  def change_save_access(access)
+    return command(134, ACCESS_INVERSE[access])
+  end
+
+  def change_menu_access(access)
+    return command(135, ACCESS_INVERSE[access])
+  end
+
+  def change_encounter(access)
+    return command(136, ACCESS_INVERSE[access])
+  end
+
+  def prepare_transition
+    return command(221)
+  end
+
+  def execute_transition(graphic)
+    return command(222, graphic)
+  end
+
+  def call_menu_screen
+    return command(351)
+  end
+
+  def call_save_screen
+    return command(352)
+  end
+
+  def game_over
+    return command(353)
+  end
+
+  def title_screen
+    return command(354)
+  end
+
+  def memorize_bgm_bgs
+    return command(247)
+  end
+
+  def restore_bgm_bgs
+    return command(248)
   end
 
   def evaluate(script)

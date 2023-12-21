@@ -297,6 +297,12 @@ class RPGDumper
         value += command_change_gold(command, level)
       when 131 # change windowskin
         value += command_simple("change_windowskin", 1, command, level)
+      when 134 # change save access
+        value += command_access("change_save_access", command, level)
+      when 135 # change menu access
+        value += command_access("change_menu_access", command, level)
+      when 136 # change encounter
+        value += command_access("change_encounter", command, level)
       when 201 # transfer player
         value += command_transfer_player(command, level)
       when 202 # set event location
@@ -307,10 +313,18 @@ class RPGDumper
         value += command_change_map_settings(command, level)
       when 205 # change for color tone
         value += command_change_fog_tone(command, level)
+      when 206 # change for opacity
+        value += command_change_fog_opacity(command, level)
       when 207 # show animation
         value += command_show_animation(command, level)
+      when 208 # change transparent flag
+        value += command_change_transparent_flag(command, level)
       when 210 # wait for move's completion
         value += command_simple("wait_completion", 0, command, level)
+      when 221 # prepare for transition
+        value += command_simple("prepare_transition", 0, command, level)
+      when 222 # execute transition
+        value += command_simple("execute_transition", 1, command, level)
       when 223 # change screen color tone
         value += command_change_tone(command, level)
       when 224 # screen flash
@@ -327,6 +341,8 @@ class RPGDumper
         value += command_change_picture_tone(command, level)
       when 235 # erase picture
         value += command_erase_picture(command, level)
+      when 236 # set weather effects
+        value += command_weather_effect(command, level)
       when 132 # change battle bgm
         value += command_audio("battle_bgm", command, level)
       when 133 # change battle me
@@ -339,12 +355,26 @@ class RPGDumper
         value += command_audio("play_me", command, level)
       when 250 # play se
         value += command_audio("play_se", command, level)
+      when 251 # stop se
+        value += command_simple("stop_se", 0, command, level)
       when 242 # fade out bgm
         value += command_fade_out_bgm(command, level)
       when 246 # fade out bgs
         value += command_fade_out_bgs(command, level)
       when 314 # recover all
         value += command_simple("recover_all", 1, command, level)
+      when 351 # call menu screen
+        value += command_simple("call_menu_screen", 0, command, level)
+      when 352 # call save screen
+        value += command_simple("call_save_screen", 0, command, level)
+      when 353 # game over
+        value += command_simple("game_over", 0, command, level)
+      when 354 # title screen
+        value += command_simple("title_screen", 0, command, level)
+      when 247 # memorize bgm bgs
+        value += command_simple("memorize_bgm_bgs", 0, command, level)
+      when 248 # restore bgm bgs
+        value += command_simple("restore_bgm_bgs", 0, command, level)
 
       # Unknown command
       else
@@ -449,6 +479,15 @@ class RPGDumper
     value += "green: " + command.parameters[0].green.to_i.inspect + ", "
     value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
     value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
+    value += "frames: " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_change_fog_opacity(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "change_fog_opacity("
+    value += "opacity: " + command.parameters[0].inspect + ", "
     value += "frames: " + command.parameters[1].inspect
     value += "),\n"
     return value
@@ -916,9 +955,35 @@ class RPGDumper
   end
 
   def command_erase_picture(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
+    raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "erase_picture("
     value += "number: " + command.parameters[0].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_weather_effect(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 3
+    value = indent(level) + "weather_effect("
+    value += "weather: " + RPGFactory::WEATHER[command.parameters[0]].inspect + ", "
+    value += "power: " + command.parameters[1].inspect + ", "
+    value += "frames: " + command.parameters[2].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_change_transparent_flag(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 1
+    value = indent(level) + "change_transparent_flag("
+    value += RPGFactory::TRANSPARENT_FLAG[command.parameters[0]].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_access(function, command, level)
+    raise "unexpected command parameters" if command.parameters.count != 1
+    value = indent(level) + function + "("
+    value += RPGFactory::ACCESS[command.parameters[0]].inspect
     value += "),\n"
     return value
   end
