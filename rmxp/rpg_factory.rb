@@ -433,11 +433,11 @@ class RPGFactory
     return commands
   end
 
-  def player()
+  def player
     return -1
   end
 
-  def this()
+  def this
     return 0
   end
 
