@@ -215,6 +215,9 @@ class RPGDumper
       case command.code
 
       # Flow control commands
+      when -1 # reduced nesting end
+        # condition nesting reduction
+        level -= 1
       when 0 # block end
         level -= 2
         value += indent(level + 1) + "],\n"
@@ -238,12 +241,27 @@ class RPGDumper
           level += 2
         end
       when 111 # if
-        value += command_condition(command, level)
+        condition = command_condition(command, level)
+        # nesting reduction when a branch only contains another condition
+        # this is achieved by removing the indent and star here
+        # and replacing the ending 0 command with -1
+        if ["then: ", "else: "].include?(value[-6..])
+          condition = condition[(INDENT_SIZE * level + 1)..]
+        end
+        value += condition
         if commands[i + 1].code == 0
           i += 1
         else
-          value += indent(level + 1) + "then: [\n"
-          level += 2
+          value += indent(level + 1) + "then: "
+          index = single_condition_end(commands, i + 1)
+          if index != nil
+            # condition nesting reduction
+            commands[index].code = -1
+            level += 1
+          else
+            value += "[\n"
+            level += 2
+          end
         end
       when 112 # loop
         value += command_loop(command, level)
@@ -256,14 +274,21 @@ class RPGDumper
         end
         value += "\n"
       when 411 # else
-        value += indent(level + 1) + "else: ["
+        value += indent(level + 1) + "else: "
         if commands[i + 1].code == 0
-          value += "],"
+          value += "[],\n"
           i += 1
         else
-          level += 2
+          index = single_condition_end(commands, i + 1)
+          if index != nil
+            # condition nesting reduction
+            commands[index].code = -1
+            level += 1
+          else
+            value += "[\n"
+            level += 2
+          end
         end
-        value += "\n"
       when 404, 412, 413, 604 # show choices end, branch end, loop end, battle end
         value += indent(level) + "),\n"
 
@@ -419,6 +444,17 @@ class RPGDumper
       i += 1
     end
     return value
+  end
+
+  def single_condition_end(commands, index)
+    return nil unless commands[index].code == 111
+    indent = commands[index].indent
+    index += 1
+    while commands[index].indent >= indent
+      return nil if commands[index].indent == indent && ![0, 411, 412].include?(commands[index].code)
+      index += 1
+    end
+    return index - 1
   end
 
   def collect(commands, index, code)
