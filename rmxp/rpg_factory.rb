@@ -111,7 +111,7 @@ class RPGFactory
     through: false,
     always_on_top: false,
     trigger: :action,
-    list: []
+    commands: []
   )
     condition = RPG::Event::Page::Condition.new
     condition.switch1_valid = switch1_valid == nil ? switch1 != nil : switch1_valid
@@ -137,8 +137,8 @@ class RPGFactory
     page.through = through
     page.always_on_top = always_on_top
     page.trigger = EVENT_TRIGGER_INVERSE[trigger]
-    list.append RPG::EventCommand.new
-    page.list = list.flatten
+    commands.append RPG::EventCommand.new
+    page.list = commands.flatten
     return page
   end
 
@@ -614,9 +614,9 @@ class RPGFactory
 
   def control_switches(switches, value)
     if switches.is_a?(Range)
-      return command(121, switches.begin, switches.end, value)
+      return command(121, switches.begin, switches.end, value ? 1 : 0)
     end
-    return command(121, switches, switches, value)
+    return command(121, switches, switches, value ? 1 : 0)
   end
 
   def control_self_switch(switch, value)
@@ -966,6 +966,31 @@ class RPGFactory
 
   def route_script(script)
     return move(45, script)
+  end
+
+  COMMON_EVENT_TRIGGER = {
+    0 => :none,
+    1 => :autorun,
+    2 => :parallel,
+  }
+
+  COMMON_EVENT_TRIGGER_INVERSE = COMMON_EVENT_TRIGGER.invert
+
+  def common_event(
+    id: 0,
+    name: "",
+    trigger: :none,
+    switch: 1,
+    commands: []
+  )
+    event = RPG::CommonEvent.new
+    event.id = id
+    event.name = name
+    event.trigger = COMMON_EVENT_TRIGGER_INVERSE[trigger]
+    event.switch_id = switch
+    commands.append RPG::EventCommand.new
+    event.list = commands.flatten
+    return event
   end
 
   def evaluate(script)

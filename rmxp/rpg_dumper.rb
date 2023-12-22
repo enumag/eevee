@@ -1,8 +1,16 @@
 class RPGDumper
-  def dump_ruby(object)
+  def dump_ruby(object, level = 0)
     case object
     when RPG::Map
-      return map(object, 0)
+      return map(object, level)
+    when RPG::CommonEvent
+      return common_event(object, level)
+    when Array
+      return array(object, level)
+    when NilClass
+      return indent(level) + "nil,\n"
+    else
+      puts object.class
     end
   end
 
@@ -15,8 +23,17 @@ class RPGDumper
   DEFAULT_MOVE = Marshal.dump(RPG::MoveCommand.new)
   DEFAULT_PAGE = Marshal.dump(RPG::Event::Page.new)
 
+  def array(array, level)
+    value = indent(level) + "[\n"
+    array.each do |object|
+      value += dump_ruby(object, level + 1)
+    end
+    value += indent(level) + "]\n"
+    return value
+  end
+
   def map(map, level)
-    value = "map(\n"
+    value = indent(level) + "map(\n"
     value += indent(level + 1) + "tileset_id: " + map.tileset_id.inspect + ",\n" if map.tileset_id != 1
     value += indent(level + 1) + "autoplay_bgm: " + map.autoplay_bgm.inspect + ",\n" if map.autoplay_bgm != false
     value += indent(level + 1) + "bgm: " + audio(map.bgm) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
@@ -26,11 +43,30 @@ class RPGDumper
     value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
     value += indent(level + 1) + "events: [\n\n"
     map.events.each do |key, event|
-      value += indent(level + 2) + event(event, level + 2) + ",\n\n"
+      value += event(event, level + 2) + ",\n\n"
     end
     value += indent(level + 1) + "],\n"
     value += indent(level + 1) + "data: " + table(map.data, level + 1) + ",\n"
-    value += indent(level) + ")"
+    value += indent(level) + ")\n"
+    return value
+  end
+
+  def common_event(event, level)
+    value = indent(level) + "common_event(\n"
+    value += indent(level + 1) + "id: " + event.id.inspect + ",\n" if event.id != 0
+    value += indent(level + 1) + "name: " + event.name.inspect + ",\n" if event.name != ""
+    value += indent(level + 1) + "trigger: " + RPGFactory::COMMON_EVENT_TRIGGER[event.trigger].inspect + ",\n" if event.trigger != 0
+    value += indent(level + 1) + "switch: switch(" + event.switch_id.inspect + "),\n" if event.trigger != 0 || event.switch_id != 1
+
+    commands = event.list.clone
+    last = commands.pop
+    raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
+    if event.list.count > 1
+      value += indent(level + 1) + "commands: [\n"
+      value += command_list(commands, level + 2)
+      value += indent(level + 1) + "],\n"
+    end
+    value += indent(level) + "),\n"
     return value
   end
 
@@ -113,7 +149,7 @@ class RPGDumper
   end
 
   def event(event, level)
-    value = "event(\n"
+    value = indent(level) + "event(\n"
     value += indent(level + 1) + "id: " + event.id.inspect + ",\n"
     value += indent(level + 1) + "name: " + event.name.inspect + ",\n"
     value += indent(level + 1) + "x: " + event.x.inspect + ",\n"
@@ -162,7 +198,7 @@ class RPGDumper
     last = commands.pop
     raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
     if page.list.count > 1
-      value += indent(level + 1) + "list: [\n"
+      value += indent(level + 1) + "commands: [\n"
       value += command_list(commands, level + 2)
       value += indent(level + 1) + "],\n"
     end
@@ -642,7 +678,7 @@ class RPGDumper
     if command.parameters[0] != command.parameters[1]
       value += ".." + command.parameters[1].inspect
     end
-    value += "), " + command.parameters[2].inspect
+    value += "), " + (command.parameters[2] == 1 ? "true" : "false")
     value += "),\n"
     return value
   end
@@ -838,7 +874,7 @@ class RPGDumper
       value += indent(level + 1) + "script: " + command.parameters[1].inspect + ",\n"
     else
       # TODO print a warning that this condition type isn't supported
-      raise "unexpected condition type " + type.to_s
+      # raise "unexpected condition type " + type.to_s
       value += indent(level + 1) + "type: " + type.inspect + ",\n"
       value += indent(level + 1) + "parameters: " + command.parameters[1..].inspect + ",\n"
     end
