@@ -188,10 +188,7 @@ class RPGFactory
     return route
   end
 
-  def move(
-    code:,
-    parameters: []
-  )
+  def move(code, *parameters)
     move = RPG::MoveCommand.new
     move.code = code
     move.parameters = parameters
@@ -788,6 +785,186 @@ class RPGFactory
 
   def restore_bgm_bgs
     return command(248)
+  end
+
+  def move_down
+    return move(1)
+  end
+
+  def move_left
+    return move(2)
+  end
+
+  def move_right
+    return move(3)
+  end
+
+  def move_up
+    return move(4)
+  end
+
+  def move_lower_left
+    return move(5)
+  end
+
+  def move_lower_right
+    return move(6)
+  end
+
+  def move_upper_left
+    return move(7)
+  end
+
+  def move_upper_right
+    return move(8)
+  end
+
+  def move_random
+    return move(9)
+  end
+
+  def move_toward_player
+    return move(10)
+  end
+
+  def move_away_from_player
+    return move(11)
+  end
+
+  def move_forward
+    return move(12)
+  end
+
+  def move_backward
+    return move(13)
+  end
+
+  def jump(x_plus:, y_plus:)
+    return move(14, x_plus, y_plus)
+  end
+
+  def route_wait(frames)
+    return move(15, frames)
+  end
+
+  def turn_down
+    return move(16)
+  end
+
+  def turn_left
+    return move(17)
+  end
+
+  def turn_right
+    return move(18)
+  end
+
+  def turn_up
+    return move(19)
+  end
+
+  def turn_right_90
+    return move(20)
+  end
+
+  def turn_left_90
+    return move(21)
+  end
+
+  def turn_180
+    return move(22)
+  end
+
+  def turn_right_or_left_90
+    return move(23)
+  end
+
+  def turn_random
+    return move(24)
+  end
+
+  def turn_toward_player
+    return move(25)
+  end
+
+  def turn_away_from_player
+    return move(26)
+  end
+
+  def switch_on(switch)
+    return move(27, switch)
+  end
+
+  def switch_off(switch)
+    return move(28, switch)
+  end
+
+  def change_speed(speed)
+    return move(29, speed)
+  end
+
+  def change_frequency(frequency)
+    return move(30, frequency)
+  end
+
+  def walk_anime_on
+    return move(31)
+  end
+
+  def walk_anime_off
+    return move(32)
+  end
+
+  def step_anime_on
+    return move(33)
+  end
+
+  def step_anime_off
+    return move(34)
+  end
+
+  def direction_fix_on
+    return move(35)
+  end
+
+  def direction_fix_off
+    return move(36)
+  end
+
+  def through_on
+    return move(37)
+  end
+
+  def through_off
+    return move(38)
+  end
+
+  def always_on_top_on
+    return move(39)
+  end
+
+  def always_on_top_off
+    return move(40)
+  end
+
+  def change_graphic(character_name: "", character_hue: 0, direction: :down, pattern: 0)
+    return move(41, character_name, character_hue, DIRECTION_INVERSE[direction], pattern)
+  end
+
+  def change_opacity(opacity)
+    return move(42, opacity)
+  end
+
+  def change_blending(blending)
+    return move(43, BLENDING_INVERSE[blending])
+  end
+
+  def route_play_se(audio)
+    return move(44, audio)
+  end
+
+  def route_script(script)
+    return move(45, script)
   end
 
   def evaluate(script)

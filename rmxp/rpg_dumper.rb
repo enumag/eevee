@@ -19,9 +19,9 @@ class RPGDumper
     value = "map(\n"
     value += indent(level + 1) + "tileset_id: " + map.tileset_id.inspect + ",\n" if map.tileset_id != 1
     value += indent(level + 1) + "autoplay_bgm: " + map.autoplay_bgm.inspect + ",\n" if map.autoplay_bgm != false
-    value += indent(level + 1) + "bgm: " + audio(map.bgm, level + 1) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
+    value += indent(level + 1) + "bgm: " + audio(map.bgm) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
     value += indent(level + 1) + "autoplay_bgs: " + map.autoplay_bgs.inspect + ",\n" if map.autoplay_bgs != false
-    value += indent(level + 1) + "bgs: " + audio(map.bgs, level + 1) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
+    value += indent(level + 1) + "bgs: " + audio(map.bgs) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
     raise "non-empty map encounter_list" if map.encounter_list != []
     value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
     value += indent(level + 1) + "events: [\n\n"
@@ -34,7 +34,7 @@ class RPGDumper
     return value
   end
 
-  def audio(audio, level)
+  def audio(audio)
     value = "audio("
     parameters = []
     parameters.append "name: " + audio.name.inspect if audio.name != ""
@@ -539,7 +539,7 @@ class RPGDumper
   def command_audio(function, command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + function + "("
-    value += audio(command.parameters[0], level + 1)
+    value += audio(command.parameters[0])
     value += "),\n"
     return value
   end
@@ -743,23 +743,66 @@ class RPGDumper
   end
 
   def move(move, level)
-    if move.parameters.count == 0
-      return "move(code: " + move.code.inspect + ")"
+    case move.code
+    when 1 then return "move_down"
+    when 2 then return "move_left"
+    when 3 then return "move_right"
+    when 4 then return "move_up"
+    when 5 then return "move_lower_left"
+    when 6 then return "move_lower_right"
+    when 7 then return "move_upper_left"
+    when 8 then return "move_upper_right"
+    when 9 then return "move_random"
+    when 10 then return "move_toward_player"
+    when 11 then return "move_away_from_player"
+    when 12 then return "move_forward"
+    when 13 then return "move_backward"
+    when 14 then return "jump(x_plus: " + move.parameters[0].inspect + ", y_plus: " + move.parameters[1].inspect + ")"
+    when 15 then return "route_wait(" + move.parameters[0].inspect + ")"
+    when 16 then return "turn_down"
+    when 17 then return "turn_left"
+    when 18 then return "turn_right"
+    when 19 then return "turn_up"
+    when 20 then return "turn_right_90"
+    when 21 then return "turn_left_90"
+    when 22 then return "turn_180"
+    when 23 then return "turn_right_or_left_90"
+    when 24 then return "turn_random"
+    when 25 then return "turn_toward_player"
+    when 26 then return "turn_away_from_player"
+    when 27 then return "switch_on(switch(" + move.parameters[0].inspect + "))"
+    when 28 then return "switch_off(switch(" + move.parameters[0].inspect + "))"
+    when 29 then return "change_speed(" + move.parameters[0].inspect + ")"
+    when 30 then return "change_frequency(" + move.parameters[0].inspect + ")"
+    when 31 then return "walk_anime_on"
+    when 32 then return "walk_anime_off"
+    when 33 then return "step_anime_on"
+    when 34 then return "step_anime_off"
+    when 35 then return "direction_fix_on"
+    when 36 then return "direction_fix_off"
+    when 37 then return "through_on"
+    when 38 then return "through_off"
+    when 39 then return "always_on_top_on"
+    when 40 then return "always_on_top_off"
+    when 41
+      parameters = []
+      parameters.append "character_name: " + move.parameters[0].inspect if move.parameters[0] != ""
+      parameters.append "character_hue: " + move.parameters[1].inspect if move.parameters[1] != 0
+      parameters.append "direction: " + RPGFactory::DIRECTION[move.parameters[2]].inspect if move.parameters[2] != 2
+      parameters.append "pattern: " + move.parameters[3].inspect if move.parameters[3] != 0
+      return "change_graphic(" + parameters.join(", ") + ")"
+    when 42 then return "change_opacity(" + move.parameters[0].inspect + ")"
+    when 43 then return "change_blending(" + RPGFactory::BLENDING[move.parameters[0]].inspect + ")"
+    when 44 then return "route_play_se(" + audio(move.parameters[0]) + ")"
+    when 45 then return "route_script(" + move.parameters[0].inspect + ")"
+    else
+      value = "move(" + move.code.inspect
+      move.parameters.each do |parameter|
+        value += ", " + parameter.inspect
+      end
+      value += ")"
+      return value
     end
-
-    if move.code == 44
-      return "move(code: 44, parameters: [" + audio(move.parameters[0], level) + "])"
-    end
-
-    move.parameters.each do |parameter|
-      raise "missing if for move code " + move.code.to_s if parameter.inspect.start_with?('#')
-    end
-
-    value = "move(\n"
-    value += indent(level + 1) + "code: " + move.code.inspect + ",\n"
-    value += indent(level + 1) + "parameters: " + move.parameters.inspect + ",\n"
-    value += indent(level) + ")"
-    return value
   end
 
   def command_condition(command, level)
