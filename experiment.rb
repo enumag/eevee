@@ -100,11 +100,8 @@ end
 
 # TODO:
 # CommonEvents, MapInfos and other rxdata
-# adjust generic move() or command() to either both or neither to use named arguments
-# Move route commands
-# Useful commands
 # Consider adding variable and switch name comments
-# Consider map() function and a name comment - is map referenced outside of transfer player?
+# Consider map() function and a name comment for transfer player?
 # Consider character() function and a name comment but not in CommonEvents
 # Consider comments with common event name
 # Use Change encounter command in agate city raid, but careful with fly
