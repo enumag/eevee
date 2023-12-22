@@ -791,8 +791,8 @@ class RPGDumper
   def graphic(graphic, level)
     value = "graphic(\n"
     value += indent(level + 1) + "tile_id: " + graphic.tile_id.inspect + ",\n" if graphic.tile_id != 0
-    value += indent(level + 1) + "character_name: " + graphic.character_name.inspect + ",\n" if graphic.character_name != ""
-    value += indent(level + 1) + "character_hue: " + graphic.character_hue.inspect + ",\n" if graphic.character_hue != 0
+    value += indent(level + 1) + "name: " + graphic.character_name.inspect + ",\n" if graphic.character_name != ""
+    value += indent(level + 1) + "hue: " + graphic.character_hue.inspect + ",\n" if graphic.character_hue != 0
     value += indent(level + 1) + "direction: " + RPGFactory::DIRECTION[graphic.direction].inspect + ",\n" if graphic.direction != 2
     value += indent(level + 1) + "pattern: " + graphic.pattern.inspect + ",\n" if graphic.pattern != 0
     value += indent(level + 1) + "opacity: " + graphic.opacity.inspect + ",\n" if graphic.opacity != 255
@@ -829,7 +829,7 @@ class RPGDumper
     when 11 then return "move_away_from_player"
     when 12 then return "move_forward"
     when 13 then return "move_backward"
-    when 14 then return "jump(x_plus: " + move.parameters[0].inspect + ", y_plus: " + move.parameters[1].inspect + ")"
+    when 14 then return "jump(x: " + move.parameters[0].inspect + ", y: " + move.parameters[1].inspect + ")"
     when 15 then return "route_wait(" + move.parameters[0].inspect + ")"
     when 16 then return "turn_down"
     when 17 then return "turn_left"
@@ -858,10 +858,11 @@ class RPGDumper
     when 40 then return "always_on_top_off"
     when 41
       parameters = []
-      parameters.append "character_name: " + move.parameters[0].inspect if move.parameters[0] != ""
-      parameters.append "character_hue: " + move.parameters[1].inspect if move.parameters[1] != 0
+      parameters.append "name: " + move.parameters[0].inspect if move.parameters[0] != ""
+      parameters.append "hue: " + move.parameters[1].inspect if move.parameters[1] != 0
       parameters.append "direction: " + RPGFactory::DIRECTION[move.parameters[2]].inspect if move.parameters[2] != 2
       parameters.append "pattern: " + move.parameters[3].inspect if move.parameters[3] != 0
+      return "remove_graphic" if parameters == []
       return "change_graphic(" + parameters.join(", ") + ")"
     when 42 then return "change_opacity(" + move.parameters[0].inspect + ")"
     when 43 then return "change_blending(" + RPGFactory::BLENDING[move.parameters[0]].inspect + ")"

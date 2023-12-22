@@ -157,8 +157,8 @@ class RPGFactory
 
   def graphic(
     tile_id: 0,
-    character_name: "",
-    character_hue: 0,
+    name: "",
+    hue: 0,
     direction: :down,
     pattern: 0,
     opacity: 255,
@@ -166,8 +166,8 @@ class RPGFactory
   )
     graphic = RPG::Event::Page::Graphic.new
     graphic.tile_id = tile_id
-    graphic.character_name = character_name
-    graphic.character_hue = character_hue
+    graphic.character_name = name
+    graphic.character_hue = hue
     graphic.direction = DIRECTION_INVERSE[direction]
     graphic.pattern = pattern
     graphic.opacity = opacity
@@ -840,8 +840,8 @@ class RPGFactory
     return move(13)
   end
 
-  def jump(x_plus:, y_plus:)
-    return move(14, x_plus, y_plus)
+  def jump(x:, y:)
+    return move(14, x, y)
   end
 
   def route_wait(frames)
@@ -948,8 +948,12 @@ class RPGFactory
     return move(40)
   end
 
-  def change_graphic(character_name: "", character_hue: 0, direction: :down, pattern: 0)
-    return move(41, character_name, character_hue, DIRECTION_INVERSE[direction], pattern)
+  def change_graphic(name: "", hue: 0, direction: :down, pattern: 0)
+    return move(41, name, hue, DIRECTION_INVERSE[direction], pattern)
+  end
+
+  def remove_graphic
+    return change_graphic
   end
 
   def change_opacity(opacity)
