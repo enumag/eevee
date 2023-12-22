@@ -104,5 +104,4 @@ end
 # Consider map() function and a name comment for transfer player?
 # Consider character() function and a name comment but not in CommonEvents
 # Consider comments with common event name
-# Use Change encounter command in agate city raid, but careful with fly
 # Consider function and name comment for animations
