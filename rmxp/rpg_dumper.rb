@@ -905,7 +905,14 @@ class RPGDumper
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "*move_route(\n"
     value += indent(level + 1) + character(command.parameters[0]) + ",\n"
-    value += indent(level + 1) + route(command.parameters[1], level + 1) + ",\n"
+    route = command.parameters[1]
+    last = route.list.pop
+    raise "unexpected last route command" if Marshal.dump(last) != DEFAULT_MOVE
+    route.list.each do |move|
+      value += indent(level + 1) + move(move, level + 1) + ",\n"
+    end
+    value += indent(level + 1) + "repeat: " + route.repeat.inspect + ",\n" if route.repeat != false
+    value += indent(level + 1) + "skippable: " + route.skippable.inspect + ",\n" if route.skippable != false
     value += indent(level) + "),\n"
     return value
   end
