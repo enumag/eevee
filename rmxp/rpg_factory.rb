@@ -27,11 +27,11 @@ class RPGFactory
     return map
   end
 
-  def variable(id)
+  def v(id)
     return id
   end
 
-  def switch(id)
+  def s(id)
     return id
   end
 
