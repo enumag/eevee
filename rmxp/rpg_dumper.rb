@@ -575,7 +575,7 @@ class RPGDumper
       value += "y: variable(" + command.parameters[3].inspect + "), "
     end
     value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect + ", "
-    value += "fading: " + (command.parameters[5] == 0 ? 'true' : 'false') + ", "
+    value += "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
     value += "),\n"
     return value
   end
