@@ -105,3 +105,4 @@ end
 # Consider character() function and a name comment but not in CommonEvents
 # Consider comments with common event name
 # Consider function and name comment for animations
+# Consider comments with tileset name
