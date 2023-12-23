@@ -389,7 +389,6 @@ class RPGFactory
   GOLD_COMPARISON_INVERSE = GOLD_COMPARISON.invert
 
   # TODO: lossy change - skip else block is empty
-  # TODO: skip then block if empty
   def condition(**args)
     commands = []
     if args[:parameters] != nil
