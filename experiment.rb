@@ -84,15 +84,31 @@ data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Facto
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
 
 range = 0..999
+range = []
+range.append 'Actors'
+range.append 'Animations'
+range.append 'Armors'
+range.append 'Classes'
+range.append 'CommonEvents'
+range.append 'Enemies'
+range.append 'Items'
+range.append 'MapInfos'
+range.append 'Skills'
+range.append 'States'
+range.append 'System'
+range.append 'Tilesets'
+range.append 'Troops'
+range.append 'Weapons'
 
 range.each do |id|
-  file = 'C:\Projects\Reborn\Reborn\Data/Map' + id.to_s.rjust(3, '0') + '.rxdata'
+  name = id.is_a?(Integer) ? 'Map' + id.to_s.rjust(3, '0') : id
+  file = 'C:\Projects\Reborn\Reborn\Data/' + name + '.rxdata'
   if File.exist?(file)
     puts file
     data = load_rxdata(file)
     save_rb('', data)
 
-    FileUtils.cp('var/map.rb', 'C:\Projects\Reborn\Reborn\DataRuby/Map' + id.to_s.rjust(3, '0') + '.rb')
+    FileUtils.cp('var/map.rb', 'C:\Projects\Reborn\Reborn\DataRuby/' + name + '.rb')
   else
     puts 'skip ' + id.to_s
   end
