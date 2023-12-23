@@ -62,9 +62,7 @@ class RPGDumper
     last = commands.pop
     raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
     if event.list.count > 1
-      value += indent(level + 1) + "commands: [\n"
-      value += command_list(commands, level + 2)
-      value += indent(level + 1) + "],\n"
+      value += command_array(commands, level + 1)
     end
     value += indent(level) + "),\n"
     return value
@@ -198,16 +196,28 @@ class RPGDumper
     last = commands.pop
     raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
     if page.list.count > 1
-      value += indent(level + 1) + "commands: [\n"
-      value += command_list(commands, level + 2)
-      value += indent(level + 1) + "],\n"
+      value += command_array(commands, level + 1)
     end
 
     value += indent(level) + ")"
     return value
   end
 
-  def command_list(commands, level)
+  def command_array(commands, level)
+    value = indent(level) + "commands: "
+    index = single_condition_end(commands, 0)
+    if index != nil
+      # condition nesting reduction
+      value += command_list(commands, level, true)
+    else
+      value += "[\n"
+      value += command_list(commands, level + 1)
+      value += indent(level) + "],\n"
+    end
+    return value
+  end
+
+  def command_list(commands, level, nesting_reduction = false)
     value = ""
     i = 0
     while i < commands.count
@@ -245,7 +255,8 @@ class RPGDumper
         # nesting reduction when a branch only contains another condition
         # this is achieved by removing the indent and star here
         # and replacing the ending 0 command with -1
-        if ["then: ", "else: "].include?(value[-6..])
+        if nesting_reduction
+          nesting_reduction = false
           condition = condition[(INDENT_SIZE * level + 1)..]
         end
         value += condition
@@ -258,6 +269,7 @@ class RPGDumper
             # condition nesting reduction
             commands[index].code = -1
             level += 1
+            nesting_reduction = true
           else
             value += "[\n"
             level += 2
@@ -284,6 +296,7 @@ class RPGDumper
             # condition nesting reduction
             commands[index].code = -1
             level += 1
+            nesting_reduction = true
           else
             value += "[\n"
             level += 2
@@ -450,7 +463,8 @@ class RPGDumper
     return nil unless commands[index].code == 111
     indent = commands[index].indent
     index += 1
-    while commands[index].indent >= indent
+    length = commands.length
+    while index < length && commands[index].indent >= indent
       return nil if commands[index].indent == indent && ![0, 411, 412].include?(commands[index].code)
       index += 1
     end
