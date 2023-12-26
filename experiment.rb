@@ -83,22 +83,22 @@ end
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
 data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
 
-range = 0..999
 range = []
 range.append 'Actors'
-range.append 'Animations'
+#range.append 'Animations'
 range.append 'Armors'
 range.append 'Classes'
 range.append 'CommonEvents'
 range.append 'Enemies'
 range.append 'Items'
-range.append 'MapInfos'
+#range.append 'MapInfos'
 range.append 'Skills'
 range.append 'States'
-range.append 'System'
+#range.append 'System'
 range.append 'Tilesets'
 range.append 'Troops'
 range.append 'Weapons'
+#range.append *0..999
 
 range.each do |id|
   name = id.is_a?(Integer) ? 'Map' + id.to_s.rjust(3, '0') : id
@@ -115,7 +115,7 @@ range.each do |id|
 end
 
 # TODO:
-# CommonEvents, MapInfos and other rxdata
+# MapInfos and other rxdata
 # Consider adding variable and switch name comments
 # Consider map() function and a name comment for transfer player?
 # Consider character() function and a name comment but not in CommonEvents

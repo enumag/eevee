@@ -1063,6 +1063,46 @@ class RPGFactory
     return object
   end
 
+  def tileset(
+    id:,
+    name:,
+    tileset_name:,
+    autotile_names:,
+    panorama_name: "",
+    panorama_hue: 0,
+    fog_name: "",
+    fog_hue: 0,
+    fog_opacity: 64,
+    fog_blending: :normal,
+    fog_zoom: 200,
+    fog_sx: 0,
+    fog_sy: 0,
+    battleback_name: "",
+    passages:,
+    priorities:,
+    terrain_tags:
+  )
+    tileset = RPG::Tileset.new
+    tileset.id = id
+    tileset.name = name
+    tileset.tileset_name = tileset_name
+    tileset.autotile_names = autotile_names
+    tileset.panorama_name = panorama_name
+    tileset.panorama_hue = panorama_hue
+    tileset.fog_name = fog_name
+    tileset.fog_hue = fog_hue
+    tileset.fog_opacity = fog_opacity
+    tileset.fog_blend_type = BLENDING_INVERSE[fog_blending]
+    tileset.fog_zoom = fog_zoom
+    tileset.fog_sx = fog_sx
+    tileset.fog_sy = fog_sy
+    tileset.battleback_name = battleback_name
+    tileset.passages = passages
+    tileset.priorities = priorities
+    tileset.terrain_tags = terrain_tags
+    return tileset
+  end
+
   def evaluate(script)
     return eval(script)
   end

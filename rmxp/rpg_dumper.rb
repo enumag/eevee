@@ -27,6 +27,8 @@ class RPGDumper
       return troop(object, level)
     when RPG::Weapon
       return weapon(object, level)
+    when RPG::Tileset
+      return tileset(object, level)
     else
       puts object.class
     end
@@ -64,7 +66,7 @@ class RPGDumper
       value += event(event, level + 2) + ",\n\n"
     end
     value += indent(level + 1) + "],\n"
-    value += indent(level + 1) + "data: " + table(map.data, level + 1) + ",\n"
+    value += indent(level + 1) + "data: " + table(map.data, level + 1, pretty: true) + ",\n"
     value += indent(level) + ")\n"
     return value
   end
@@ -97,68 +99,30 @@ class RPGDumper
     return value
   end
 
-  def table(table, level)
+  def table(table, level, pretty: false)
     value = "table(\n"
     value += indent(level + 1) + "x: " + table.xsize.inspect + ",\n"
     value += indent(level + 1) + "y: " + table.ysize.inspect + ",\n" if table.ysize > 1
     value += indent(level + 1) + "z: " + table.zsize.inspect + ",\n" if table.zsize > 1
 
-    # Method 1 - fastest solution but not pretty
-    # value += indent(level + 1) + "data: " + table.data.inspect + ",\n"
-
-    # Method 2 - very slow but nice result
-    # value += indent(level + 1) + "data: [\n"
-    # i = 0
-    # table.data.each do |cell|
-    #   i += 1
-    #   if i % table.xsize == 1
-    #     value += indent(level + 2)
-    #   end
-    #   value += cell.to_s.rjust(4) + ","
-    #   if i % table.xsize == 0
-    #     value += "\n"
-    #     if i % (table.xsize * table.ysize) == 0
-    #       value += "\n" if i != table.data.count
-    #     end
-    #   else
-    #     value += " "
-    #   end
-    # end
-    # value += indent(level + 1) + "],\n"
-
-    # Method 3 - still fast, at least it's separated by layer
-    # value += indent(level + 1) + "data: [\n"
-    # (0...table.zsize).each do |z|
-    #   value += indent(level + 2) + "*" + table.data[z * table.xsize * table.ysize, table.xsize * table.ysize].inspect + ",\n"
-    # end
-    # value += indent(level + 1) + "],\n"
-
-    # Method 4 - speed still fine, result without padding
-    # value += indent(level + 1) + "data: [\n"
-    # start = 0
-    # (0...table.zsize).each do
-    #   (0...table.ysize).each do
-    #     value += indent(level + 2) + "*" + table.data[start, table.xsize].inspect + ",\n"
-    #     start += table.xsize
-    #   end
-    #   value += "\n"
-    # end
-    # value += indent(level + 1) + "],\n"
-
-    # Method 5 - optimized speed, result with padding
-    value += indent(level + 1) + "data: [\n"
-    start = 0
-    (0...table.zsize).each do
-      (0...table.ysize).each do
-        value += (indent(level + 2) + table.data[start, table.xsize].inspect[1..-2] + ',').
-          gsub(/ ([0-9]{1}),/, "    \\1,").
-          gsub(/ ([0-9]{2}),/, "   \\1,").
-          gsub(/ ([0-9]{3}),/, "  \\1,") + "\n"
-        start += table.xsize
+    if pretty
+      value += indent(level + 1) + "data: [\n"
+      start = 0
+      (0...table.zsize).each do
+        (0...table.ysize).each do
+          value += (indent(level + 2) + table.data[start, table.xsize].inspect[1..-2] + ',').
+            gsub(/ ([0-9]{1}),/, "    \\1,").
+            gsub(/ ([0-9]{2}),/, "   \\1,").
+            gsub(/ ([0-9]{3}),/, "  \\1,") + "\n"
+          start += table.xsize
+        end
+        value += "\n"
       end
-      value += "\n"
+      value = value.rstrip + "\n"
+      value += indent(level + 1) + "],\n"
+    else
+      value += indent(level + 1) + "data: " + table.data.inspect + ",\n"
     end
-    value += indent(level + 1) + "],\n"
 
     value += indent(level) + ")"
     return value
@@ -1177,5 +1141,28 @@ class RPGDumper
 
   def weapon(object, level)
     return indent(level) + "weapon(" + object.id.inspect + "),\n"
+  end
+
+  def tileset(tileset, level)
+    value = indent(level) + "tileset(\n"
+    value += indent(level + 1) + "id: " + tileset.id.inspect + ",\n"
+    value += indent(level + 1) + "name: " + tileset.name.inspect + ",\n"
+    value += indent(level + 1) + "tileset_name: " + tileset.tileset_name.inspect + ",\n"
+    value += indent(level + 1) + "autotile_names: " + tileset.autotile_names.inspect + ",\n"
+    value += indent(level + 1) + "panorama_name: " + tileset.panorama_name.inspect + ",\n" if tileset.panorama_name != ""
+    value += indent(level + 1) + "panorama_hue: " + tileset.panorama_hue.inspect + ",\n" if tileset.panorama_hue != 0
+    value += indent(level + 1) + "fog_name: " + tileset.fog_name.inspect + ",\n" if tileset.fog_name != ""
+    value += indent(level + 1) + "fog_hue: " + tileset.fog_hue.inspect + ",\n" if tileset.fog_hue != 0
+    value += indent(level + 1) + "fog_opacity: " + tileset.fog_opacity.inspect + ",\n" if tileset.fog_opacity != 64
+    value += indent(level + 1) + "fog_blending: " + RPGFactory::BLENDING[tileset.fog_blend_type].inspect + ",\n" if tileset.fog_blend_type != 0
+    value += indent(level + 1) + "fog_zoom: " + tileset.fog_zoom.inspect + ",\n" if tileset.fog_zoom != 200
+    value += indent(level + 1) + "fog_sx: " + tileset.fog_sx.inspect + ",\n" if tileset.fog_sx != 0
+    value += indent(level + 1) + "fog_sy: " + tileset.fog_sy.inspect + ",\n" if tileset.fog_sy != 0
+    value += indent(level + 1) + "battleback_name: " + tileset.battleback_name.inspect + ",\n" if tileset.battleback_name != ""
+    value += indent(level + 1) + "passages: " + table(tileset.passages, level + 1) + ",\n"
+    value += indent(level + 1) + "priorities: " + table(tileset.priorities, level + 1) + ",\n"
+    value += indent(level + 1) + "terrain_tags: " + table(tileset.terrain_tags, level + 1) + ",\n"
+    value += indent(level) + "),\n"
+    return value
   end
 end
