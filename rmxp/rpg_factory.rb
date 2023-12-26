@@ -997,6 +997,72 @@ class RPGFactory
     return event
   end
 
+  def actor(id, name)
+    object = RPG::Actor.new
+    object.id = id
+    object.name = name
+    return object
+  end
+
+  def armor(id)
+    object = RPG::Armor.new
+    object.id = id
+    return object
+  end
+
+  def rpg_class(id)
+    object = RPG::Class.new
+    object.id = id
+    object.element_ranks = Table.new(2)
+    object.state_ranks = Table.new(2)
+    object.element_ranks.data[1] = 3
+    object.state_ranks.data[1] = 3
+    return object
+  end
+
+  def enemy(id)
+    object = RPG::Enemy.new
+    object.id = id
+    object.maxhp = 33333
+    object.str = 999
+    object.element_ranks = Table.new(2)
+    object.state_ranks = Table.new(2)
+    object.element_ranks.data[1] = 3
+    object.state_ranks.data[1] = 3
+    return object
+  end
+
+  def item(id)
+    object = RPG::Item.new
+    object.id = id
+    return object
+  end
+
+  def skill(id)
+    object = RPG::Skill.new
+    object.id = id
+    return object
+  end
+
+  def state(id)
+    object = RPG::State.new
+    object.id = id
+    return object
+  end
+
+  def troop(id)
+    object = RPG::Troop.new
+    object.id = id
+    object.pages = [RPG::Troop::Page.new]
+    return object
+  end
+
+  def weapon(id)
+    object = RPG::Weapon.new
+    object.id = id
+    return object
+  end
+
   def evaluate(script)
     return eval(script)
   end

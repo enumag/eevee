@@ -9,6 +9,24 @@ class RPGDumper
       return array(object, level)
     when NilClass
       return indent(level) + "nil,\n"
+    when RPG::Actor
+      return actor(object, level)
+    when RPG::Armor
+      return armor(object, level)
+    when RPG::Class
+      return rpg_class(object, level)
+    when RPG::Enemy
+      return enemy(object, level)
+    when RPG::Item
+      return item(object, level)
+    when RPG::Skill
+      return skill(object, level)
+    when RPG::State
+      return state(object, level)
+    when RPG::Troop
+      return troop(object, level)
+    when RPG::Weapon
+      return weapon(object, level)
     else
       puts object.class
     end
@@ -1123,5 +1141,41 @@ class RPGDumper
     value += RPGFactory::ACCESS[command.parameters[0]].inspect
     value += "),\n"
     return value
+  end
+
+  def actor(object, level)
+    return indent(level) + "actor(" + object.id.inspect + ", " + object.name.inspect + "),\n"
+  end
+
+  def armor(object, level)
+    return indent(level) + "armor(" + object.id.inspect + "),\n"
+  end
+
+  def rpg_class(object, level)
+    return indent(level) + "rpg_class(" + object.id.inspect + "),\n"
+  end
+
+  def enemy(object, level)
+    return indent(level) + "enemy(" + object.id.inspect + "),\n"
+  end
+
+  def item(object, level)
+    return indent(level) + "item(" + object.id.inspect + "),\n"
+  end
+
+  def skill(object, level)
+    return indent(level) + "skill(" + object.id.inspect + "),\n"
+  end
+
+  def state(object, level)
+    return indent(level) + "state(" + object.id.inspect + "),\n"
+  end
+
+  def troop(object, level)
+    return indent(level) + "troop(" + object.id.inspect + "),\n"
+  end
+
+  def weapon(object, level)
+    return indent(level) + "weapon(" + object.id.inspect + "),\n"
   end
 end
