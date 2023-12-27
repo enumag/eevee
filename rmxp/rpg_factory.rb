@@ -198,6 +198,7 @@ class RPGFactory
   def script(script)
     parts = script.lines
     commands = parts.map { |text| command(655, text.chomp) }
+    commands = [command(355, "")] if commands == []
     commands[0].code = 355
     return commands[0] if commands.length == 1
     return commands
