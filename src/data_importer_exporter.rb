@@ -39,7 +39,7 @@ class DataImporterExporter
 
     # Create the list of data files to export
     files = Dir.entries( input_dir )
-    files = files.select { |e| File.extname(e) == '.yaml' && ! e.end_with?('.local.yaml') }
+    files = files.select { |e| File.extname(e) == $CONFIG.export_extension && ! e.end_with?('.local' + $CONFIG.export_extension) }
     files.sort! do |a, b|
       a_is_map = ! a.match(/^Map0*+(?<number>[0-9]++),*\.yaml$/).nil?
       b_is_map = ! b.match(/^Map0*+(?<number>[0-9]++).*\.yaml$/).nil?

@@ -73,7 +73,7 @@ end
 #   filename: The name of the data file.
 #----------------------------------------------------------------------------
 def data_file_exported?(filename)
-  exported_filename = $PROJECT_DIR + $CONFIG.export_dir + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
+  exported_filename = $PROJECT_DIR + $CONFIG.export_dir + '/' + File.basename(filename, File.extname(filename)) + $CONFIG.export_extension
   return File.exist?( exported_filename )
 end
 
@@ -223,7 +223,7 @@ end
 
 def import_file(file, checksums, input_dir, output_dir)
   start_time = Time.now
-  filename = format_rxdata_name(File.basename(file, '.yaml'))
+  filename = format_rxdata_name(File.basename(file, $CONFIG.export_extension))
   name = File.basename(filename, '.rxdata')
   record = checksums[name]
   export_file = input_dir + file
@@ -231,7 +231,7 @@ def import_file(file, checksums, input_dir, output_dir)
   import_only = $CONFIG.import_only_list.include?(filename)
   export_checksum = calculate_checksum(export_file)
   data_checksum = File.exist?(data_file) ? calculate_checksum(data_file) : nil
-  local_file = input_dir + name + '.local.yaml'
+  local_file = input_dir + name + '.local' + $CONFIG.export_extension
   local_merge = File.exist?(local_file)
   now = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -297,13 +297,13 @@ def export_file(file, checksums, maps, input_dir, output_dir)
 
   # Handle default values for the System data file
   if name == 'System'
-    save_yaml(output_dir + name + '.local.yaml', data)
+    save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
     # Prevent the 'magic_number' field of System from always conflicting
     data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
     # Prevent the 'edit_map_id' field of System from conflicting
     data.edit_map_id = $CONFIG.startup_map unless $CONFIG.startup_map == -1
   elsif name == 'MapInfos'
-    save_yaml(output_dir + name + '.local.yaml', data)
+    save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
     data.each do |key, map|
       map.expanded = false
       map.scroll_x = 0
@@ -318,21 +318,21 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   end
 
   # Dump the data to a YAML file
-  unstable_file = Dir.tmpdir() + '/' + name + '_export.yaml'
+  unstable_file = Dir.tmpdir() + '/' + name + '_export' + $CONFIG.export_extension
   save_yaml(unstable_file, data)
 
   # Simplify references in yaml to avoid conflicts
-  fixed_file = Dir.tmpdir() + '/' + name + '_fixed.yaml'
+  fixed_file = Dir.tmpdir() + '/' + name + '_fixed' + $CONFIG.export_extension
   yaml_stable_ref(unstable_file, fixed_file)
 
   # Delete other maps with same number to handle map rename
-  Dir.glob(output_dir + name + ' - *.yaml').each do |file|
+  Dir.glob(output_dir + name + ' - *' + $CONFIG.export_extension).each do |file|
     begin
       File.delete(file)
     rescue Errno::ENOENT
     end
   end
-  Dir.glob(output_dir + name + '.yaml').each do |file|
+  Dir.glob(output_dir + name + $CONFIG.export_extension).each do |file|
     begin
       File.delete(file)
     rescue Errno::ENOENT
@@ -422,10 +422,10 @@ end
 
 def format_export_name(name, maps)
   match = name.match(/^Map0*+(?<number>[0-9]++)$/)
-  return name + '.yaml' if match.nil?
+  return name + $CONFIG.export_extension if match.nil?
   map_name = maps.fetch(match[:number].to_i).name.gsub(/[^0-9A-Za-z ]/, '')
-  return name + '.yaml' if map_name == ''
-  return name + ' - ' + map_name + '.yaml'
+  return name + $CONFIG.export_extension if map_name == ''
+  return name + ' - ' + map_name + $CONFIG.export_extension
 end
 
 def format_rxdata_name(name)
@@ -435,7 +435,7 @@ def format_rxdata_name(name)
 end
 
 def ensure_non_duplicate_maps(files)
-  data_files = files.map { |file| format_rxdata_name(File.basename(file, '.yaml')) }
+  data_files = files.map { |file| format_rxdata_name(File.basename(file, $CONFIG.export_extension)) }
   duplicates = data_files.tally.select { |_, count| count > 1 }.keys
   raise "Found multiple yamls for same map: #{duplicates}" unless duplicates.empty?
 end
@@ -484,7 +484,7 @@ def generate_patch(base_tag, password)
       SevenZipRuby::Writer.open(file, { password: password }) do |sevenzip|
         files.each do |file|
           if file.start_with?($CONFIG.export_dir + '/')
-            file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
+            file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
           end
           sevenzip.add_file(file)
         end
@@ -502,7 +502,7 @@ def generate_patch(base_tag, password)
     Zip::File.open('patch.zip', create: true) do |zipfile|
       files.each do |file|
         if file.start_with?($CONFIG.export_dir + '/')
-          file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
+          file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
         end
         zipfile.add(file, file)
       end
