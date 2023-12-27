@@ -374,6 +374,12 @@ def load_rxdata(data_file)
       value.parameters.each do |parameter|
         parameter.force_encoding('utf-8') if parameter.instance_of? String
       end
+    elsif value.instance_of? RPG::Event
+      value.name.force_encoding('utf-8')
+    elsif value.instance_of? RPG::Tileset
+      value.name.force_encoding('utf-8')
+    elsif value.instance_of? RPG::MapInfo
+      value.name.force_encoding('utf-8')
     elsif value.instance_of? Array
       value.map do |parameter|
         parameter.force_encoding('utf-8') if parameter.instance_of? String
