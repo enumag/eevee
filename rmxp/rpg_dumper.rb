@@ -7,6 +7,8 @@ class RPGDumper
       return common_event(object, level)
     when Array
       return array(object, level)
+    when Hash
+      return hash(object, level)
     when NilClass
       return indent(level) + "nil,\n"
     when RPG::Actor
@@ -29,6 +31,8 @@ class RPGDumper
       return weapon(object, level)
     when RPG::Tileset
       return tileset(object, level)
+    when RPG::MapInfo
+      return mapinfo(object, level)
     else
       puts object.class
     end
@@ -49,6 +53,15 @@ class RPGDumper
       value += dump_ruby(object, level + 1)
     end
     value += indent(level) + "]\n"
+    return value
+  end
+
+  def hash(array, level)
+    value = indent(level) + "{\n"
+    array.each do |key, object|
+      value += indent(level + 1) + key.inspect + " => " + dump_ruby(object, level + 1)
+    end
+    value += indent(level) + "}\n"
     return value
   end
 
@@ -1162,6 +1175,18 @@ class RPGDumper
     value += indent(level + 1) + "passages: " + table(tileset.passages, level + 1) + ",\n"
     value += indent(level + 1) + "priorities: " + table(tileset.priorities, level + 1) + ",\n"
     value += indent(level + 1) + "terrain_tags: " + table(tileset.terrain_tags, level + 1) + ",\n"
+    value += indent(level) + "),\n"
+    return value
+  end
+
+  def mapinfo(mapinfo, level)
+    value = "mapinfo(\n"
+    value += indent(level + 1) + "name: " + mapinfo.name.inspect + ",\n" if mapinfo.name != ""
+    value += indent(level + 1) + "parent_id: " + mapinfo.parent_id.inspect + ",\n" if mapinfo.parent_id != 0
+    value += indent(level + 1) + "order: " + mapinfo.order.inspect + ",\n" if mapinfo.order != 0
+    value += indent(level + 1) + "expanded: " + mapinfo.expanded.inspect + ",\n" if mapinfo.expanded != false
+    value += indent(level + 1) + "scroll_x: " + mapinfo.scroll_x.inspect + ",\n" if mapinfo.scroll_x != 0
+    value += indent(level + 1) + "scroll_y: " + mapinfo.scroll_y.inspect + ",\n" if mapinfo.scroll_y != 0
     value += indent(level) + "),\n"
     return value
   end

@@ -1103,6 +1103,24 @@ class RPGFactory
     return tileset
   end
 
+  def mapinfo(
+    name: "",
+    parent_id: 0,
+    order: 0,
+    expanded: false,
+    scroll_x: 0,
+    scroll_y: 0
+  )
+    mapinfo = RPG::MapInfo.new
+    mapinfo.name = name
+    mapinfo.parent_id = parent_id
+    mapinfo.order = order
+    mapinfo.expanded = expanded
+    mapinfo.scroll_x = scroll_x
+    mapinfo.scroll_y = scroll_y
+    return mapinfo
+  end
+
   def evaluate(script)
     return eval(script)
   end
