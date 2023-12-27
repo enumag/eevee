@@ -69,7 +69,7 @@ def file_modified_since?( filename, timestamp )
 end
 
 #----------------------------------------------------------------------------
-# data_file_exported?: Returns true if the data file has been exported to yaml.
+# data_file_exported?: Returns true if the data file has been exported.
 #   filename: The name of the data file.
 #----------------------------------------------------------------------------
 def data_file_exported?(filename)
@@ -219,6 +219,10 @@ class Config
   def export_extension
     return @ruby_dir.nil? ? '.yaml' : '.rb'
   end
+
+  def use_ruby?
+    return ! @ruby_dir.nil?
+  end
 end
 
 def import_file(file, checksums, input_dir, output_dir)
@@ -238,16 +242,16 @@ def import_file(file, checksums, input_dir, output_dir)
   # Skip import if checksum matches
   return nil if ! local_merge && skip_file(record, data_checksum, export_checksum, import_only)
 
-  # Load the data from yaml file
-  data = load_yaml(export_file)
+  # Load the data from yaml or ruby file
+  data = $CONFIG.use_ruby? ? load_ruby(export_file) : load_yaml(export_file)
 
   if data === false
-    puts 'Error: ' + file + ' is not a valid YAML file.'
+    puts 'Error: ' + file + ' is not a valid file.'
     exit 1
   end
 
   if local_merge
-    local_data = load_yaml(local_file)
+    local_data = $CONFIG.use_ruby? ? load_ruby(local_file) : load_yaml(local_file)
     if name == 'System'
       data.magic_number = local_data.magic_number
       data.edit_map_id = local_data.edit_map_id
@@ -297,33 +301,46 @@ def export_file(file, checksums, maps, input_dir, output_dir)
 
   # Handle default values for the System data file
   if name == 'System'
-    save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
+    if $CONFIG.use_ruby?
+      save_ruby(output_dir + name + '.local' + $CONFIG.export_extension, data)
+    else
+      save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
+    end
     # Prevent the 'magic_number' field of System from always conflicting
     data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
     # Prevent the 'edit_map_id' field of System from conflicting
     data.edit_map_id = $CONFIG.startup_map unless $CONFIG.startup_map == -1
   elsif name == 'MapInfos'
-    save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
+    if $CONFIG.use_ruby?
+      save_ruby(output_dir + name + '.local' + $CONFIG.export_extension, data)
+    else
+      save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
+    end
     data.each do |key, map|
       map.expanded = false
       map.scroll_x = 0
       map.scroll_y = 0
       map.order = 0
     end
-    # Sort the maps hash by keys to keep stable order in yaml.
+    # Sort the maps hash by keys to keep stable order in yaml or ruby.
     data = data.sort.to_h
   elsif data.instance_of?(RPG::Map)
-    # Sort the events hash by keys to keep stable order in yaml.
+    # Sort the events hash by keys to keep stable order in yaml or ruby.
     data.events = data.events.sort.to_h
   end
 
-  # Dump the data to a YAML file
-  unstable_file = Dir.tmpdir() + '/' + name + '_export' + $CONFIG.export_extension
-  save_yaml(unstable_file, data)
+  temp_file = Dir.tmpdir() + '/' + name + '_fixed' + $CONFIG.export_extension
 
-  # Simplify references in yaml to avoid conflicts
-  fixed_file = Dir.tmpdir() + '/' + name + '_fixed' + $CONFIG.export_extension
-  yaml_stable_ref(unstable_file, fixed_file)
+  if $CONFIG.use_ruby?
+    save_ruby(temp_file, data)
+  else
+    # Dump the data to a yaml or ruby file
+    unstable_file = Dir.tmpdir() + '/' + name + '_export' + $CONFIG.export_extension
+    save_yaml(unstable_file, data)
+
+    # Simplify references in yaml to avoid conflicts
+    yaml_stable_ref(unstable_file, temp_file)
+  end
 
   # Delete other maps with same number to handle map rename
   Dir.glob(output_dir + name + ' - *' + $CONFIG.export_extension).each do |file|
@@ -339,11 +356,11 @@ def export_file(file, checksums, maps, input_dir, output_dir)
     end
   end
 
-  # Save map yaml
+  # Save map yaml or ruby
   begin
-    FileUtils.move(fixed_file, export_file)
+    FileUtils.move(temp_file, export_file)
   rescue Errno::ENOENT
-    puts "Missing file: " + fixed_file
+    puts "Missing file: " + temp_file
   end
 
   # Update checksums
@@ -351,7 +368,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
     checksums[name] = FileRecord.new(name, calculate_checksum(export_file), data_checksum)
   end
 
-  # Calculate the time to dump the .yaml file
+  # Calculate the time to dump the .yaml or .ruby file
   dump_time = Time.now - start_time
 end
 
@@ -376,6 +393,14 @@ def save_yaml(export_file, data)
   File.open(export_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
     File.write(output_file, YAML::dump({'root' => data}))
   end
+end
+
+def load_ruby(export_file)
+  return (RPGFactory.new).evaluate(File.read(export_file))
+end
+
+def save_ruby(export_file, data)
+  File.write(export_file, (RPGDumper.new).dump_ruby(data))
 end
 
 def load_rxdata(data_file)
@@ -437,7 +462,7 @@ end
 def ensure_non_duplicate_maps(files)
   data_files = files.map { |file| format_rxdata_name(File.basename(file, $CONFIG.export_extension)) }
   duplicates = data_files.tally.select { |_, count| count > 1 }.keys
-  raise "Found multiple yamls for same map: #{duplicates}" unless duplicates.empty?
+  raise "Found multiple files for same map: #{duplicates}" unless duplicates.empty?
 end
 
 def calculate_checksum(file)

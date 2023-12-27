@@ -1,16 +1,3 @@
-#===============================================================================
-# Filename:    data_importer_exporter.rb
-#
-# Developer:   Raku (rakudayo@gmail.com)
-#              XXXX
-#
-# Description: This file contains a plugin for the RMXP Plugin System which 
-#  automatically exports all data files (except Scripts) to plain text YAML
-#  files which can be versioned using a versioning system such as Subversion or 
-#  Mercurial.  When the system shuts down, all data is output into YAML and when the
-#  system is started again, the YAML files are read back into the original data files.
-#===============================================================================
-
 class DataImporterExporter
   def on_start
     # Set up the directory paths
@@ -40,9 +27,10 @@ class DataImporterExporter
     # Create the list of data files to export
     files = Dir.entries( input_dir )
     files = files.select { |e| File.extname(e) == $CONFIG.export_extension && ! e.end_with?('.local' + $CONFIG.export_extension) }
+    regex = /^Map0*+(?<number>[0-9]++).*#{Regexp.quote($CONFIG.export_extension)}$/
     files.sort! do |a, b|
-      a_is_map = ! a.match(/^Map0*+(?<number>[0-9]++),*\.yaml$/).nil?
-      b_is_map = ! b.match(/^Map0*+(?<number>[0-9]++).*\.yaml$/).nil?
+      a_is_map = ! a.match(regex).nil?
+      b_is_map = ! b.match(regex).nil?
       next a <=> b if a_is_map && b_is_map
       next 1 if a_is_map
       next -1 if b_is_map
@@ -60,7 +48,7 @@ class DataImporterExporter
     checksums = load_checksums
     ensure_non_duplicate_maps(files)
 
-    # For each yaml file, load it and dump the objects to data file
+    # For each yaml or ruby file, load it and dump the objects to data file
     Parallel.each(
       files,
       in_threads: detect_cores,
@@ -194,7 +182,7 @@ class DataImporterExporter
       return
     end
 
-    # For each data file, load it and dump the objects to YAML
+    # For each data file, load it and dump the objects to yaml or ruby
     Parallel.each(
       files,
       in_threads: detect_cores,
@@ -224,7 +212,7 @@ class DataImporterExporter
  
     # Report the times
     print_separator
-    puts_verbose "YAML dump time: #{total_dump_time} seconds."
+    puts_verbose "Dump time: #{total_dump_time} seconds."
     puts_verbose "Total export time: #{total_elapsed_time} seconds."
     print_separator
     puts_verbose

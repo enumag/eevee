@@ -10,6 +10,8 @@
 require_relative 'rgss_internal'
 require_relative 'rgss_rpg'
 require_relative 'rgss_mod'
+require_relative 'rpg_dumper'
+require_relative 'rpg_factory'
 
 # Initialize all classes to help Marshal.dump have consistent output.
 RPG::Actor.new

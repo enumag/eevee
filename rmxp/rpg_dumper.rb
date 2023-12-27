@@ -42,6 +42,12 @@ class RPGDumper
     end
   end
 
+  INDENT_SIZE = 2
+
+  def indent(level)
+    return ' ' * level * INDENT_SIZE
+  end
+
   DEFAULT_AUDIO = Marshal.dump(RPG::AudioFile.new)
   DEFAULT_BGS = Marshal.dump(RPG::AudioFile.new("", 80))
   DEFAULT_CONDITION = Marshal.dump(RPG::Event::Page::Condition.new)
