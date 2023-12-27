@@ -1171,6 +1171,82 @@ class RPGFactory
     return object
   end
 
+  def system(
+    windowskin_name: "",
+    title_name: "",
+    gameover_name: "",
+    battle_transition: "",
+    battleback_name: "",
+    battler_name: "",
+    battler_hue: 0,
+    title_bgm: RPG::AudioFile.new,
+    battle_bgm: RPG::AudioFile.new,
+    battle_end_me: RPG::AudioFile.new,
+    gameover_me: RPG::AudioFile.new,
+    cursor_se: RPG::AudioFile.new("", 80),
+    decision_se: RPG::AudioFile.new("", 80),
+    cancel_se: RPG::AudioFile.new("", 80),
+    buzzer_se: RPG::AudioFile.new("", 80),
+    equip_se: RPG::AudioFile.new("", 80),
+    shop_se: RPG::AudioFile.new("", 80),
+    save_se: RPG::AudioFile.new("", 80),
+    load_se: RPG::AudioFile.new("", 80),
+    battle_start_se: RPG::AudioFile.new("", 80),
+    escape_se: RPG::AudioFile.new("", 80),
+    actor_collapse_se: RPG::AudioFile.new("", 80),
+    enemy_collapse_se: RPG::AudioFile.new("", 80),
+    magic_number: 0,
+    party_members: [1],
+    test_troop_id: 1,
+    start_map_id: 1,
+    edit_map_id: 1,
+    start_x: 0,
+    start_y: 0,
+    elements: ["", ""],
+    words: RPG::System::Words.new,
+    test_battlers: [RPG::System::TestBattler.new],
+    switches:,
+    variables:
+  )
+    object = RPG::System.new
+    object.windowskin_name = windowskin_name
+    object.title_name = title_name
+    object.gameover_name = gameover_name
+    object.battle_transition = battle_transition
+    object.battleback_name = battleback_name
+    object.battler_name = battler_name
+    object.battler_hue = battler_hue
+    object.title_bgm = title_bgm
+    object.battle_bgm = battle_bgm
+    object.battle_end_me = battle_end_me
+    object.gameover_me = gameover_me
+    object.cursor_se = cursor_se
+    object.decision_se = decision_se
+    object.cancel_se = cancel_se
+    object.buzzer_se = buzzer_se
+    object.equip_se = equip_se
+    object.shop_se = shop_se
+    object.save_se = save_se
+    object.load_se = load_se
+    object.battle_start_se = battle_start_se
+    object.escape_se = escape_se
+    object.actor_collapse_se = actor_collapse_se
+    object.enemy_collapse_se = enemy_collapse_se
+    object.magic_number = magic_number
+    object.party_members = party_members
+    object.test_troop_id = test_troop_id
+    object.start_map_id = start_map_id
+    object.edit_map_id = edit_map_id
+    object.start_x = start_x
+    object.start_y = start_y
+    object.elements = elements
+    object.words = words
+    object.test_battlers = test_battlers
+    object.switches = switches
+    object.variables = variables
+    return object
+  end
+
   def evaluate(script)
     return eval(script)
   end

@@ -61,7 +61,7 @@ def save_rb(file, data)
   # puts Marshal.dump(yaml) == Marshal.dump(load)
   match = File.read('var/map_original.yaml') == File.read('var/map.yaml')
   puts match
-  exit unless match
+  exit unless match || file == "System"
 end
 
 def measure(&block)
@@ -94,11 +94,11 @@ range.append 'Items'
 range.append 'MapInfos'
 range.append 'Skills'
 range.append 'States'
-#range.append 'System'
+range.append 'System'
 range.append 'Tilesets'
 range.append 'Troops'
 range.append 'Weapons'
-#range.append *0..999
+range.append *0..999
 
 range.each do |id|
   name = id.is_a?(Integer) ? 'Map' + id.to_s.rjust(3, '0') : id
@@ -106,7 +106,7 @@ range.each do |id|
   if File.exist?(file)
     puts file
     data = load_rxdata(file)
-    save_rb('', data)
+    save_rb(name, data)
 
     FileUtils.cp('var/map.rb', 'C:\Projects\Reborn\Reborn\DataRuby/' + name + '.rb')
   else
@@ -115,7 +115,6 @@ range.each do |id|
 end
 
 # TODO:
-# MapInfos and other rxdata
 # Consider adding variable and switch name comments
 # Consider map() function and a name comment for transfer player?
 # Consider character() function and a name comment but not in CommonEvents

@@ -35,6 +35,8 @@ class RPGDumper
       return mapinfo(object, level)
     when RPG::Animation
       return animation(object, level)
+    when RPG::System
+      return system(object, level)
     else
       puts object.class
     end
@@ -1257,6 +1259,63 @@ class RPGDumper
     value += "blue: " + timing.flash_color.blue.to_i.inspect + ", "
     value += "alpha: " + timing.flash_color.alpha.to_i.inspect
     value += "),"
+    return value
+  end
+
+  def system(system, level)
+    value = indent(level) + "system(\n"
+
+    value += indent(level + 1) + "windowskin_name: " + system.windowskin_name.inspect + ",\n" if system.windowskin_name != ""
+    value += indent(level + 1) + "title_name: " + system.title_name.inspect + ",\n" if system.title_name != ""
+    value += indent(level + 1) + "gameover_name: " + system.gameover_name.inspect + ",\n" if system.gameover_name != ""
+    value += indent(level + 1) + "battle_transition: " + system.battle_transition.inspect + ",\n" if system.battle_transition != ""
+    value += indent(level + 1) + "battleback_name: " + system.battleback_name.inspect + ",\n" if system.battleback_name != ""
+    value += indent(level + 1) + "battler_name: " + system.battler_name.inspect + ",\n" if system.battler_name != ""
+    value += indent(level + 1) + "battler_hue: " + system.battler_hue.inspect + ",\n" if system.battler_hue != 0
+
+    value += indent(level + 1) + "title_bgm: " + audio(system.title_bgm) + ",\n" if Marshal.dump(system.title_bgm) != DEFAULT_AUDIO
+    value += indent(level + 1) + "battle_bgm: " + audio(system.battle_bgm) + ",\n" if Marshal.dump(system.battle_bgm) != DEFAULT_AUDIO
+    value += indent(level + 1) + "battle_end_me: " + audio(system.battle_end_me) + ",\n" if Marshal.dump(system.battle_end_me) != DEFAULT_AUDIO
+    value += indent(level + 1) + "gameover_me: " + audio(system.gameover_me) + ",\n" if Marshal.dump(system.gameover_me) != DEFAULT_AUDIO
+    value += indent(level + 1) + "cursor_se: " + audio(system.cursor_se) + ",\n" if Marshal.dump(system.cursor_se) != DEFAULT_BGS
+    value += indent(level + 1) + "decision_se: " + audio(system.decision_se) + ",\n" if Marshal.dump(system.decision_se) != DEFAULT_BGS
+    value += indent(level + 1) + "cancel_se: " + audio(system.cancel_se) + ",\n" if Marshal.dump(system.cancel_se) != DEFAULT_BGS
+    value += indent(level + 1) + "buzzer_se: " + audio(system.buzzer_se) + ",\n" if Marshal.dump(system.buzzer_se) != DEFAULT_BGS
+    value += indent(level + 1) + "equip_se: " + audio(system.equip_se) + ",\n" if Marshal.dump(system.equip_se) != DEFAULT_BGS
+    value += indent(level + 1) + "shop_se: " + audio(system.shop_se) + ",\n" if Marshal.dump(system.shop_se) != DEFAULT_BGS
+    value += indent(level + 1) + "save_se: " + audio(system.save_se) + ",\n" if Marshal.dump(system.save_se) != DEFAULT_BGS
+    value += indent(level + 1) + "load_se: " + audio(system.load_se) + ",\n" if Marshal.dump(system.load_se) != DEFAULT_BGS
+    value += indent(level + 1) + "battle_start_se: " + audio(system.battle_start_se) + ",\n" if Marshal.dump(system.battle_start_se) != DEFAULT_BGS
+    value += indent(level + 1) + "escape_se: " + audio(system.escape_se) + ",\n" if Marshal.dump(system.escape_se) != DEFAULT_BGS
+    value += indent(level + 1) + "actor_collapse_se: " + audio(system.actor_collapse_se) + ",\n" if Marshal.dump(system.actor_collapse_se) != DEFAULT_BGS
+    value += indent(level + 1) + "enemy_collapse_se: " + audio(system.enemy_collapse_se) + ",\n" if Marshal.dump(system.enemy_collapse_se) != DEFAULT_BGS
+
+    value += indent(level + 1) + "magic_number: " + system.magic_number.inspect + ",\n" if system.magic_number != 0
+    value += indent(level + 1) + "party_members: " + system.party_members.inspect + ",\n" if system.party_members != [1]
+    value += indent(level + 1) + "test_troop_id: " + system.test_troop_id.inspect + ",\n" if system.test_troop_id != 1
+    value += indent(level + 1) + "edit_map_id: " + system.edit_map_id.inspect + ",\n" if system.edit_map_id != 1
+    value += indent(level + 1) + "start_map_id: " + system.start_map_id.inspect + ",\n" if system.start_map_id != 1
+    value += indent(level + 1) + "start_x: " + system.start_x.inspect + ",\n" if system.start_x != 0
+    value += indent(level + 1) + "start_y: " + system.start_y.inspect + ",\n" if system.start_y != 0
+    value += indent(level + 1) + "elements: " + system.elements.inspect + ",\n" if system.elements != ["", ""]
+
+    # Not supported
+    # value += indent(level + 1) + "words: " + system.words.inspect + ",\n"
+    # value += indent(level + 1) + "test_battlers: " + system.test_battlers.inspect + ",\n"
+
+    value += indent(level + 1) + "switches: [\n"
+    system.switches.each_with_index do |switch, index|
+      value += indent(level + 2) + switch.inspect + ", # s(" + index.to_s + ")\n"
+    end
+    value += indent(level + 1) + "],\n"
+
+    value += indent(level + 1) + "variables: [\n"
+    system.variables.each_with_index do |variable, index|
+      value += indent(level + 2) + variable.inspect + ", # v(" + index.to_s + ")\n"
+    end
+    value += indent(level + 1) + "],\n"
+
+    value += indent(level) + ")\n"
     return value
   end
 end
