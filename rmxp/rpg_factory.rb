@@ -1023,8 +1023,6 @@ class RPGFactory
   def enemy(id)
     object = RPG::Enemy.new
     object.id = id
-    object.maxhp = 33333
-    object.str = 999
     object.element_ranks = Table.new(2)
     object.state_ranks = Table.new(2)
     object.element_ranks.data[1] = 3
