@@ -73,7 +73,7 @@ end
 #   filename: The name of the data file.
 #----------------------------------------------------------------------------
 def data_file_exported?(filename)
-  exported_filename = $PROJECT_DIR + $CONFIG.yaml_dir + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
+  exported_filename = $PROJECT_DIR + $CONFIG.export_dir + '/' + File.basename(filename, File.extname(filename)) + ".yaml"
   return File.exist?( exported_filename )
 end
 
@@ -142,40 +142,40 @@ end
 
 class FileRecord
   attr_accessor :name
-  attr_accessor :yaml_checksum
+  attr_accessor :export_checksum
   attr_accessor :data_checksum
 
-  def initialize(name, yaml_checksum, data_checksum)
-    @name=name
-    @yaml_checksum=yaml_checksum
-    @data_checksum=data_checksum
+  def initialize(name, export_checksum, data_checksum)
+    @name = name
+    @export_checksum = export_checksum
+    @data_checksum = data_checksum
   end
 end
 
 def load_checksums
   hash = {}
-  if File.exist?($CONFIG.yaml_dir + '/' + CHECKSUMS_FILE)
-    File.open($CONFIG.yaml_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
-      name, yaml_checksum, data_checksum = line.rstrip.split(',', 3)
-      hash[name] = FileRecord.new(name, yaml_checksum, data_checksum)
+  if File.exist?($CONFIG.export_dir + '/' + CHECKSUMS_FILE)
+    File.open($CONFIG.export_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
+      name, export_checksum, data_checksum = line.rstrip.split(',', 3)
+      hash[name] = FileRecord.new(name, export_checksum, data_checksum)
     end
   end
   return hash
 end
 
 def save_checksums(hash)
-  File.open($CONFIG.yaml_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
+  File.open($CONFIG.export_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
     hash.each_value do |record|
-      output.print "#{record.name},#{record.yaml_checksum},#{record.data_checksum}\n"
+      output.print "#{record.name},#{record.export_checksum},#{record.data_checksum}\n"
     end
   end
 end
 
-def skip_file(record, data_checksum, yaml_checksum, import_only)
-  return false if data_checksum.nil? || yaml_checksum.nil?
+def skip_file(record, data_checksum, export_checksum, import_only)
+  return false if data_checksum.nil? || export_checksum.nil?
   return true if import_only
   return false if record.nil?
-  return data_checksum == record.data_checksum && yaml_checksum == record.yaml_checksum
+  return data_checksum == record.data_checksum && export_checksum == record.export_checksum
 end
 
 class Config
@@ -208,6 +208,10 @@ class Config
     @base_tag         = config['base_tag']
     @base_commit      = config['base_commit']
   end
+
+  def export_dir
+    return @yaml_dir
+  end
 end
 
 def import_file(file, checksums, input_dir, output_dir)
@@ -215,20 +219,20 @@ def import_file(file, checksums, input_dir, output_dir)
   filename = format_rxdata_name(File.basename(file, '.yaml'))
   name = File.basename(filename, '.rxdata')
   record = checksums[name]
-  yaml_file = input_dir + file
+  export_file = input_dir + file
   data_file = output_dir + filename
   import_only = $CONFIG.import_only_list.include?(filename)
-  yaml_checksum = calculate_checksum(yaml_file)
+  export_checksum = calculate_checksum(export_file)
   data_checksum = File.exist?(data_file) ? calculate_checksum(data_file) : nil
   local_file = input_dir + name + '.local.yaml'
   local_merge = File.exist?(local_file)
   now = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
   # Skip import if checksum matches
-  return nil if ! local_merge && skip_file(record, data_checksum, yaml_checksum, import_only)
+  return nil if ! local_merge && skip_file(record, data_checksum, export_checksum, import_only)
 
   # Load the data from yaml file
-  data = load_yaml(yaml_file)
+  data = load_yaml(export_file)
 
   if data === false
     puts 'Error: ' + file + ' is not a valid YAML file.'
@@ -261,7 +265,7 @@ def import_file(file, checksums, input_dir, output_dir)
 
   # Update checksums
   unless import_only
-    checksums[name] = FileRecord.new(name, yaml_checksum, calculate_checksum(data_file))
+    checksums[name] = FileRecord.new(name, export_checksum, calculate_checksum(data_file))
   end
 
   # Calculate the time to dump the data file
@@ -273,13 +277,13 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   name = File.basename(file, '.rxdata')
   record = checksums[name]
   data_file = input_dir + file
-  yaml_file = output_dir + format_yaml_name(name, maps)
+  export_file = output_dir + format_export_name(name, maps)
   import_only = $CONFIG.import_only_list.include?(file)
-  yaml_checksum = File.exist?(yaml_file) ? calculate_checksum(yaml_file) : nil
+  export_checksum = File.exist?(export_file) ? calculate_checksum(export_file) : nil
   data_checksum = calculate_checksum(data_file)
 
   # Skip import if checksum matches
-  return nil if skip_file(record, data_checksum, yaml_checksum, import_only)
+  return nil if skip_file(record, data_checksum, export_checksum, import_only)
 
   # Load the data from rmxp's data file
   data = load_rxdata(data_file)
@@ -307,12 +311,12 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   end
 
   # Dump the data to a YAML file
-  export_file = Dir.tmpdir() + '/' + name + '_export.yaml'
-  save_yaml(export_file, data)
+  unstable_file = Dir.tmpdir() + '/' + name + '_export.yaml'
+  save_yaml(unstable_file, data)
 
   # Simplify references in yaml to avoid conflicts
   fixed_file = Dir.tmpdir() + '/' + name + '_fixed.yaml'
-  yaml_stable_ref(export_file, fixed_file)
+  yaml_stable_ref(unstable_file, fixed_file)
 
   # Delete other maps with same number to handle map rename
   Dir.glob(output_dir + name + ' - *.yaml').each do |file|
@@ -330,14 +334,14 @@ def export_file(file, checksums, maps, input_dir, output_dir)
 
   # Save map yaml
   begin
-    FileUtils.move(fixed_file, yaml_file)
+    FileUtils.move(fixed_file, export_file)
   rescue Errno::ENOENT
     puts "Missing file: " + fixed_file
   end
 
   # Update checksums
   unless import_only
-    checksums[name] = FileRecord.new(name, calculate_checksum(yaml_file), data_checksum)
+    checksums[name] = FileRecord.new(name, calculate_checksum(export_file), data_checksum)
   end
 
   # Calculate the time to dump the .yaml file
@@ -353,16 +357,16 @@ def detect_cores
   end
 end
 
-def load_yaml(yaml_file)
+def load_yaml(export_file)
   data = nil
-  File.open( yaml_file, "r+" ) do |input_file|
+  File.open( export_file, "r+" ) do |input_file|
     data = YAML::unsafe_load( input_file )
   end
   return data['root']
 end
 
-def save_yaml(yaml_file, data)
-  File.open(yaml_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
+def save_yaml(export_file, data)
+  File.open(export_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |output_file|
     File.write(output_file, YAML::dump({'root' => data}))
   end
 end
@@ -409,7 +413,7 @@ def load_maps
   return load_rxdata($CONFIG.data_dir + '/MapInfos.rxdata')
 end
 
-def format_yaml_name(name, maps)
+def format_export_name(name, maps)
   match = name.match(/^Map0*+(?<number>[0-9]++)$/)
   return name + '.yaml' if match.nil?
   map_name = maps.fetch(match[:number].to_i).name.gsub(/[^0-9A-Za-z ]/, '')
@@ -472,7 +476,7 @@ def generate_patch(base_tag, password)
     File.open('patch.7z', 'wb') do |file|
       SevenZipRuby::Writer.open(file, { password: password }) do |sevenzip|
         files.each do |file|
-          if file.start_with?($CONFIG.yaml_dir + '/')
+          if file.start_with?($CONFIG.export_dir + '/')
             file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
           end
           sevenzip.add_file(file)
@@ -490,7 +494,7 @@ def generate_patch(base_tag, password)
 
     Zip::File.open('patch.zip', create: true) do |zipfile|
       files.each do |file|
-        if file.start_with?($CONFIG.yaml_dir + '/')
+        if file.start_with?($CONFIG.export_dir + '/')
           file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, '.yaml'))
         end
         zipfile.add(file, file)

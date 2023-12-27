@@ -14,7 +14,7 @@
 class DataImporterExporter
   def on_start
     # Set up the directory paths
-    input_dir  = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
+    input_dir  = $PROJECT_DIR + $CONFIG.export_dir + '/'
     output_dir = $PROJECT_DIR + $CONFIG.data_dir + '/'
 
     print_separator(true)
@@ -135,7 +135,7 @@ class DataImporterExporter
   def on_exit_exclusive(maps, removed_files = [])
     # Set up the directory paths
     input_dir  = $PROJECT_DIR + $CONFIG.data_dir + '/'
-    output_dir = $PROJECT_DIR + $CONFIG.yaml_dir + '/'
+    output_dir = $PROJECT_DIR + $CONFIG.export_dir + '/'
 
     print_separator(true)
     puts "  Data Export"
@@ -163,9 +163,9 @@ class DataImporterExporter
     removed_files.each do |file|
       if file.end_with?('.rxdata')
         name = File.basename(file, '.rxdata')
-        yaml_file = output_dir + format_yaml_name(name, maps)
-        if File.exist?(yaml_file)
-          File.delete(yaml_file)
+        export_file = output_dir + format_export_name(name, maps)
+        if File.exist?(export_file)
+          File.delete(export_file)
           puts_verbose 'Deleted ' + name + '.rxdata'
         end
       end
