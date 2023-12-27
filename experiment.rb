@@ -85,7 +85,7 @@ data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jung
 
 range = []
 range.append 'Actors'
-#range.append 'Animations'
+range.append 'Animations'
 range.append 'Armors'
 range.append 'Classes'
 range.append 'CommonEvents'

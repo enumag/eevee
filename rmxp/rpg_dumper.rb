@@ -33,6 +33,8 @@ class RPGDumper
       return tileset(object, level)
     when RPG::MapInfo
       return mapinfo(object, level)
+    when RPG::Animation
+      return animation(object, level)
     else
       puts object.class
     end
@@ -112,11 +114,25 @@ class RPGDumper
     return value
   end
 
-  def table(table, level, pretty: false)
-    value = "table(\n"
-    value += indent(level + 1) + "x: " + table.xsize.inspect + ",\n"
-    value += indent(level + 1) + "y: " + table.ysize.inspect + ",\n" if table.ysize > 1
-    value += indent(level + 1) + "z: " + table.zsize.inspect + ",\n" if table.zsize > 1
+  def table(table, level, pretty: false, inline: false)
+    value = "table("
+    value += "\n" unless inline
+
+    value += indent(level + 1) unless inline
+    value += "x: " + table.xsize.inspect + ","
+    value += inline ? " " : "\n"
+
+    if table.ysize > 1
+      value += indent(level + 1) unless inline
+      value += "y: " + table.ysize.inspect + ","
+      value += inline ? " " : "\n"
+    end
+
+    if table.zsize > 1
+      value += indent(level + 1) unless inline
+      value += "z: " + table.zsize.inspect + ","
+      value += inline ? " " : "\n"
+    end
 
     if pretty
       value += indent(level + 1) + "data: [\n"
@@ -134,10 +150,13 @@ class RPGDumper
       value = value.rstrip + "\n"
       value += indent(level + 1) + "],\n"
     else
-      value += indent(level + 1) + "data: " + table.data.inspect + ",\n"
+      value += indent(level + 1) unless inline
+      value += "data: " + table.data.inspect
+      value += ",\n" unless inline
     end
 
-    value += indent(level) + ")"
+    value += indent(level) unless inline
+    value += ")"
     return value
   end
 
@@ -1188,6 +1207,56 @@ class RPGDumper
     value += indent(level + 1) + "scroll_x: " + mapinfo.scroll_x.inspect + ",\n" if mapinfo.scroll_x != 0
     value += indent(level + 1) + "scroll_y: " + mapinfo.scroll_y.inspect + ",\n" if mapinfo.scroll_y != 0
     value += indent(level) + "),\n"
+    return value
+  end
+
+  def animation(animation, level)
+    value = "\n" + indent(level) + "animation(\n"
+    value += indent(level + 1) + "id: " + animation.id.inspect + ",\n"
+    value += indent(level + 1) + "name: " + animation.name.inspect + ",\n" if animation.name != ""
+    value += indent(level + 1) + "animation: " + animation.animation_name.inspect + ",\n" if animation.animation_name != ""
+    value += indent(level + 1) + "hue: " + animation.animation_hue.inspect + ",\n" if animation.animation_hue != 0
+    value += indent(level + 1) + "position: " + animation.position.inspect + ",\n" if animation.position != 1
+    value += indent(level + 1) + "frame_max: " + animation.frame_max.inspect + ",\n" if animation.frame_max != 1
+
+    value += indent(level + 1) + "frames: [\n"
+    animation.frames.each do |frame|
+      value += indent(level + 2) + frame(frame, level + 2) + "\n"
+    end
+    value += indent(level + 1) + "],\n"
+
+    if animation.timings != []
+      value += indent(level + 1) + "timings: [\n"
+      animation.timings.each do |timing|
+        value += indent(level + 2) + timing(timing, level + 2) + "\n"
+      end
+      value += indent(level + 1) + "],\n"
+    end
+
+    value += indent(level) + "),\n"
+    return value
+  end
+
+  def frame(frame, level)
+    value = "frame("
+    value += "max: " + frame.cell_max.inspect + ", "
+    value += "data: " + table(frame.cell_data, level + 1, inline: true)
+    value += "),"
+    return value
+  end
+
+  def timing(timing, level)
+    value = "timing("
+    value += "frame: " + timing.frame.inspect + ", "
+    value += "se: " + audio(timing.se) + ", " if Marshal.dump(timing.se) != DEFAULT_BGS
+    value += "condition: " + timing.condition.inspect + ", " if timing.condition != 0
+    value += "scope: " + timing.flash_scope.inspect + ", " if timing.flash_scope != 0
+    value += "duration: " + timing.flash_duration.inspect + ", "
+    value += "red: " + timing.flash_color.red.to_i.inspect + ", "
+    value += "green: " + timing.flash_color.green.to_i.inspect + ", "
+    value += "blue: " + timing.flash_color.blue.to_i.inspect + ", "
+    value += "alpha: " + timing.flash_color.alpha.to_i.inspect
+    value += "),"
     return value
   end
 end

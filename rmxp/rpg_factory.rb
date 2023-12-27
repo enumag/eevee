@@ -1121,6 +1121,56 @@ class RPGFactory
     return mapinfo
   end
 
+  def animation(
+    id:,
+    name: "",
+    animation: "",
+    hue: 0,
+    position: 1,
+    frame_max: 1,
+    frames:,
+    timings: []
+  )
+    object = RPG::Animation.new
+    object.id = id
+    object.name = name
+    object.animation_name = animation
+    object.animation_hue = hue
+    object.position = position
+    object.frame_max = frame_max
+    object.frames = frames
+    object.timings = timings
+    return object
+  end
+
+  def frame(max:, data:)
+    object = RPG::Animation::Frame.new
+    object.cell_max = max
+    object.cell_data = data
+    return object
+  end
+
+  def timing(
+    frame:,
+    se: RPG::AudioFile.new("", 80),
+    condition: 0,
+    scope: 0,
+    duration:,
+    red:,
+    green:,
+    blue:,
+    alpha:
+  )
+    object = RPG::Animation::Timing.new
+    object.frame = frame
+    object.se = se
+    object.condition = condition
+    object.flash_scope = scope
+    object.flash_duration = duration
+    object.flash_color = Color.new(red, green, blue, alpha)
+    return object
+  end
+
   def evaluate(script)
     return eval(script)
   end
