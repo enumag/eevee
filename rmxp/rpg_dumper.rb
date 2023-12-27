@@ -698,7 +698,7 @@ class RPGDumper
     else
       value += "event_location_swap("
       value += character(command.parameters[0]) + ", "
-      value += "target: " + character(command.parameters[0]) + ", "
+      value += "target: " + character(command.parameters[2]) + ", "
     end
     value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     value += "),\n"
