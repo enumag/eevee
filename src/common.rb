@@ -181,6 +181,7 @@ end
 class Config
   attr_accessor :data_dir
   attr_accessor :yaml_dir
+  attr_accessor :ruby_dir
   attr_accessor :backup_dir
   attr_accessor :data_ignore_list
   attr_accessor :import_only_list
@@ -196,6 +197,7 @@ class Config
   def initialize(config)
     @data_dir         = config['data_dir']
     @yaml_dir         = config['yaml_dir']
+    @ruby_dir         = config['ruby_dir']
     @backup_dir       = config['backup_dir']
     @data_ignore_list = config['data_ignore_list']
     @import_only_list = config['import_only_list']
@@ -210,7 +212,12 @@ class Config
   end
 
   def export_dir
+    return @ruby_dir unless @ruby_dir.nil?
     return @yaml_dir
+  end
+
+  def export_extension
+    return @ruby_dir.nil? ? '.yaml' : '.rb'
   end
 end
 
