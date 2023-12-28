@@ -578,3 +578,54 @@ def clear_backups()
     File.delete($CONFIG.backup_dir + '/' + file)
   end
 end
+
+# Moves a switch or variable. Requires exporting to ruby.
+def shuffle(source, target)
+  if ! source.match(/^[sv][1-9][0-9]*$/) || ! target.match(/^[sv][1-9][0-9]*$/) || source[0] != target[0] || source == target
+    puts 'Specify a source and target switch or variable using "s<number>" or "v<number>".'
+    exit(false)
+  end
+
+  unless $CONFIG.use_ruby?
+    puts 'This command can only be used with "ruby_path" configuration.'
+    exit(false)
+  end
+
+  unless File.exist?($CONFIG.export_dir + "/System.rb")
+    puts 'System.rb not found.'
+    exit(false)
+  end
+
+  type = source[0]
+  source = source[1..].to_i
+  target = target[1..].to_i
+
+  system = load_ruby($CONFIG.export_dir + "/System.rb")
+  array = type == "s" ? system.switches : system.variables
+
+  if source >= array.length
+    puts 'Source does not exist.'
+    exit(false)
+  end
+
+  if target >= array.length
+    (array.length...target).each do |i|
+      array[i] = ""
+    end
+  end
+
+  array[target] = array[source]
+  array[source] = ""
+
+  files = Dir.entries($CONFIG.export_dir)
+  files = files.select do |e|
+    File.extname(e) == ".rb" && File.basename(e, ".rb") != "System"
+  end
+
+  files.each do |file|
+    f = $CONFIG.export_dir + "/" + file
+    File.write(f, File.read(f).gsub("#{type}(#{source})", "#{type}(#{target})"))
+  end
+
+  save_ruby($CONFIG.export_dir + "/System.rb", system)
+end

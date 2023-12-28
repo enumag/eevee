@@ -74,6 +74,11 @@ elsif $COMMAND == "patch"
   password = ARGV[2] || nil
 
   generate_patch(base_tag, password)
+elsif $COMMAND == "shuffle"
+  source = ARGV[1] || nil
+  target = ARGV[2] || nil
+
+  shuffle(source, target)
 else
   puts "Unknown command " + $COMMAND
 end
