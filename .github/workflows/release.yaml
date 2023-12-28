@@ -17,11 +17,12 @@ jobs:
       - name: Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
-          bundler-cache: true
+          ruby-version: '3.3'
 
       - name: Gems
-        run: gem install aibika
+        run: |
+          bundle install
+          gem install aibika
 
       - name: Compile
         run: >
