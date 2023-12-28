@@ -1,0 +1,43 @@
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+name: Release
+
+jobs:
+  release:
+    name: Release
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+
+      - name: Aibika
+        run: gem install aibika
+
+      - name: Compile
+        run: >
+          aibika
+          eevee.rb
+          src/*.rb
+          rmxp/*.rb
+          --gemfile Gemfile
+          --gem-full
+          --dll ruby_builtin_dlls\libyaml-0-2.dll
+          --icon eevee.ico
+          --output eevee.exe
+          --no-dep-run
+          --no-lzma
+
+      - name: Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: eevee.exe
