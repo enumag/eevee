@@ -22,14 +22,11 @@ jobs:
       - name: Gems
         run: |
           bundle install
-          gem install ocra
-
-      - name: Fiber
-        run: touch fiber.so
+          gem install aibika
 
       - name: Compile
         run: >
-          ocra
+          aibika
           eevee.rb
           src/*.rb
           rmxp/*.rb
