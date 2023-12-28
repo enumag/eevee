@@ -17,12 +17,16 @@ jobs:
       - name: Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: '3.2'
 
       - name: Gems
         run: |
           bundle install
           gem install aibika
+
+      - run: |
+          ls C:/hostedtoolcache/windows/Ruby
+          ls C:/hostedtoolcache/windows/Ruby/3.2.2/x64/bin/ruby_builtin_dlls
 
       - name: Compile
         run: >
