@@ -31,7 +31,6 @@ jobs:
           rmxp/*.rb
           --gemfile Gemfile
           --gem-full
-          --dll ruby_builtin_dlls\libwinpthread-1.dll
           --dll ruby_builtin_dlls\libyaml-0-2.dll
           --dll ruby_builtin_dlls\zlib1.dll
           --icon eevee.ico
