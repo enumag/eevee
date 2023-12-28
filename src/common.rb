@@ -301,11 +301,17 @@ def export_file(file, checksums, maps, input_dir, output_dir)
 
   # Handle default values for the System data file
   if name == 'System'
+    variables = data.variables
+    switches = data.switches
+    data.variables = []
+    data.switches = []
     if $CONFIG.use_ruby?
       save_ruby(output_dir + name + '.local' + $CONFIG.export_extension, data)
     else
       save_yaml(output_dir + name + '.local' + $CONFIG.export_extension, data)
     end
+    data.variables = variables
+    data.switches = switches
     # Prevent the 'magic_number' field of System from always conflicting
     data.magic_number = $CONFIG.magic_number unless $CONFIG.magic_number == -1
     # Prevent the 'edit_map_id' field of System from conflicting
