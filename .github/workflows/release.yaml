@@ -21,14 +21,11 @@ jobs:
           bundler-cache: true
 
       - name: Gems
-        run: gem install ocra
-
-      - name: Fiber
-        run: touch fiber.so
+        run: gem install aibika
 
       - name: Compile
         run: >
-          ocra
+          aibika
           eevee.rb
           src/*.rb
           rmxp/*.rb
