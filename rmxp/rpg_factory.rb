@@ -151,7 +151,8 @@ class RPGFactory
     direction: :down,
     pattern: 0,
     opacity: 255,
-    blend_type: 0
+    blending: :normal,
+    blend_type: nil
   )
     graphic = RPG::Event::Page::Graphic.new
     graphic.tile_id = tile_id
@@ -160,7 +161,8 @@ class RPGFactory
     graphic.direction = DIRECTION_INVERSE[direction]
     graphic.pattern = pattern
     graphic.opacity = opacity
-    graphic.blend_type = blend_type
+    graphic.blend_type = BLENDING_INVERSE[blending]
+    graphic.blend_type = blend_type if blend_type != nil # backwards compatibility
     return graphic
   end
 

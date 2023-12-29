@@ -827,7 +827,7 @@ class RPGDumper
     value += indent(level + 1) + "direction: " + RPGFactory::DIRECTION[graphic.direction].inspect + ",\n" if graphic.direction != 2
     value += indent(level + 1) + "pattern: " + graphic.pattern.inspect + ",\n" if graphic.pattern != 0
     value += indent(level + 1) + "opacity: " + graphic.opacity.inspect + ",\n" if graphic.opacity != 255
-    value += indent(level + 1) + "blend_type: " + graphic.blend_type.inspect + ",\n" if graphic.blend_type != 0
+    value += indent(level + 1) + "blending: " + RPGFactory::BLENDING[graphic.blend_type].inspect + ",\n" if graphic.blend_type != 0
     value += indent(level) + ")"
     return value
   end
