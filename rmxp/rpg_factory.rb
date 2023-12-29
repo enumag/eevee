@@ -103,10 +103,10 @@ class RPGFactory
     **args # backwards compatibility
   )
     condition = RPG::Event::Page::Condition.new
-    condition.switch1_valid = switch1 != nil
-    condition.switch2_valid = switch2 != nil
-    condition.variable_valid = variable != nil
-    condition.self_switch_valid = self_switch != nil
+    condition.switch1_valid = switch1 != nil && args[:switch1_valid] != false
+    condition.switch2_valid = switch2 != nil && args[:switch2_valid] != false
+    condition.variable_valid = variable != nil && args[:variable_valid] != false
+    condition.self_switch_valid = self_switch != nil && args[:self_switch_valid] != false
     condition.switch1_id = switch1 != nil && args[:switch1_valid] != false ? switch1 : 1
     condition.switch2_id = switch2 != nil && args[:switch2_valid] != false ? switch2 : 1
     condition.variable_id = variable != nil && args[:variable_valid] != false ? variable : 1
