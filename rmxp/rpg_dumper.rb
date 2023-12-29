@@ -191,15 +191,11 @@ class RPGDumper
     value = "page(\n"
 
     if Marshal.dump(page.condition) != DEFAULT_CONDITION
-      value += indent(level + 1) + "switch1_valid: " + page.condition.switch1_valid.inspect + ",\n" if page.condition.switch1_valid == false && page.condition.switch1_id != 1
-      value += indent(level + 1) + "switch1: s(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_id != 1 || page.condition.switch1_valid
-      value += indent(level + 1) + "switch2_valid: " + page.condition.switch2_valid.inspect + ",\n" if page.condition.switch2_valid == false && page.condition.switch2_id != 1
-      value += indent(level + 1) + "switch2: s(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_id != 1 || page.condition.switch2_valid
-      value += indent(level + 1) + "variable_valid: " + page.condition.variable_valid.inspect + ",\n" if page.condition.variable_valid == false && page.condition.variable_id != 1
-      value += indent(level + 1) + "variable: v(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_id != 1 || page.condition.variable_valid
+      value += indent(level + 1) + "switch1: s(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_valid
+      value += indent(level + 1) + "switch2: s(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_valid
+      value += indent(level + 1) + "variable: v(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_valid
       value += indent(level + 1) + "at_least: " + page.condition.variable_value.inspect + ",\n" if page.condition.variable_value != 0
-      value += indent(level + 1) + "self_switch_valid: " + page.condition.self_switch_valid.inspect + ",\n" if page.condition.self_switch_valid == false && page.condition.self_switch_ch != "A"
-      value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_ch != "A" || page.condition.self_switch_valid
+      value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_valid
     end
 
     value += indent(level + 1) + "graphic: " + graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC

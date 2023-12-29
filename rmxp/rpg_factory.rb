@@ -81,20 +81,8 @@ class RPGFactory
   }
 
   EVENT_TRIGGER_INVERSE = EVENT_TRIGGER.invert
-
-  # TODO: lossy change - simplify conditions to this:
-  # page(
-  #   switch1: switch(id),
-  #   switch2: switch(id),
-  #   variable: variable(id),
-  #   at_least: value,
-  #   self_switch: "A",
-  # )
+  
   def page(
-    switch1_valid: nil,
-    switch2_valid: nil,
-    variable_valid: nil,
-    self_switch_valid: nil,
     switch1: nil,
     switch2: nil,
     variable: nil,
@@ -114,10 +102,10 @@ class RPGFactory
     commands: []
   )
     condition = RPG::Event::Page::Condition.new
-    condition.switch1_valid = switch1_valid == nil ? switch1 != nil : switch1_valid
-    condition.switch2_valid = switch2_valid == nil ? switch2 != nil : switch2_valid
-    condition.variable_valid = variable_valid == nil ? variable != nil : variable_valid
-    condition.self_switch_valid = self_switch_valid == nil ? self_switch != nil : self_switch_valid
+    condition.switch1_valid = switch1 != nil
+    condition.switch2_valid = switch2 != nil
+    condition.variable_valid = variable != nil
+    condition.self_switch_valid = self_switch != nil
     condition.switch1_id = switch1 != nil ? switch1 : 1
     condition.switch2_id = switch2 != nil ? switch2 : 1
     condition.variable_id = variable != nil ? variable : 1
