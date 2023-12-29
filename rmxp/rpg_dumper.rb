@@ -194,7 +194,7 @@ class RPGDumper
       value += indent(level + 1) + "switch1: s(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_valid
       value += indent(level + 1) + "switch2: s(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_valid
       value += indent(level + 1) + "variable: v(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_valid
-      value += indent(level + 1) + "at_least: " + page.condition.variable_value.inspect + ",\n" if page.condition.variable_value != 0
+      value += indent(level + 1) + "at_least: " + page.condition.variable_value.inspect + ",\n" if page.condition.variable_valid
       value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_valid
     end
 
