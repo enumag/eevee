@@ -79,7 +79,37 @@ def print_rb(code)
 end
 
 def objects_equal?(obj1, obj2)
-  return Marshal.dump(obj1) == Marshal.dump(obj2)
+  return true if obj1.equal?(obj2)
+  return false unless obj1.class == obj2.class
+
+  if obj1.is_a?(Enumerable)
+    return false if obj1.count != obj2.count
+
+    obj1.each_with_index do |value1, i|
+      value2 = obj2[i]
+
+      if value1.is_a?(Comparable)
+        return false unless value1 == value2
+      else
+        return false unless objects_equal?(value1, value2)
+      end
+    end
+
+    return true
+  end
+
+  obj1.instance_variables.each do |var|
+    value1 = obj1.instance_variable_get(var)
+    value2 = obj2.instance_variable_get(var)
+
+    if value1.is_a?(Comparable)
+      return false unless value1 == value2
+    else
+      return false unless objects_equal?(value1, value2)
+    end
+  end
+
+  return true
 end
 
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
@@ -103,7 +133,6 @@ range.append 'Tilesets'
 range.append 'Troops'
 range.append 'Weapons'
 range.append *0..999
-range = [1]
 
 range.each do |id|
   name = id.is_a?(Integer) ? 'Map' + id.to_s.rjust(3, '0') : id
