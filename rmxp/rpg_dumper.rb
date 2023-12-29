@@ -308,11 +308,10 @@ class RPGDumper
         end
         value += "\n"
       when 411 # else
-        value += indent(level + 1) + "else: "
         if commands[i + 1].code == 0
-          value += "[],\n"
           i += 1
         else
+          value += indent(level + 1) + "else: "
           index = single_condition_end(commands, i + 1)
           if index != nil
             # condition nesting reduction
