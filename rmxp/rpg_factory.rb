@@ -107,11 +107,11 @@ class RPGFactory
     condition.switch2_valid = switch2 != nil
     condition.variable_valid = variable != nil
     condition.self_switch_valid = self_switch != nil
-    condition.switch1_id = switch1 != nil ? switch1 : 1
-    condition.switch2_id = switch2 != nil ? switch2 : 1
-    condition.variable_id = variable != nil ? variable : 1
+    condition.switch1_id = switch1 != nil && args[:switch1_valid] != false ? switch1 : 1
+    condition.switch2_id = switch2 != nil && args[:switch2_valid] != false ? switch2 : 1
+    condition.variable_id = variable != nil && args[:variable_valid] != false ? variable : 1
     condition.variable_value = at_least
-    condition.self_switch_ch = self_switch != nil ? self_switch : "A"
+    condition.self_switch_ch = self_switch != nil && args[:self_switch_valid] != false ? self_switch : "A"
 
     page = RPG::Event::Page.new
     page.condition = condition
