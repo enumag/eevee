@@ -80,8 +80,8 @@ end
 
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
-data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
-data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
+# data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map150 - Rhodochrine Jungle.yaml')
 
 range = []
 range.append 'Actors'
@@ -99,6 +99,7 @@ range.append 'Tilesets'
 range.append 'Troops'
 range.append 'Weapons'
 range.append *0..999
+range = [1]
 
 range.each do |id|
   name = id.is_a?(Integer) ? 'Map' + id.to_s.rjust(3, '0') : id
@@ -108,7 +109,7 @@ range.each do |id|
     data = load_rxdata(file)
     save_rb(name, data)
 
-    FileUtils.cp('var/map.rb', 'C:\Projects\Reborn\Reborn\DataRuby/' + name + '.rb')
+    # FileUtils.cp('var/map.rb', 'C:\Projects\Reborn\Reborn\DataRuby/' + name + '.rb')
   else
     puts 'skip ' + id.to_s
   end
