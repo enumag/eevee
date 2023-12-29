@@ -81,7 +81,7 @@ class RPGFactory
   }
 
   EVENT_TRIGGER_INVERSE = EVENT_TRIGGER.invert
-  
+
   def page(
     switch1: nil,
     switch2: nil,
@@ -99,7 +99,8 @@ class RPGFactory
     through: false,
     always_on_top: false,
     trigger: :action,
-    commands: []
+    commands: [],
+    **args # backwards compatibility
   )
     condition = RPG::Event::Page::Condition.new
     condition.switch1_valid = switch1 != nil
