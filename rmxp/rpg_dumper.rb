@@ -99,7 +99,7 @@ class RPGDumper
     value += indent(level + 1) + "id: " + event.id.inspect + ",\n" if event.id != 0
     value += indent(level + 1) + "name: " + event.name.inspect + ",\n" if event.name != ""
     value += indent(level + 1) + "trigger: " + RPGFactory::COMMON_EVENT_TRIGGER[event.trigger].inspect + ",\n" if event.trigger != 0
-    value += indent(level + 1) + "switch: s(" + event.switch_id.inspect + "),\n" if event.trigger != 0 || event.switch_id != 1
+    value += indent(level + 1) + "switch: s(" + event.switch_id.inspect + "),\n" if event.trigger != 0
 
     commands = event.list.clone
     last = commands.pop

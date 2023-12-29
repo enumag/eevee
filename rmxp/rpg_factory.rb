@@ -979,7 +979,6 @@ class RPGFactory
 
   COMMON_EVENT_TRIGGER_INVERSE = COMMON_EVENT_TRIGGER.invert
 
-  # TODO: lossy change - remove switch if trigger is none
   def common_event(
     id: 0,
     name: "",
