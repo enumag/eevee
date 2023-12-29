@@ -42,14 +42,14 @@ class RPGDumper
     end
   end
 
-  DEFAULT_AUDIO = Marshal.dump(RPG::AudioFile.new)
-  DEFAULT_BGS = Marshal.dump(RPG::AudioFile.new("", 80))
-  DEFAULT_CONDITION = Marshal.dump(RPG::Event::Page::Condition.new)
-  DEFAULT_GRAPHIC = Marshal.dump(RPG::Event::Page::Graphic.new)
-  DEFAULT_COMMAND = Marshal.dump(RPG::EventCommand.new)
-  DEFAULT_ROUTE = Marshal.dump(RPG::MoveRoute.new)
-  DEFAULT_MOVE = Marshal.dump(RPG::MoveCommand.new)
-  DEFAULT_PAGE = Marshal.dump(RPG::Event::Page.new)
+  DEFAULT_AUDIO = RPG::AudioFile.new
+  DEFAULT_BGS = RPG::AudioFile.new("", 80)
+  DEFAULT_CONDITION = RPG::Event::Page::Condition.new
+  DEFAULT_GRAPHIC = RPG::Event::Page::Graphic.new
+  DEFAULT_COMMAND = RPG::EventCommand.new
+  DEFAULT_ROUTE = RPG::MoveRoute.new
+  DEFAULT_MOVE = RPG::MoveCommand.new
+  DEFAULT_PAGE = RPG::Event::Page.new
 
   def array(array, level)
     value = indent(level) + "[\n"
@@ -73,9 +73,9 @@ class RPGDumper
     value = indent(level) + "map(\n"
     value += indent(level + 1) + "tileset_id: " + map.tileset_id.inspect + ",\n" if map.tileset_id != 1
     value += indent(level + 1) + "autoplay_bgm: " + map.autoplay_bgm.inspect + ",\n" if map.autoplay_bgm != false
-    value += indent(level + 1) + "bgm: " + audio(map.bgm) + ",\n" if Marshal.dump(map.bgm) != DEFAULT_AUDIO
+    value += indent(level + 1) + "bgm: " + audio(map.bgm) + ",\n" unless objects_equal?(map.bgm, DEFAULT_AUDIO)
     value += indent(level + 1) + "autoplay_bgs: " + map.autoplay_bgs.inspect + ",\n" if map.autoplay_bgs != false
-    value += indent(level + 1) + "bgs: " + audio(map.bgs) + ",\n" if Marshal.dump(map.bgs) != DEFAULT_BGS
+    value += indent(level + 1) + "bgs: " + audio(map.bgs) + ",\n" unless objects_equal?(map.bgs, DEFAULT_BGS)
     raise "non-empty map encounter_list" if map.encounter_list != []
     value += indent(level + 1) + "encounter_step: " + map.encounter_step.inspect + ",\n" if map.encounter_step != 30
     value += indent(level + 1) + "events: [\n\n"
@@ -97,7 +97,7 @@ class RPGDumper
 
     commands = event.list.clone
     last = commands.pop
-    raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
+    raise "unexpected last event command" unless objects_equal?(last, DEFAULT_COMMAND)
     if event.list.count > 1
       value += command_array(commands, level + 1)
     end
@@ -169,7 +169,7 @@ class RPGDumper
     value += indent(level + 1) + "x: " + event.x.inspect + ",\n"
     value += indent(level + 1) + "y: " + event.y.inspect + ",\n"
 
-    if event.pages.count > 1 || Marshal.dump(event.pages[0]) != DEFAULT_PAGE
+    if event.pages.count > 1 || ! objects_equal?(event.pages[0], DEFAULT_PAGE)
       event.pages.each_with_index do |page, i|
         value += indent(level + 1) + "page_" + i.to_s + ": " + page(page, level + 1) + ",\n"
       end
@@ -180,11 +180,11 @@ class RPGDumper
   end
 
   def page(page, level)
-    return "page" if Marshal.dump(page) == DEFAULT_PAGE
+    return "page" if objects_equal?(page, DEFAULT_PAGE)
 
     value = "page(\n"
 
-    if Marshal.dump(page.condition) != DEFAULT_CONDITION
+    unless objects_equal?(page.condition, DEFAULT_CONDITION)
       value += indent(level + 1) + "switch1_valid: " + page.condition.switch1_valid.inspect + ",\n" if page.condition.switch1_valid == false && page.condition.switch1_id != 1
       value += indent(level + 1) + "switch1: s(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_id != 1 || page.condition.switch1_valid
       value += indent(level + 1) + "switch2_valid: " + page.condition.switch2_valid.inspect + ",\n" if page.condition.switch2_valid == false && page.condition.switch2_id != 1
@@ -196,11 +196,11 @@ class RPGDumper
       value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_ch != "A" || page.condition.self_switch_valid
     end
 
-    value += indent(level + 1) + "graphic: " + graphic(page.graphic, level + 1) + ",\n" if Marshal.dump(page.graphic) != DEFAULT_GRAPHIC
+    value += indent(level + 1) + "graphic: " + graphic(page.graphic, level + 1) + ",\n" unless objects_equal?(page.graphic, DEFAULT_GRAPHIC)
     value += indent(level + 1) + "move_type: " + RPGFactory::EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
     value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
     value += indent(level + 1) + "move_frequency: " + page.move_frequency.inspect + ",\n" if page.move_frequency != 3
-    value += indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n" if Marshal.dump(page.move_route) != DEFAULT_ROUTE
+    value += indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n" unless objects_equal?(page.move_route, DEFAULT_ROUTE)
     value += indent(level + 1) + "walk_anime: " + page.walk_anime.inspect + ",\n" if page.walk_anime != true
     value += indent(level + 1) + "step_anime: " + page.step_anime.inspect + ",\n" if page.step_anime != false
     value += indent(level + 1) + "direction_fix: " + page.direction_fix.inspect + ",\n" if page.direction_fix != false
@@ -210,7 +210,7 @@ class RPGDumper
 
     commands = page.list.clone
     last = commands.pop
-    raise "unexpected last event command" if Marshal.dump(last) != DEFAULT_COMMAND
+    raise "unexpected last event command" unless objects_equal?(last, DEFAULT_COMMAND)
     if page.list.count > 1
       value += command_array(commands, level + 1)
     end
@@ -834,7 +834,7 @@ class RPGDumper
   def route(route, level)
     value = "route(\n"
     last = route.list.pop
-    raise "unexpected last route command" if Marshal.dump(last) != DEFAULT_MOVE
+    raise "unexpected last route command" unless objects_equal?(last, DEFAULT_MOVE)
     route.list.each do |command|
       value += indent(level + 1) + move(command, level + 1) + ",\n"
     end
@@ -1010,7 +1010,7 @@ class RPGDumper
     value += indent(level + 1) + character(command.parameters[0]) + ",\n"
     route = command.parameters[1]
     last = route.list.pop
-    raise "unexpected last route command" if Marshal.dump(last) != DEFAULT_MOVE
+    raise "unexpected last route command" unless objects_equal?(last, DEFAULT_MOVE)
     route.list.each do |move|
       value += indent(level + 1) + move(move, level + 1) + ",\n"
     end
@@ -1250,7 +1250,7 @@ class RPGDumper
   def timing(timing, level)
     value = "timing("
     value += "frame: " + timing.frame.inspect + ", "
-    value += "se: " + audio(timing.se) + ", " if Marshal.dump(timing.se) != DEFAULT_BGS
+    value += "se: " + audio(timing.se) + ", " unless objects_equal?(timing.se, DEFAULT_BGS)
     value += "condition: " + timing.condition.inspect + ", " if timing.condition != 0
     value += "scope: " + timing.flash_scope.inspect + ", " if timing.flash_scope != 0
     value += "duration: " + timing.flash_duration.inspect + ", "
@@ -1273,22 +1273,22 @@ class RPGDumper
     value += indent(level + 1) + "battler_name: " + system.battler_name.inspect + ",\n" if system.battler_name != ""
     value += indent(level + 1) + "battler_hue: " + system.battler_hue.inspect + ",\n" if system.battler_hue != 0
 
-    value += indent(level + 1) + "title_bgm: " + audio(system.title_bgm) + ",\n" if Marshal.dump(system.title_bgm) != DEFAULT_AUDIO
-    value += indent(level + 1) + "battle_bgm: " + audio(system.battle_bgm) + ",\n" if Marshal.dump(system.battle_bgm) != DEFAULT_AUDIO
-    value += indent(level + 1) + "battle_end_me: " + audio(system.battle_end_me) + ",\n" if Marshal.dump(system.battle_end_me) != DEFAULT_AUDIO
-    value += indent(level + 1) + "gameover_me: " + audio(system.gameover_me) + ",\n" if Marshal.dump(system.gameover_me) != DEFAULT_AUDIO
-    value += indent(level + 1) + "cursor_se: " + audio(system.cursor_se) + ",\n" if Marshal.dump(system.cursor_se) != DEFAULT_BGS
-    value += indent(level + 1) + "decision_se: " + audio(system.decision_se) + ",\n" if Marshal.dump(system.decision_se) != DEFAULT_BGS
-    value += indent(level + 1) + "cancel_se: " + audio(system.cancel_se) + ",\n" if Marshal.dump(system.cancel_se) != DEFAULT_BGS
-    value += indent(level + 1) + "buzzer_se: " + audio(system.buzzer_se) + ",\n" if Marshal.dump(system.buzzer_se) != DEFAULT_BGS
-    value += indent(level + 1) + "equip_se: " + audio(system.equip_se) + ",\n" if Marshal.dump(system.equip_se) != DEFAULT_BGS
-    value += indent(level + 1) + "shop_se: " + audio(system.shop_se) + ",\n" if Marshal.dump(system.shop_se) != DEFAULT_BGS
-    value += indent(level + 1) + "save_se: " + audio(system.save_se) + ",\n" if Marshal.dump(system.save_se) != DEFAULT_BGS
-    value += indent(level + 1) + "load_se: " + audio(system.load_se) + ",\n" if Marshal.dump(system.load_se) != DEFAULT_BGS
-    value += indent(level + 1) + "battle_start_se: " + audio(system.battle_start_se) + ",\n" if Marshal.dump(system.battle_start_se) != DEFAULT_BGS
-    value += indent(level + 1) + "escape_se: " + audio(system.escape_se) + ",\n" if Marshal.dump(system.escape_se) != DEFAULT_BGS
-    value += indent(level + 1) + "actor_collapse_se: " + audio(system.actor_collapse_se) + ",\n" if Marshal.dump(system.actor_collapse_se) != DEFAULT_BGS
-    value += indent(level + 1) + "enemy_collapse_se: " + audio(system.enemy_collapse_se) + ",\n" if Marshal.dump(system.enemy_collapse_se) != DEFAULT_BGS
+    value += indent(level + 1) + "title_bgm: " + audio(system.title_bgm) + ",\n" unless objects_equal?(system.title_bgm, DEFAULT_AUDIO)
+    value += indent(level + 1) + "battle_bgm: " + audio(system.battle_bgm) + ",\n" unless objects_equal?(system.battle_bgm, DEFAULT_AUDIO)
+    value += indent(level + 1) + "battle_end_me: " + audio(system.battle_end_me) + ",\n" unless objects_equal?(system.battle_end_me, DEFAULT_AUDIO)
+    value += indent(level + 1) + "gameover_me: " + audio(system.gameover_me) + ",\n" unless objects_equal?(system.gameover_me, DEFAULT_AUDIO)
+    value += indent(level + 1) + "cursor_se: " + audio(system.cursor_se) + ",\n" unless objects_equal?(system.cursor_se, DEFAULT_BGS)
+    value += indent(level + 1) + "decision_se: " + audio(system.decision_se) + ",\n" unless objects_equal?(system.decision_se, DEFAULT_BGS)
+    value += indent(level + 1) + "cancel_se: " + audio(system.cancel_se) + ",\n" unless objects_equal?(system.cancel_se, DEFAULT_BGS)
+    value += indent(level + 1) + "buzzer_se: " + audio(system.buzzer_se) + ",\n" unless objects_equal?(system.buzzer_se, DEFAULT_BGS)
+    value += indent(level + 1) + "equip_se: " + audio(system.equip_se) + ",\n" unless objects_equal?(system.equip_se, DEFAULT_BGS)
+    value += indent(level + 1) + "shop_se: " + audio(system.shop_se) + ",\n" unless objects_equal?(system.shop_se, DEFAULT_BGS)
+    value += indent(level + 1) + "save_se: " + audio(system.save_se) + ",\n" unless objects_equal?(system.save_se, DEFAULT_BGS)
+    value += indent(level + 1) + "load_se: " + audio(system.load_se) + ",\n" unless objects_equal?(system.load_se, DEFAULT_BGS)
+    value += indent(level + 1) + "battle_start_se: " + audio(system.battle_start_se) + ",\n" unless objects_equal?(system.battle_start_se, DEFAULT_BGS)
+    value += indent(level + 1) + "escape_se: " + audio(system.escape_se) + ",\n" unless objects_equal?(system.escape_se, DEFAULT_BGS)
+    value += indent(level + 1) + "actor_collapse_se: " + audio(system.actor_collapse_se) + ",\n" unless objects_equal?(system.actor_collapse_se, DEFAULT_BGS)
+    value += indent(level + 1) + "enemy_collapse_se: " + audio(system.enemy_collapse_se) + ",\n" unless objects_equal?(system.enemy_collapse_se, DEFAULT_BGS)
 
     value += indent(level + 1) + "magic_number: " + system.magic_number.inspect + ",\n" if system.magic_number != 0
     value += indent(level + 1) + "party_members: " + system.party_members.inspect + ",\n" if system.party_members != [1]

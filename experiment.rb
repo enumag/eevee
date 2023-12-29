@@ -78,6 +78,10 @@ def print_rb(code)
   end
 end
 
+def objects_equal?(obj1, obj2)
+  return Marshal.dump(obj1) == Marshal.dump(obj2)
+end
+
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map369 - Critical Capture.yaml')
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map006 - Department Store 11F.yaml')
 # data = load_yaml('C:\Projects\Reborn\Reborn\DataExport/Map011 - Blacksteam Factory B1F.yaml')
