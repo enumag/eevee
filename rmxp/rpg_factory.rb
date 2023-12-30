@@ -214,6 +214,7 @@ class RPGFactory
   end
 
   # TODO: this can use enums for improved serialization but it's rarely used
+  # Similar position is used for animations (with an extra value)
   def change_text_options(position, window)
     return command(104, position, window)
   end
@@ -1109,6 +1110,7 @@ class RPGFactory
     return mapinfo
   end
 
+  # TODO: Use enum for position
   def animation(
     id:,
     name: "",
@@ -1131,6 +1133,7 @@ class RPGFactory
     return object
   end
 
+  # TODO: Data can be analyzed similar to move commands
   def frame(max:, data:)
     object = RPG::Animation::Frame.new
     object.cell_max = max
@@ -1138,6 +1141,7 @@ class RPGFactory
     return object
   end
 
+  # TODO: Use enum for scope and condition
   def timing(
     frame:,
     se: RPG::AudioFile.new("", 80),
