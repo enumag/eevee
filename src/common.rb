@@ -328,12 +328,55 @@ def has_scrap_train(page)
   return false
 end
 
+def has_jump(route)
+  route.list.each do |move|
+    next unless move.code == 14 && (move.parameters[0] == 0 || move.parameters[1] == 0)
+    total = (move.parameters[0] + move.parameters[1]).abs
+    return true if total == 2 || total == 3
+  end
+  return false
+end
+
+def ignore_route(route)
+  jumps = 0
+  route.list.each do |move|
+    return true unless [0, 14, 37, 38, 39, 40].include?(move.code)
+    jumps += 1 if move.code == 14
+  end
+  return true if jumps != 1
+  return false
+end
+
+def enhance_jumps(page, event, name)
+  return if page.trigger != 1 # player touch
+  commands = []
+  append_animation = false
+  page.list.each_with_index do |command, i|
+    if append_animation && command.code != 509
+      # move route end, add animation
+      commands.push RPG::EventCommand.new(210, command.indent)
+      commands.push RPG::EventCommand.new(207, command.indent, [-1, 2])
+      append_animation = false
+    end
+
+    if command.code == 209 && command.parameters[0] == -1 && has_jump(command.parameters[1]) && !ignore_route(command.parameters[1])
+      # player move route with jump
+      commands.push RPG::EventCommand.new(250, command.indent, [RPG::AudioFile.new("jump", 35)])
+      append_animation = true
+    end
+
+    commands.push command
+  end
+  page.list = commands
+end
+
 def transform_page(page, event, name)
   # insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
   # insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
-  if has_scrap_train(page)
-    puts name + ' ' + event.x.to_s + ' / ' + event.y.to_s
-  end
+  # if has_scrap_train(page)
+  #   puts name + ' ' + event.x.to_s + ' / ' + event.y.to_s
+  # end
+  enhance_jumps(page, event, name)
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
@@ -388,7 +431,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
     data.events = data.events.sort.to_h
     data.events.each do |key, event|
       event.pages.each do |page|
-        transform_page(page, event, yaml_file)
+        transform_page(page, event, export_file)
       end
     end
   end
