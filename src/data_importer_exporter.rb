@@ -24,6 +24,9 @@ class DataImporterExporter
       exit(false)
     end
 
+    # Create the backup directory if it doesn't exist
+    recursive_mkdir($CONFIG.backup_dir) unless File.directory?($CONFIG.backup_dir)
+
     # Create the list of data files to export
     files = Dir.entries( input_dir )
     files = files.select { |e| File.extname(e) == $CONFIG.export_extension && ! e.end_with?('.local' + $CONFIG.export_extension) }
