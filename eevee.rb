@@ -32,8 +32,8 @@ elsif $COMMAND == "rmxp"
 
   plugin.on_start
 
-  # Dump the system time at startup into a file to read later
-  dump_startup_time
+  # Save the system time at startup
+  $STARTUP_TIME = Time.now
 
   # Definitely do not want the user to close the command window
   puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -66,9 +66,6 @@ elsif $COMMAND == "rmxp"
   plugin.on_exit(maps)
 
   clear_backups
-
-  # Delete the startup timestamp
-  load_startup_time(true)
 elsif $COMMAND == "patch"
   base_tag = ARGV[1] || nil
   password = ARGV[2] || nil

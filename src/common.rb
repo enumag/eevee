@@ -18,11 +18,6 @@ require 'fileutils'
 
 CHECKSUMS_FILE = 'checksums.csv'
 
-# This is the filename where the startup timestamp is dumped.  Later it can
-# be compared with the modification timestamp for data files to determine
-# if they need to be exported.
-TIME_LOG_FILE = "timestamp.bin"
-
 #----------------------------------------------------------------------------
 # recursive_mkdir: Creates a directory and all its parent directories if they
 # do not exist.
@@ -75,31 +70,6 @@ end
 def data_file_exported?(filename)
   exported_filename = $PROJECT_DIR + $CONFIG.export_dir + '/' + File.basename(filename, File.extname(filename)) + $CONFIG.export_extension
   return File.exist?( exported_filename )
-end
-
-#----------------------------------------------------------------------------
-# dump_startup_time: Dumps the current system time to a temporary file.
-#   directory: The directory to dump the system tile into.
-#----------------------------------------------------------------------------
-def dump_startup_time
-  File.open( $PROJECT_DIR + TIME_LOG_FILE, "w+" ) do |outfile|
-    Marshal.dump( Time.now, outfile )
-  end
-end
-
-#----------------------------------------------------------------------------
-# load_startup_time: Loads the dumped system time from the temporary file.
-#   directory: The directory to load the system tile from.
-#----------------------------------------------------------------------------
-def load_startup_time(delete_file = false)
-  t = nil
-  if File.exist?( $PROJECT_DIR + TIME_LOG_FILE )
-    File.open( $PROJECT_DIR + TIME_LOG_FILE, "r+" ) do |infile|
-      t = Marshal.load( infile )
-    end
-    if delete_file then File.delete( $PROJECT_DIR + TIME_LOG_FILE ) end
-  end
-  t
 end
 
 def yaml_stable_ref(input_file, output_file)

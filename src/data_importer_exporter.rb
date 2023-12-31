@@ -129,8 +129,6 @@ class DataImporterExporter
     puts "  Data Export"
     print_separator(true)
 
-    $STARTUP_TIME = load_startup_time
-
     # Check if the input directory exist
     if not (File.exist? input_dir and File.directory? input_dir)
       puts "Error: Input directory #{input_dir} does not exist."
