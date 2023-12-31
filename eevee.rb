@@ -24,6 +24,8 @@ plugin = DataImporterExporter.new
 
 if $COMMAND == "import"
   plugin.on_start
+
+  clear_backups
 elsif $COMMAND == "export"
   plugin.on_exit(load_maps)
 elsif $COMMAND == "rmxp"
