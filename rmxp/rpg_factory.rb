@@ -386,9 +386,13 @@ class RPGFactory
     if args[:parameters] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[args[:type]], *args[:parameters])
     elsif args[:switch] != nil
-      commands.append command(111, CONDITION_TYPE_INVERSE[:switch], args[:switch], args[:value])
+      value = args[:value] # backwards compatibility, next major can simply always use SWITCH_VALUE_INVERSE
+      value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:switch], args[:switch], value)
     elsif args[:self_switch] != nil
-      commands.append command(111, CONDITION_TYPE_INVERSE[:self_switch], args[:self_switch], args[:value])
+      value = args[:value] # backwards compatibility, next major can simply always use SWITCH_VALUE_INVERSE
+      value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:self_switch], args[:self_switch], value)
     elsif args[:variable] != nil && args[:constant] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 0, args[:constant], COMPARISON_INVERSE[args[:operation]])
     elsif args[:variable] != nil && args[:other_variable] != nil
@@ -603,14 +607,24 @@ class RPGFactory
     return command(122, *parameters)
   end
 
+  SWITCH_VALUE = {
+    0 => :ON, # Yes, 0 and 1 mean the exact opposite of what you would expect
+    1 => :OFF,
+  }
+
+  SWITCH_VALUE_INVERSE = SWITCH_VALUE.invert
+
   def control_switches(switches, value)
+    value = value ? 1 : 0 if [true, false].include?(value) # backwards compatibility
+    value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
     if switches.is_a?(Range)
-      return command(121, switches.begin, switches.end, value ? 1 : 0)
+      return command(121, switches.begin, switches.end, value)
     end
-    return command(121, switches, switches, value ? 1 : 0)
+    return command(121, switches, switches, value)
   end
 
   def control_self_switch(switch, value)
+    value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
     return command(123, switch, value)
   end
 

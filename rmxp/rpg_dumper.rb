@@ -767,7 +767,7 @@ class RPGDumper
     if command.parameters[0] != command.parameters[1]
       value += ".." + command.parameters[1].inspect
     end
-    value += "), " + (command.parameters[2] == 1 ? "true" : "false")
+    value += "), " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     value += "),\n"
     return value
   end
@@ -808,7 +808,7 @@ class RPGDumper
   def command_self_switch(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "control_self_switch("
-    value += command.parameters[0].inspect + ", " + command.parameters[1].inspect
+    value += command.parameters[0].inspect + ", " + RPGFactory::SWITCH_VALUE[command.parameters[1]].inspect
     value += "),\n"
     return value
   end
@@ -939,7 +939,7 @@ class RPGDumper
     when :switch
       raise "unexpected command parameters" if command.parameters.count != 3
       value += indent(level + 1) + "switch: s(" + command.parameters[1].inspect + "),\n"
-      value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
+      value += indent(level + 1) + "value: " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect + ",\n"
     when :variable
       raise "unexpected command parameters" if command.parameters.count != 5
       value += indent(level + 1) + "variable: v(" + command.parameters[1].inspect + "),\n"
@@ -952,7 +952,7 @@ class RPGDumper
     when :self_switch
       raise "unexpected command parameters" if command.parameters.count != 3
       value += indent(level + 1) + "self_switch: " + command.parameters[1].inspect + ",\n"
-      value += indent(level + 1) + "value: " + command.parameters[2].inspect + ",\n"
+      value += indent(level + 1) + "value: " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect + ",\n"
     when :character
       value += indent(level + 1) + "character: " + character(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "facing: " + RPGFactory::DIRECTION[command.parameters[2]].inspect + ",\n"
