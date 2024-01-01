@@ -1,4 +1,9 @@
 class RPGDumper
+  def initialize(name:, maps:)
+    @name = name
+    @maps = maps
+  end
+
   def dump_ruby(object, level = 0)
     case object
     when RPG::Map
@@ -98,7 +103,21 @@ class RPGDumper
   end
 
   def map(map, level)
-    value = indent(level) + "map(\n"
+    names = []
+    map_id = @name[3..].to_i
+    while map_id != 0
+      names.push @maps[map_id].name + " (" + map_id.to_s + ")"
+      map_id = @maps[map_id].parent_id
+    end
+
+    value = ""
+    i = 0
+    names.reverse.each do |name|
+      value += "# " + indent(i) + name + "\n"
+      i += 1
+    end
+
+    value += indent(level) + "map(\n"
     value += indent(level + 1) + "tileset_id: " + map.tileset_id.inspect + ",\n" if map.tileset_id != 1
     value += indent(level + 1) + "autoplay_bgm: " + map.autoplay_bgm.inspect + ",\n" if map.autoplay_bgm != false
     value += indent(level + 1) + "bgm: " + audio(map.bgm) + ",\n" unless objects_equal?(map.bgm, DEFAULT_AUDIO)

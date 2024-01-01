@@ -308,7 +308,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   temp_file = Dir.tmpdir() + '/' + name + '_fixed' + $CONFIG.export_extension
 
   if $CONFIG.use_ruby?
-    save_ruby(temp_file, data)
+    save_ruby(temp_file, data, name: name, maps: maps)
   else
     # Dump the data to a yaml or ruby file
     unstable_file = Dir.tmpdir() + '/' + name + '_export' + $CONFIG.export_extension
@@ -375,8 +375,8 @@ def load_ruby(export_file)
   return (RPGFactory.new).evaluate(File.read(export_file))
 end
 
-def save_ruby(export_file, data)
-  File.write(export_file, (RPGDumper.new).dump_ruby(data))
+def save_ruby(export_file, data, name: nil, maps: nil)
+  File.write(export_file, (RPGDumper.new(name: name, maps: maps)).dump_ruby(data))
 end
 
 def load_rxdata(data_file)
