@@ -23,6 +23,9 @@ jobs:
       - name: Aibika
         run: gem install aibika
 
+      - name: Version
+        run: sed -i "s~\$VERSION = 'dev'~\$VERSION = '${{ github.ref_name }}'~g" eevee.rb
+
       - name: Compile
         run: >
           aibika
@@ -38,7 +41,10 @@ jobs:
           --no-dep-run
           --no-lzma
 
+      - name: Archive
+        run: zip --junk-paths modding-tools-${{ github.ref_name }}.zip eevee.exe DOCS.md example/*
+
       - name: Release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: eevee.exe
+          file: modding-tools-${{ github.ref_name }}.zip

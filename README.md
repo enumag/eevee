@@ -5,15 +5,21 @@
 
 This tool is meant to provide better versioning for games based on [Essentials](https://github.com/Maruno17/pokemon-essentials).
 
+## Documentation
+
+See [`DOCS.md`](DOCS.md)
+
 ## Usage for other games
 
-Note that this is currently mainly tested on a game which is based on an older version of Essentials so not sure if it's completely compatible with current Essentials.
+Note that this is currently mainly tested on a game which is based on an older version of Essentials, so not sure if it's completely compatible with current Essentials.
 
-It will most likely work for other RMXP-based games as well but it's not my focus.
+It will most likely work for other RMXP-based games as well, but it's not my focus.
 
-Older versions of this tool also had support for RMVX and RMVXA games but I removed all of that to simplify the code. With some effort it could likely be re-introduced.
+Older versions of this tool also had support for RMVX and RMVXA games, but I removed all of that to simplify the code. With some effort, it could likely be re-introduced.
 
-Support for exporting scripts was in the original project but I removed it because the game we're testing the tool on has a much better way to deal with that.
+Support for exporting scripts was in the original project, but I removed it because the game we're testing the tool on has a much better way to deal with that.
+
+The Ruby format is currently missing support for many features not used in Essentials. For such games you have to use the YAML format or contribute the missing code.
 
 ## Features
 
@@ -21,7 +27,7 @@ Support for exporting scripts was in the original project but I removed it becau
 - Import .yaml files back to .rxdata files.
 - Configuration using [`eevee.yaml`](example/eevee.yaml).
 - Time stamp and filesize comparison to see if export / import is necessary.
-- Internal post-processing to minimize the amount of changed lines and conflicts.
+- Custom Ruby format to minimize the number of changed lines and conflicts.
 - Parallel processing to speed things up.
 
 ## Installation
@@ -32,12 +38,16 @@ Add the following lines into your `.gitignore`:
 /Data/*.rxdata
 !/Data/Scripts.rxdata
 !/Data/PkmnAnimations.rxdata
+
 /DataExport/checksums.csv
 /DataExport/*.local.yaml
+/DataExport/*.local.rb
+
 /DataBackup/*
-/timestamp.bin
-!.gitkeep
-Game.rxproj
+
+/Save Data/
+/RGSS104E.dll
+/Game.rxproj
 ```
 
 If you have any of these lines in your `.gitignore` then remove them:
@@ -58,13 +68,9 @@ Add `eevee.exe`, `eevee.yaml`, `eevee.rmxp.bat`, `eevee.import.bat` and `eevee.e
 
 Commit your changes before continuing.
 
-Create empty `DataExport` and `DataBackup` subdirectories in your game directory.
-
-Add an empty file called `.gitkeep` into `DataBackup`.
-
 Run `eevee.export.bat` and commit everything.
 
-Go into your `Data` directory, make a backup of all of these files and then delete them:
+Go into your `Data` directory, make a backup of all these files and then delete them:
 
 ```
 Actors.rxdata
@@ -111,17 +117,17 @@ docker run -v $PWD:/app eevee ruby /eevee/optimize.rb
 
 ## Compilation
 
-This is written for Windows 11 PowerShell with admin privileges.
+It is recommended to use eevee releases compiled automatically through GitHub Actions. Below is a setup useful for local testing. This is written for Windows 11 PowerShell with admin privileges.
 
 ```
 choco install ruby
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 ridk install
-gem install ocra listen
+gem install aibika listen
 ```
 
 Next on the list I needed `gem install wdm` but it's a native extension and needs C compiler.
-The installation finally passed after running these though I'm unsure which of these are actually required.
+The installation finally passed after running these, though I'm unsure which of these are actually required.
 My suspicion is that gcc and make are necessary while the rest is useless, but I'm not reinstalling windows to test that.
 
 ```
@@ -135,19 +141,6 @@ Now finally:
 
 ```
 gem install wdm parallel rubyzip
-```
-
-Next ocra failed on missing `fiber.so` which isn't distributed with Ruby 3.1+.
-So instead I got it from Ruby 3.0 (x64) here:
-
-https://rubyinstaller.org/downloads/
-
-In the archive it was in `rubyinstaller-3.0.5-1-x64/lib/ruby/3.0.0/x64-mingw32/fiber.so`.
-
-It belongs to this directory (path may be different depending on where Ruby is installed):
-
-```
-C:\tools\ruby31\lib\ruby\3.1.0\x64-mingw-ucrt
 ```
 
 Now `build.bat` should be able to build `eevee.exe`. But it won't work because the gems won't be included.
