@@ -1,0 +1,13 @@
+/Data/*.rxdata
+!/Data/Scripts.rxdata
+!/Data/PkmnAnimations.rxdata
+
+/DataExport/checksums.csv
+/DataExport/*.local.yaml
+/DataExport/*.local.rb
+
+/DataBackup/*
+
+/Save Data/
+/RGSS104E.dll
+/Game.rxproj

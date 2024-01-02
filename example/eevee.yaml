@@ -8,7 +8,7 @@
 data_dir: Data
 
 # Modify this path to specify where you want the game data emitted in YAML
-yaml_dir: DataExport
+ruby_dir: DataExport
 
 # Modify this path to specify where to backup .rxdata files
 backup_dir: DataBackup
@@ -29,6 +29,14 @@ data_ignore_list:
 # This array specifies all .rxdata files that should be imported but not
 # exported. They'll only be exported in case the yaml file is missing.
 import_only_list:
+  - "Actors.rxdata"
+  - "Armors.rxdata"
+  - "Enemies.rxdata"
+  - "Items.rxdata"
+  - "Skills.rxdata"
+  - "States.rxdata"
+  - "Troops.rxdata"
+  - "Weapons.rxdata"
 
 # This parameter determines whether the import/export scripts print verbose 
 # information such as each filename as it is imported or exported and timing 
@@ -41,7 +49,7 @@ verbose: true
 # value prevents unnecessary conflicts when versioning the System.yaml file.
 # If, for any reason, this causes problems, you can disable the default magic
 # number functionality by setting the value -1.
-magic_number: 77323823
+magic_number: 1
 
 # This is the value always used for System object's edit_map_id field.  RMXP
 # changes this value whenever the editor changes maps.  When exiting the 
@@ -52,13 +60,13 @@ magic_number: 77323823
 startup_map: 1
 
 # Glob mask for files that should always be included in a patch.
-patch_always: '{version,Scripts/*.rb}'
+patch_always: '{Scripts/*}'
 
 # Glob mask for files that should never be included in a patch even if they match patch_always.
-patch_never: '{Scripts/ScriptLoader.rb}'
+patch_never: ''
 
 # Glob mask to filter changed files for patch.
-patch_changed: '{Audio/*,Data/*,DataExport/*,Graphics/*}'
+patch_changed: '{Audio/*,Data/*,DataExport/*,Fonts/*,Graphics/*}'
 
 # Base tag for generating a patch.
 base_tag:
