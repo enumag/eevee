@@ -1,6 +1,7 @@
 $COMMAND = ARGV[0] || ''
 $PROJECT_DIR = Dir.pwd + '/'
 $SEED = $PROJECT_DIR.hash.to_s
+$VERSION = 'dev'
 
 require_relative 'rmxp/rgss'
 require_relative 'src/common'
@@ -11,14 +12,20 @@ config_filename = "eevee.yaml"
 # Setup the config file path
 $CONFIG_PATH = $PROJECT_DIR + config_filename
 
-# Read the config YAML file
-config = nil
-File.open( $CONFIG_PATH, "r+" ) do |configfile|
-  config = YAML::load( configfile )
-end
+if File.exist?($CONFIG_PATH)
+  # Read the config YAML file
+  config = nil
+  File.open( $CONFIG_PATH, "r+" ) do |configfile|
+    config = YAML::load( configfile )
+  end
 
-# Initialize configuration parameters
-$CONFIG = Config.new(config)
+  # Initialize configuration parameters
+  $CONFIG = Config.new(config)
+else
+  puts "Missing eevee.yaml configuration file."
+  puts
+  $COMMAND = ""
+end
 
 plugin = DataImporterExporter.new
 
@@ -79,5 +86,21 @@ elsif $COMMAND == "shuffle"
 
   shuffle(source, target)
 else
-  puts "Unknown command " + $COMMAND
+  puts "eevee version: " + $VERSION
+  puts
+  puts "Available commands:"
+
+  help "export",  "Export rxdata files to yaml/ruby"
+  help "import",  "Import yaml/ruby files back to rxdata filed"
+  help "rmxp",    "Open RPG Maker and watch for changes"
+  help "patch",   "Generate a patch file"
+  help "shuffle", "Move a switch or variable to new ID"
+
+  if STDIN.isatty
+    puts
+    puts "Press enter to exit..."
+    gets
+  end
+
+  exit 1
 end

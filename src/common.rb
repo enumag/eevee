@@ -599,3 +599,7 @@ def shuffle(source, target)
 
   save_ruby($CONFIG.export_dir + "/System.rb", system)
 end
+
+def help(command, description)
+  puts command.ljust(10, " ") + " " + description
+end
