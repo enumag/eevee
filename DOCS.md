@@ -52,7 +52,7 @@ Eevee will also run `ResizeEnableRunner.exe` in the background to let you resize
 
 While RPG Maker is open:
 - Do *NOT* change the Ruby files in the `DataExport` directory. `Scripts` can be changed freely.
-- Do *NOT* use Git commands that can change the ruby files such as `checkout`, `pull`, `merge`, `rebase` and `cherry-pick`. Using commit and push is fine.
+- Do *NOT* use Git commands that can change the ruby files such as `checkout`, `pull`, `merge`, `rebase` and `cherry-pick`. Using `commit` and `push` is fine.
 
 ## No limits
 
