@@ -370,13 +370,38 @@ def enhance_jumps(page, event, name)
   page.list = commands
 end
 
+def enhance_rock_climbs(page, event, name)
+  commands = []
+  page.list.each_with_index do |command, i|
+    if command.code == 209 && command.parameters[0] == -1
+      route = command.parameters[1]
+      moves = []
+      route.list.each_with_index do |move, i|
+        moves.push move
+        if (move.code >= 1 && move.code <= 8) || move.code == 12
+          nextmove = route.list[i+1]
+          if (nextmove.code >= 1 && nextmove.code <= 8) || nextmove.code == 12
+            moves.push RPG::MoveCommand.new(45, ["$scene.spriteset.addUserAnimation(33,$game_player.x,$game_player.y,true)"])
+            moves.push RPG::MoveCommand.new(45, ["$scene.spriteset.addUserAnimation(32,$game_player.x,$game_player.y,true)"])
+          end
+        end
+      end
+      route.list = moves
+    end
+
+    commands.push command
+  end
+  page.list = commands
+end
+
 def transform_page(page, event, name)
   # insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
   # insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
   # if has_scrap_train(page)
   #   puts name + ' ' + event.x.to_s + ' / ' + event.y.to_s
   # end
-  enhance_jumps(page, event, name)
+  # enhance_jumps(page, event, name)
+  enhance_rock_climbs(page, event, name) if has_rock_climb(page)
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
