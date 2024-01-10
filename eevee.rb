@@ -85,6 +85,8 @@ elsif $COMMAND == "shuffle"
   target = ARGV[2] || nil
 
   shuffle(source, target)
+elsif $COMMAND == "assets"
+  assets
 else
   puts "eevee version: " + $VERSION
   puts

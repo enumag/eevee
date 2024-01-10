@@ -54,6 +54,14 @@ While RPG Maker is open:
 - Do *NOT* change the Ruby files in the `DataExport` directory. `Scripts` can be changed freely.
 - Do *NOT* use Git commands that can change the ruby files such as `checkout`, `pull`, `merge`, `rebase` and `cherry-pick`. Using `commit` and `push` is fine.
 
+## Missing assets
+
+Eevee can also check that the game events aren't using any missing assets.
+
+```sh
+./eevee.exe assets
+```
+
 ## No limits
 
 You can even break RPG Maker's limits beyond the standard 5000 switches and 5000 variables by using the shuffle command to move something above this limit. You can still see, use and manage switches and variables above the limit in RPG Maker. While it doesn't allow you to set the maximum above 5000, it works just fine if you set the maximum above that using other means like eevee.

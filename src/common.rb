@@ -600,6 +600,62 @@ def shuffle(source, target)
   save_ruby($CONFIG.export_dir + "/System.rb", system)
 end
 
+def assets
+  input_dir  = $PROJECT_DIR + $CONFIG.export_dir + '/'
+
+  # Create the list of data files to export
+  files = Dir.entries( input_dir )
+  files = files.select { |e| File.extname(e) == $CONFIG.export_extension && ! e.end_with?('.local' + $CONFIG.export_extension) }
+  regex = /^Map0*+(?<number>[0-9]++).*#{Regexp.quote($CONFIG.export_extension)}$/
+  files.sort! do |a, b|
+    a_is_map = ! a.match(regex).nil?
+    b_is_map = ! b.match(regex).nil?
+    next a <=> b if a_is_map && b_is_map
+    next 1 if a_is_map
+    next -1 if b_is_map
+    next File.size(input_dir + "/" + b) <=> File.size(input_dir + "/" + a)
+  end
+
+  if files.empty?
+    puts "No data files found."
+    exit(false)
+  end
+
+  success = true
+
+  Parallel.each(
+    files,
+    in_threads: detect_cores,
+    finish: -> (file, index, missing_assets) {
+      success &&= missing_assets.length == 0
+
+      if missing_assets.length > 0
+        str =  "Checked "
+        str += "#{file}".ljust(50)
+        str += "(" + "#{index}".rjust(3, '0')
+        str += "/"
+        str += "#{files.size}".rjust(3, '0') + ")"
+        str += "    #{missing_assets.length} missing assets"
+        puts str
+
+        missing_assets.each do |file|
+          puts "  " + file
+        end
+
+        $stdout.flush
+      end
+    }
+  ) do |file|
+    factory = RPGFactory.new
+    factory.evaluate(File.read(input_dir + file))
+    next factory.missing_assets
+  end
+
+  puts "No missing files detected!" if success
+
+  exit(success)
+end
+
 def help(command, description)
   puts command.ljust(10, " ") + " " + description
 end

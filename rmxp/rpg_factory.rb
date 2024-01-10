@@ -1,4 +1,33 @@
 class RPGFactory
+  def initialize()
+    @missing_assets = []
+  end
+
+  def missing_assets
+    return @missing_assets.uniq
+  end
+
+  ASSET_TYPE = {
+    ME: "Audio/ME/{1}.ogg",
+    SE: "Audio/SE/{1}.ogg",
+    BGM: "Audio/BGM/{1}.ogg",
+    BGS: "Audio/BGS/{1}.ogg",
+    ANIMATION: "Graphics/Animations/{1}.png",
+    AUTOTILE: "Graphics/Autotiles/{1}.png",
+    BATTLEBACK: "Graphics/Battlebacks/{1}.png",
+    CHARACTER: "Graphics/Characters/{1}.png",
+    FOG: "Graphics/Fogs/{1}.png",
+    PANORAMA: "Graphics/Panoramas/{1}.png",
+    PICTURE: "Graphics/Pictures/{1}.png",
+    TILESET: "Graphics/Tilesets/{1}.png",
+  }
+
+  def verify_asset(type, name)
+    return if name == ""
+    path = ASSET_TYPE[type].gsub("{1}", name)
+    @missing_assets.push path unless File.exist?(path)
+  end
+
   def map(
     data:,
     events:,
@@ -10,6 +39,8 @@ class RPGFactory
     encounter_list: [],
     encounter_step: 30
   )
+    verify_asset(:BGM, bgm.name)
+    verify_asset(:BGS, bgs.name)
     map = RPG::Map.new(data.xsize, data.ysize)
     map.tileset_id = tileset_id
     map.autoplay_bgm = autoplay_bgm
@@ -154,6 +185,7 @@ class RPGFactory
     blending: :normal,
     blend_type: nil
   )
+    verify_asset(:CHARACTER, name)
     graphic = RPG::Event::Page::Graphic.new
     graphic.tile_id = tile_id
     graphic.character_name = name
@@ -256,26 +288,32 @@ class RPGFactory
   end
 
   def battle_bgm(audio)
+    verify_asset(:BGM, audio.name)
     return command(132, audio)
   end
 
   def battle_me(audio)
+    verify_asset(:ME, audio.name)
     return command(133, audio)
   end
 
   def play_bgm(audio)
+    verify_asset(:BGM, audio.name)
     return command(241, audio)
   end
 
   def play_bgs(audio)
+    verify_asset(:BGS, audio.name)
     return command(245, audio)
   end
 
   def play_me(audio)
+    verify_asset(:ME, audio.name)
     return command(249, audio)
   end
 
   def play_se(audio)
+    verify_asset(:SE, audio.name)
     return command(250, audio)
   end
 
@@ -676,10 +714,12 @@ class RPGFactory
   BLENDING_INVERSE = BLENDING.invert
 
   def change_panorama(graphic:, hue: 0)
+    verify_asset(:PANORAMA, graphic)
     return command(204, 0, graphic, hue)
   end
 
   def change_fog(graphic:, hue: 0, opacity: 0, blending:, zoom:, sx: 0, sy: 0)
+    verify_asset(:FOG, graphic)
     return command(204, 1, graphic, hue, opacity, BLENDING_INVERSE[blending], zoom, sx, sy)
   end
 
@@ -695,10 +735,12 @@ class RPGFactory
   ORIGIN_INVERSE = ORIGIN.invert
 
   def show_picture(number:, graphic:, origin:, x: 0, y: 0, zoom_x: 100, zoom_y: 100, opacity: 255, blending:)
+    verify_asset(:PICTURE, graphic)
     return command(231, number, graphic, ORIGIN_INVERSE[origin], 0, x, y, zoom_x, zoom_y, opacity, BLENDING_INVERSE[blending])
   end
 
   def show_picture_variables(number:, graphic:, origin:, x: 0, y: 0, zoom_x: 100, zoom_y: 100, opacity: 255, blending:)
+    verify_asset(:PICTURE, graphic)
     return command(231, number, graphic, ORIGIN_INVERSE[origin], 1, x, y, zoom_x, zoom_y, opacity, BLENDING_INVERSE[blending])
   end
 
@@ -954,6 +996,7 @@ class RPGFactory
   end
 
   def change_graphic(name: "", hue: 0, direction: :down, pattern: 0)
+    verify_asset(:CHARACTER, name)
     return move(41, name, hue, DIRECTION_INVERSE[direction], pattern)
   end
 
@@ -970,6 +1013,7 @@ class RPGFactory
   end
 
   def route_play_se(audio)
+    verify_asset(:SE, audio.name)
     return move(44, audio)
   end
 
@@ -1085,6 +1129,12 @@ class RPGFactory
     priorities:,
     terrain_tags:
   )
+    autotile_names.each do |autotile|
+      verify_asset(:AUTOTILE, autotile)
+    end
+    verify_asset(:TILESET, tileset_name)
+    verify_asset(:PANORAMA, panorama_name)
+    verify_asset(:FOG, fog_name)
     tileset = RPG::Tileset.new
     tileset.id = id
     tileset.name = name
@@ -1135,6 +1185,7 @@ class RPGFactory
     frames:,
     timings: []
   )
+    verify_asset(:ANIMATION, animation)
     object = RPG::Animation.new
     object.id = id
     object.name = name
@@ -1167,6 +1218,7 @@ class RPGFactory
     blue:,
     alpha:
   )
+    verify_asset(:SE, se.name)
     object = RPG::Animation::Timing.new
     object.frame = frame
     object.se = se
@@ -1214,6 +1266,22 @@ class RPGFactory
     switches:,
     variables:
   )
+    verify_asset(:BGM, title_bgm.name)
+    verify_asset(:BGM, battle_bgm.name)
+    verify_asset(:ME, battle_end_me.name)
+    verify_asset(:ME, gameover_me.name)
+    verify_asset(:SE, cursor_se.name)
+    verify_asset(:SE, decision_se.name)
+    verify_asset(:SE, cancel_se.name)
+    verify_asset(:SE, buzzer_se.name)
+    verify_asset(:SE, equip_se.name)
+    verify_asset(:SE, shop_se.name)
+    verify_asset(:SE, save_se.name)
+    verify_asset(:SE, load_se.name)
+    verify_asset(:SE, battle_start_se.name)
+    verify_asset(:SE, escape_se.name)
+    verify_asset(:SE, actor_collapse_se.name)
+    verify_asset(:SE, enemy_collapse_se.name)
     object = RPG::System.new
     object.windowskin_name = windowskin_name
     object.title_name = title_name
