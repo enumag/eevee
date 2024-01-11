@@ -370,6 +370,15 @@ def enhance_jumps(page, event, name)
   page.list = commands
 end
 
+def has_dust_anim(page)
+  page.list.each do |command|
+    if command.code == 207 && command.parameters[1] == 2
+      return true
+    end
+  end
+  return false
+end
+
 def enhance_rock_climbs(page, event, name)
   commands = []
   page.list.each_with_index do |command, i|
@@ -394,14 +403,26 @@ def enhance_rock_climbs(page, event, name)
   page.list = commands
 end
 
+def has_rock_climb_anim(page)
+  page.list.each do |command|
+    if command.code == 209
+      route = command.parameters[1]
+      route.list.each_with_index do |move, i|
+        return true if move.code == 45 && move.parameters[0] == "$scene.spriteset.addUserAnimation(33,$game_player.x,$game_player.y,true)"
+      end
+    end
+  end
+  return false
+end
+
 def transform_page(page, event, name)
   # insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
   # insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
   # if has_scrap_train(page)
   #   puts name + ' ' + event.x.to_s + ' / ' + event.y.to_s
   # end
-  # enhance_jumps(page, event, name)
-  enhance_rock_climbs(page, event, name) if has_rock_climb(page)
+  # enhance_jumps(page, event, name) unless has_dust_anim(page)
+  enhance_rock_climbs(page, event, name) if has_rock_climb(page) && !has_rock_climb_anim(page)
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
