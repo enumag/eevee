@@ -264,6 +264,24 @@ def has_rock_climb(page)
   return false
 end
 
+def has_rock_smash(page)
+  page.list.each do |command|
+    if command.code == 111 && command.parameters[1] == 'Kernel.pbRockSmash'
+      return true
+    end
+  end
+  return false
+end
+
+def has_cut(page)
+  page.list.each do |command|
+    if command.code == 111 && command.parameters[1] == 'Kernel.pbCut'
+      return true
+    end
+  end
+  return false
+end
+
 def insert_rock_climb_scripts(page, event, name)
   beforeInserts = 0
   afterInserts = 0
@@ -322,6 +340,15 @@ end
 def has_scrap_train(page)
   page.list.each do |command|
     if command.code == 355 && command.parameters[0].include?('pbDependentEventOpacity')
+      return true
+    end
+  end
+  return false
+end
+
+def has_headbutt(page)
+  page.list.each do |command|
+    if command.code == 355 && command.parameters[0] == 'pbHeadbutt'
       return true
     end
   end
@@ -415,14 +442,41 @@ def has_rock_climb_anim(page)
   return false
 end
 
-def transform_page(page, event, name)
+def has_se(page, se)
+  page.list.each do |command|
+    return true if command.code == 250 && command.parameters[0].name == se
+  end
+  return false
+end
+
+def has_command(page, code)
+  page.list.each do |command|
+    return true if command.code == code
+  end
+  return false
+end
+
+def transform_page(page, event, file)
   # insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
   # insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
   # if has_scrap_train(page)
   #   puts name + ' ' + event.x.to_s + ' / ' + event.y.to_s
   # end
   # enhance_jumps(page, event, name) unless has_dust_anim(page)
-  enhance_rock_climbs(page, event, name) if has_rock_climb(page) && !has_rock_climb_anim(page)
+  # enhance_rock_climbs(page, event, name) if has_rock_climb(page) && !has_rock_climb_anim(page)
+  # event.name = "RockClimb" if has_rock_climb(page) && ! event.name.start_with?("RockClimb")
+  # event.name = "Item" if page.graphic && page.graphic.character_name.start_with?("itemball") # also "rby_pokeball"
+  # event.name = "Z-Cell" if page.graphic && page.graphic.character_name.start_with?("zycell")
+  # event.name = "Glass" if has_se(page, "GlassBreak") && event.name == "Break"
+  # if (has_se(page, "Exit Door") || has_se(page, "Entering Door")) && page.trigger == 1 && page.graphic.character_name == "" && has_command(page, 201) && !has_command(page, 101) && !has_se(page, "grassrustle") && event.name.start_with?("EV")
+  #   event.name = "Door"
+  # end
+  # if (has_se(page, "Exit Door") || has_se(page, "Entering Door")) && page.trigger == 1 && page.graphic.character_name == "" && has_command(page, 201) && !has_command(page, 101) && !has_se(page, "grassrustle") && event.name != "Ladder"
+  #   event.name = "Door"
+  # end
+  # event.name = "Rock" if has_rock_smash(page) && event.name != "Glass"
+  # event.name = "Tree" if has_cut(page)
+  event.name = "HeadbuttTree" if has_headbutt(page)
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
