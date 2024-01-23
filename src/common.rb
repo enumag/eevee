@@ -282,6 +282,15 @@ def has_cut(page)
   return false
 end
 
+def has_strength_boulder(page)
+  page.list.each do |command|
+    if command.code == 355 && command.parameters[0] == 'pbPushThisBoulder'
+      return true
+    end
+  end
+  return false
+end
+
 def insert_rock_climb_scripts(page, event, name)
   beforeInserts = 0
   afterInserts = 0
@@ -465,6 +474,7 @@ def transform_page(page, event, file)
   # enhance_jumps(page, event, name) unless has_dust_anim(page)
   # enhance_rock_climbs(page, event, name) if has_rock_climb(page) && !has_rock_climb_anim(page)
   # event.name = "RockClimb" if has_rock_climb(page) && ! event.name.start_with?("RockClimb")
+  event.name = "Boulder" if has_strength_boulder(page) && ! event.name.start_with?("Crustle")
   # event.name = "Item" if page.graphic && page.graphic.character_name.start_with?("itemball") # also "rby_pokeball"
   # event.name = "Z-Cell" if page.graphic && page.graphic.character_name.start_with?("zycell")
   # event.name = "Glass" if has_se(page, "GlassBreak") && event.name == "Break"
@@ -476,7 +486,10 @@ def transform_page(page, event, file)
   # end
   # event.name = "Rock" if has_rock_smash(page) && event.name != "Glass"
   # event.name = "Tree" if has_cut(page)
-  event.name = "HeadbuttTree" if has_headbutt(page)
+  # event.name = "HeadbuttTree" if has_headbutt(page)
+  # if page.graphic.character_name.start_with?("pkmn_") && page.trigger == 0 && has_command(page, 101) && !has_command(page, 250)
+  #   puts file + " " + event.name + " " + page.graphic.character_name + " " + event.x.to_s + "/" + event.y.to_s
+  # end
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
