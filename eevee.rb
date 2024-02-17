@@ -87,6 +87,8 @@ elsif $COMMAND == "shuffle"
   shuffle(source, target)
 elsif $COMMAND == "assets"
   assets
+elsif $COMMAND == "tiles"
+  tiles
 else
   puts "eevee version: " + $VERSION
   puts

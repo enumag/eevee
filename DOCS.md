@@ -62,6 +62,14 @@ Eevee can also check that the game events aren't using any missing assets.
 ./eevee.exe assets
 ```
 
+## Invalid tiles
+
+We also found that some of our maps were using invalid tiles - index outside the boundaries of the given tileset. Those are invalid and may cause passability issues with JoiPlay's map optimizer. Eevee can replace all such tiles with zeros.
+
+```sh
+./eevee.exe tiles
+```
+
 ## No limits
 
 You can even break RPG Maker's limits beyond the standard 5000 switches and 5000 variables by using the shuffle command to move something above this limit. You can still see, use and manage switches and variables above the limit in RPG Maker. While it doesn't allow you to set the maximum above 5000, it works just fine if you set the maximum above that using other means like eevee.

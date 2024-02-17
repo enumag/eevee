@@ -656,6 +656,33 @@ def assets
   exit(success)
 end
 
+def tiles
+  maps = load_ruby($CONFIG.export_dir + '/MapInfos.rb')
+  tilesets = load_ruby($CONFIG.export_dir + "/Tilesets.rb")
+  files = Dir.entries($CONFIG.export_dir)
+  files = files.select do |e|
+    File.extname(e) == ".rb" && File.basename(e, ".rb").start_with?("Map") && !File.basename(e, ".rb").start_with?("MapInfos")
+  end
+  i = 0
+  files.each do |file|
+    map = load_ruby($CONFIG.export_dir + "/" + file)
+    tileset = tilesets[map.tileset_id]
+    for x in 0...map.data.xsize
+      for y in 0...map.data.ysize
+        for z in 0...map.data.zsize
+          if map.data[x, y, z] >= tileset.passages.xsize
+            i += 1
+            puts "invalid tile: #{x} / #{y} / #{z} is using tile #{map.data[x, y, z]} but the tileset only has tiles up to #{tileset.passages.xsize - 1} - #{file}"
+            map.data[x, y, z] = 0
+          end
+        end
+      end
+    end
+    save_ruby($CONFIG.export_dir + "/" + file, map, name: File.basename(file, '.rb'), maps: maps)
+  end
+  puts "#{i} incorrect tiles detected"
+end
+
 def help(command, description)
   puts command.ljust(10, " ") + " " + description
 end
