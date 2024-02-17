@@ -157,7 +157,7 @@ class CMap
       raise "incorrect table data size, expected: "+table.xsize.to_s+" * "+table.ysize.to_s+" * "+table.zsize.to_s+" = "+(table.xsize * table.ysize * table.zsize).to_s+", actual "+table.data.length.to_s
     end
     table.data.each_with_index do |v, i| v
-      raise "nil in table index "+i if v.nil?
+      raise "nil in table index "+i.to_s if v.nil?
     end
   end
 
