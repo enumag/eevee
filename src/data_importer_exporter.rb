@@ -71,7 +71,12 @@ class DataImporterExporter
         total_dump_time += dump_time
       }
     ) do |file|
-      import_file(file, checksums, input_dir, output_dir)
+      begin
+        import_file(file, checksums, input_dir, output_dir)
+      rescue => error
+        puts "Error while importing #{file}:"
+        raise error
+      end
     end
 
     save_checksums(checksums)
@@ -203,7 +208,12 @@ class DataImporterExporter
         total_dump_time += dump_time
       }
     ) do |file|
-      export_file(file, checksums, maps, input_dir, output_dir)
+      begin
+        export_file(file, checksums, maps, input_dir, output_dir)
+      rescue => error
+        puts "Error while exporting #{file}:"
+        raise error
+      end
     end
 
     save_checksums(checksums)
