@@ -368,13 +368,13 @@ class RPGDumper
         value += command_battle(command, level)
         level += 2
       when 601
-        value += command_win(command, level)
+        value += command_battle_win(command, level)
         level += 2
       when 602
-        value += command_escape(command, level)
+        value += command_battle_escape(command, level)
         level += 2
       when 603
-        value += command_lose(command, level)
+        value += command_battle_lose(command, level)
         level += 2
 
       # Command groups
