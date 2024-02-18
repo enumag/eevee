@@ -6,6 +6,8 @@ The project is open-source so feel free to use it for other games as well if you
 
 If you have questions or need help with the setup, ask `@enumag` on Discord or create an issue on GitHub.
 
+You can download the latest modding tools zip from [releases](https://github.com/enumag/eevee/releases).
+
 The modding tools zip contains the following:
 - `eevee.exe` - the version of eevee we're currently using
 - `eevee.yaml` - our eevee configuration
