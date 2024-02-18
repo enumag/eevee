@@ -72,6 +72,8 @@ We also found that some of our maps were using invalid tiles - index outside the
 ./eevee.exe tiles
 ```
 
+Speaking of JoiPlay's map optimizer, I have found several bugs in it. As a result, this repository actually contains a fixed implementation which we're using internally. Running it, however, is a lot more difficult as I was unable to compile it into an exe. In case you need it, look into `Dockerfile`, `optimize.rb` and the `joiplay` directory.
+
 ## No limits
 
 You can even break RPG Maker's limits beyond the standard 5000 switches and 5000 variables by using the shuffle command to move something above this limit. You can still see, use and manage switches and variables above the limit in RPG Maker. While it doesn't allow you to set the maximum above 5000, it works just fine if you set the maximum above that using other means like eevee.
