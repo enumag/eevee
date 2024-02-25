@@ -459,17 +459,20 @@ def generate_patch(base_tag, password)
     puts "Generating patch with changes since tag #{$CONFIG.base_tag} (#{base_commit})."
   end
 
-  command = 'git diff --ignore-submodules --name-only --diff-filter=ACMRTUX ' + base_commit + '..HEAD'
+  command = 'git --no-pager diff --ignore-submodules --name-only --diff-filter=ACMRTUX ' + base_commit + '..HEAD'
   files = nil
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    out = stdout.read
+    err = stderr.read
+
     if waiter.value.exitstatus != 0
       puts 'Unable to get git diff'
-      puts stdout.read
-      puts stderr.read
+      puts out
+      puts err
       exit(false)
     end
 
-    files = stdout.read.split("\n")
+    files = out.split("\n")
   end
 
   files.select! { |file| File.fnmatch($CONFIG.patch_changed, file, File::FNM_EXTGLOB) }
