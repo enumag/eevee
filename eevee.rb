@@ -58,8 +58,11 @@ elsif $COMMAND == "rmxp"
   end
   listener.start
 
-  # Start Resizer tool if it exists
-  pid = Process.spawn('"' + $PROJECT_DIR + 'ResizeEnableRunner.exe"') if File.exist?($PROJECT_DIR + 'ResizeEnableRunner.exe')
+  pid = nil
+  if $CONFIG.resizer
+    # Start Resizer tool if it exists
+    pid = Process.spawn('"' + $PROJECT_DIR + 'ResizeEnableRunner.exe"') if File.exist?($PROJECT_DIR + 'ResizeEnableRunner.exe')
+  end
 
   # Start RMXP
   File.write($PROJECT_DIR + 'Game.rxproj', 'RPGXP 1.05')

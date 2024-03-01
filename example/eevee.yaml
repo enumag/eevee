@@ -59,6 +59,9 @@ magic_number: 1
 # the value -1.
 startup_map: 1
 
+# Run ResizeEnableRunner.exe if it exists.
+resizer: true
+
 # Glob mask for files that should always be included in a patch.
 patch_always: '{Scripts/*}'
 

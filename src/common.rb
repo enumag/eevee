@@ -158,6 +158,7 @@ class Config
   attr_accessor :verbose
   attr_accessor :magic_number
   attr_accessor :startup_map
+  attr_accessor :resizer
   attr_accessor :patch_always
   attr_accessor :patch_never
   attr_accessor :patch_changed
@@ -174,6 +175,7 @@ class Config
     @verbose          = config['verbose']
     @magic_number     = config['magic_number']
     @startup_map      = config['startup_map']
+    @resizer          = config['resizer']
     @patch_always     = config['patch_always']
     @patch_never      = config['patch_never']
     @patch_changed    = config['patch_changed']
