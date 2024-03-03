@@ -90,8 +90,6 @@ end
 class Bitmap
   def make_png(name = 'like', path = '', mode = 0)
     filepath = path + name + '.png'
-    # initialize array
-    pngdata = []
     # get image data
     pngdata = Zlib::PngFile.make_png(self, mode)
     # if the thumbnail exists, delete it first
@@ -102,8 +100,6 @@ class Bitmap
     f.write(pngdata)
     # close file writer handle
     f.close
-    # cleanup
-    pngdata = ""
   end
 end
 
