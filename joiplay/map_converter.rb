@@ -90,15 +90,10 @@ end
 class Bitmap
   def make_png(name = 'like', path = '', mode = 0)
     filepath = path + name + '.png'
-    # get image data
     pngdata = Zlib::PngFile.make_png(self, mode)
-    # if the thumbnail exists, delete it first
     File.delete(filepath) if File.file?(filepath)
-    # create a new file, write-only and binary
     f = File.open(filepath, 'wb')
-    # write image data to file
     f.write(pngdata)
-    # close file writer handle
     f.close
   end
 end
@@ -154,19 +149,19 @@ class CMap
     @mapid.gsub!("patch/","") if @mapid.include?("patch/")
     @map = nil
     @nmap = nil
-    #Read map
+    # Read map
     File.open(path, "rb"){ |file|
       mdata = file.read()
       @map = Marshal.load(mdata)
       @nmap = @map.clone
     }
-    #Check if it's a map or not
+    # Check if it's a map or not
     return unless @map.is_a? RPG::Map
-    #Get tile table from map and create tile hash
+    # Get tile table from map and create tile hash
     table = @map.data.clone
     ntable = Table.new(table.xsize, table.ysize, table.zsize)
     tilehash = self.getTilehash(table)
-    #Create an array with tile ids
+    # Create an array with tile ids
     tileArray = Array.new
     tilehash.each_value{ |value|
       tileArray.push(value) unless tileArray.include?(value)
@@ -175,20 +170,20 @@ class CMap
     eventTiles.each{ |value|
       tileArray.push(value) unless tileArray.include?(value)
     }
-    #Calculate tileset height
+    # Calculate tileset height
     tilesetwidth = 256
     tilesetheight = (tileArray.length/8.0).ceil * 32
     tilesetheight = 32 if tilesetheight == 0
-    #Get tileset and it's attributes
+    # Get tileset and it's attributes
     tileset = self.getTileset(@map.tileset_id)
     priorities = tileset.priorities
     passages = tileset.passages
     terrain_tags = tileset.terrain_tags
-    #Create attributes for new tileset
+    # Create attributes for new tileset
     npassages = Table.new(passages.xsize)
     npriorities = Table.new(priorities.xsize)
     nterrain_tags = Table.new(terrain_tags.xsize)
-    #Copy attributes for autotiles
+    # Copy attributes for autotiles
     for i in 0...384
       npassages[i] = passages[i] unless passages[i].nil?
       npriorities[i] = priorities[i] unless priorities[i].nil?
@@ -196,40 +191,40 @@ class CMap
     end
     npriorities[0] = 5
 
-    #Create bitmaps
+    # Create bitmaps
     oldtileset = Bitmap.new("Graphics/Tilesets/"+tileset.tileset_name+".png")
     newtileset = Bitmap.new(tilesetwidth, tilesetheight)
 
-    #Loop tile array to blit tiles to new tileset and
-    #use a new hash to store old and new tile ids
+    # Loop tile array to blit tiles to new tileset and
+    # use a new hash to store old and new tile ids
     tindex = 384
     newtilehash = Hash.new
     tileArray.sort!
 
     tileArray.each { |t|
-      #Copy attributes for tile
+      # Copy attributes for tile
       npassages[tindex] = passages[t] unless passages[t].nil?
       npriorities[tindex] = priorities[t] unless priorities[t].nil?
       nterrain_tags[tindex] = terrain_tags[t] unless terrain_tags[t].nil?
-      #Get tile coordinates for original tileset
+      # Get tile coordinates for original tileset
       ox = self.getX(t)
       oy = self.getY(t)
       orect = Rect.new(ox, oy, 32, 32)
-      #Get tile coordinates for new tileset
+      # Get tile coordinates for new tileset
       nx = self.getX(tindex)
       ny = self.getY(tindex )
-      #Blit tile to new tileset
+      # Blit tile to new tileset
       newtileset.blt(nx, ny, oldtileset, orect)
-      #Store tile id
+      # Store tile id
       newtilehash[t] = tindex
       tindex = tindex + 1
     }
 
-    #Replace tile ids in Table and Events
+    # Replace tile ids in Table and Events
     self.recreateTable(ntable, table, newtilehash)
     self.replaceTilesForEvents(@map.events, newtilehash)
 
-    #Create new tileset
+    # Create new tileset
     ntileset = tileset.clone
     ntileset.id = self.nextTilesetID(@mapid.to_i)
     ntileset.name = "Map"+@mapid
@@ -237,16 +232,15 @@ class CMap
     ntileset.priorities = npriorities
     ntileset.passages = npassages
     ntileset.terrain_tags = nterrain_tags
-    #Push new tileset to tilesets
+    # Push new tileset to tilesets
     self.addToTilesets(ntileset.id, ntileset)
 
-    #Set data and tileset_id of new map
+    # Set data and tileset_id of new map
     @nmap.data = ntable
     @nmap.tileset_id = ntileset.id
     @nmap.events = @map.events.clone
 
-    #Save map andcreate missing directories
-
+    # Save map and create missing directories
     Dir.mkdir("patch") unless File.exist?("patch")
     Dir.mkdir("patch/Data") unless File.exist?("patch/Data")
     path = "patch/"+path unless path.include?("patch/")
@@ -258,7 +252,7 @@ class CMap
     Dir.mkdir("patch/Graphics") unless File.exist?("patch/Graphics")
     Dir.mkdir("patch/Graphics/Tilesets") unless File.exist?("patch/Graphics/Tilesets")
 
-    #Save new tileset as png
+    # Save new tileset as png
     newtileset.make_png(@mapid, "patch/Graphics/Tilesets/")
   end
 
@@ -270,7 +264,7 @@ class CMap
     }
   end
 
-  #Get array of map paths
+  # Get array of map paths
   def getMapList(dir)
     files = Dir.entries(dir)
     files = files.select { |e| File.extname(e) == ".rxdata" }
@@ -283,7 +277,7 @@ class CMap
     return files
   end
 
-  #Get regular tiles and coordinates from Table
+  # Get regular tiles and coordinates from Table
   def getTilehash(table)
     xsize = table.xsize
     ysize = table.ysize
@@ -346,19 +340,18 @@ class CMap
     }
   end
 
-  #Get x coordinate of tile
+  # Get x coordinate of tile
   def getX(id)
     return ((id - 384 ) % 8 * 32).to_i
   end
 
-  #Get y coordinate of tile
+  # Get y coordinate of tile
   def getY(id)
     return ((id - 384 ) / 8 * 32).to_i
   end
 end
 
 def convertAll
-  #Loop all maps
   Dir.mkdir("patch") unless File.exist?("patch")
 
   converter = CMap.new(File.exist?("Data/Tilesets.rxdata") ? "Data/Tilesets.rxdata" : "Data/tilesets.rxdata")
