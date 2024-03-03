@@ -354,7 +354,7 @@ end
 def convertAll
   Dir.mkdir("patch") unless File.exist?("patch")
 
-  converter = CMap.new(File.exist?("Data/Tilesets.rxdata") ? "Data/Tilesets.rxdata" : "Data/tilesets.rxdata")
+  converter = CMap.new("Data/Tilesets.rxdata")
   maps = converter.getMapList("Data")
 
   mid = 0
