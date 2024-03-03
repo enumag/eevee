@@ -135,17 +135,8 @@ class CMap
     @ntilesets[id] = tileset
   end
 
-  def tilesetCount
-    return @tilesets.size
-  end
-
-  def ntilesetCount
-    # Add space for new tilesets to be added in a patch
-    if @tilesets.size == @ntilesets.size
-      return @tilesets.size.ceil(-3)
-    end
-
-    return @ntilesets.size
+  def nextTilesetID(mapid)
+    return @tilesets.size.ceil(-3) + mapid
   end
 
   def validateTable(table)
@@ -240,7 +231,7 @@ class CMap
 
     #Create new tileset
     ntileset = tileset.clone
-    ntileset.id = self.ntilesetCount
+    ntileset.id = self.nextTilesetID(@mapid.to_i)
     ntileset.name = "Map"+@mapid
     ntileset.tileset_name = @mapid
     ntileset.priorities = npriorities
