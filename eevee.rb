@@ -102,6 +102,8 @@ else
   help "rmxp",    "Open RPG Maker and watch for changes"
   help "patch",   "Generate a patch file"
   help "shuffle", "Move a switch or variable to new ID"
+  help "assets",  "Check ruby files for usage of missing assets"
+  help "tiles",   "Check ruby files for invalid tiles"
 
   if STDIN.isatty
     puts
