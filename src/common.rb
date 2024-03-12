@@ -668,6 +668,9 @@ def tiles
   files = files.select do |e|
     File.extname(e) == ".rb" && File.basename(e, ".rb").start_with?("Map") && !File.basename(e, ".rb").start_with?("MapInfos")
   end
+
+  success = true
+
   i = 0
   files.each do |file|
     map = load_ruby($CONFIG.export_dir + "/" + file)
@@ -679,13 +682,21 @@ def tiles
             i += 1
             puts "invalid tile: #{x} / #{y} / #{z} is using tile #{map.data[x, y, z]} but the tileset only has tiles up to #{tileset.passages.xsize - 1} - #{file}"
             map.data[x, y, z] = 0
+            success = false
           end
         end
       end
     end
     save_ruby($CONFIG.export_dir + "/" + file, map, name: File.basename(file, '.rb'), maps: maps)
   end
-  puts "#{i} incorrect tiles detected"
+
+  if success
+    puts "No incorrect tiles detected!"
+  else
+    puts "#{i} incorrect tiles detected"
+  end
+
+  exit(success)
 end
 
 def help(command, description)
