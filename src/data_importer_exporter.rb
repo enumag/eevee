@@ -83,9 +83,7 @@ class DataImporterExporter
 
     # Delete local copies of maps that were deleted by another contributor.
     maps = load_maps
-    files = Dir.entries( output_dir )
-    files -= $CONFIG.data_ignore_list
-    files = files.select { |e| File.extname(e) == ".rxdata" }
+    files = select_files(output_dir, $CONFIG.file_list)
     files = files.select do |e|
       name = File.basename(e, '.rxdata')
       match = name.match(/^Map0*+(?<number>[0-9]++)$/)
@@ -169,9 +167,7 @@ class DataImporterExporter
     maps = load_maps
 
     # Create the list of data files to export
-    files = Dir.entries( input_dir )
-    files -= $CONFIG.data_ignore_list
-    files = files.select { |e| File.extname(e) == ".rxdata" }
+    files = select_files(input_dir, $CONFIG.file_list)
     files = files.select { |e| $STARTUP_TIME.nil? || file_modified_since?(input_dir + e, $STARTUP_TIME) || ! data_file_exported?(input_dir + e) }
     files.sort! do |a, b|
       a_is_map = ! a.match(/^Map0*+(?<number>[0-9]++)\.rxdata$/).nil?

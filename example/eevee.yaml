@@ -17,20 +17,22 @@ backup_dir: DataBackup
 #  Miscellaneous Parameters
 #-------------------------------------------------------------------------------
 
-# This array specifies all .rxdata files which are to be ignored by the data
-# exporter script.  Note that the script exporter doesn't look at this array,
-# since it always exports the Scripts.rxdata file.  Add entries to this array
-# if you do not wish to version certain .rxdata files.
-data_ignore_list:
-  - "Scripts.rxdata"
-  - "PkmnAnimations.rxdata"
-  - "TilesetsTemp.rxdata"
+# This array specifies all .rxdata files which are to be processed by the data
+# exporter script.
+file_list:
+  - "Map*.rxdata"
+  - "Animations.rxdata"
+  - "CommonEvents.rxdata"
+  - "MapInfos.rxdata"
+  - "System.rxdata"
+  - "Tilesets.rxdata"
 
 # This array specifies all .rxdata files that should be imported but not
 # exported. They'll only be exported in case the yaml file is missing.
 import_only_list:
   - "Actors.rxdata"
   - "Armors.rxdata"
+  - "Classes.rxdata"
   - "Enemies.rxdata"
   - "Items.rxdata"
   - "Skills.rxdata"

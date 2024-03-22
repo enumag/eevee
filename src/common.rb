@@ -153,7 +153,7 @@ class Config
   attr_accessor :yaml_dir
   attr_accessor :ruby_dir
   attr_accessor :backup_dir
-  attr_accessor :data_ignore_list
+  attr_accessor :file_list
   attr_accessor :import_only_list
   attr_accessor :verbose
   attr_accessor :magic_number
@@ -170,7 +170,7 @@ class Config
     @yaml_dir         = config['yaml_dir']
     @ruby_dir         = config['ruby_dir']
     @backup_dir       = config['backup_dir']
-    @data_ignore_list = config['data_ignore_list']
+    @file_list        = config['file_list']
     @import_only_list = config['import_only_list']
     @verbose          = config['verbose']
     @magic_number     = config['magic_number']
@@ -552,6 +552,19 @@ def clear_backups()
   files.each do |file|
     File.delete($CONFIG.backup_dir + '/' + file)
   end
+end
+
+def select_files(directory, masks)
+  files = Dir.entries(directory)
+  files = files.select { |e| match_any(e, masks) }
+  return files
+end
+
+def match_any(file, masks)
+  for mask in masks
+    return true if File.fnmatch(mask, file, File::FNM_EXTGLOB)
+  end
+  return false
 end
 
 # Moves a switch or variable. Requires exporting to ruby.
