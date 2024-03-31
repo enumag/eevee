@@ -60,8 +60,13 @@ elsif $COMMAND == "rmxp"
 
   pid = nil
   if $CONFIG.resizer
-    # Start Resizer tool if it exists
-    pid = Process.spawn('"' + $PROJECT_DIR + 'ResizeEnableRunner.exe"') if File.exist?($PROJECT_DIR + 'ResizeEnableRunner.exe')
+    if File.exist?($PROJECT_DIR + 'ResizeEnableRunner.exe')
+      # Start Resizer tool if it exists
+      pid = Process.spawn('"' + $PROJECT_DIR + 'ResizeEnableRunner.exe"')
+      puts "ResizeEnableRunner.exe started (" + pid.to_s + ")."
+    else
+      puts "ResizeEnableRunner.exe not found."
+    end
   end
 
   # Start RMXP
