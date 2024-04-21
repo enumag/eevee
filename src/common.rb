@@ -712,6 +712,24 @@ def tiles
   exit(success)
 end
 
+def mapTree
+  maps = load_ruby($CONFIG.export_dir + '/MapInfos.rb')
+  puts dumpMaps(maps, 0, 0)
+end
+
+def dumpMaps(maps, parent_id, level)
+  output = ""
+  for id, map in maps
+    if map.parent_id == parent_id
+      output += ' ' * level * 2
+      output += map.name + " (" + id.to_s + ")"
+      output += "\n"
+      output += dumpMaps(maps, id, level + 1)
+    end
+  end
+  return output
+end
+
 def help(command, description)
   puts command.ljust(10, " ") + " " + description
 end

@@ -97,6 +97,8 @@ elsif $COMMAND == "assets"
   assets
 elsif $COMMAND == "tiles"
   tiles
+elsif $COMMAND == "tree"
+  mapTree
 else
   puts "eevee version: " + $VERSION
   puts
@@ -109,6 +111,7 @@ else
   help "shuffle", "Move a switch or variable to new ID"
   help "assets",  "Check ruby files for usage of missing assets"
   help "tiles",   "Check ruby files for invalid tiles"
+  help "tree",    "Generate map tree of the game"
 
   if STDIN.isatty
     puts
