@@ -1,6 +1,12 @@
 class RPGFactory
   def initialize()
+    @used_events = []
     @missing_assets = []
+    @missing_events = []
+  end
+
+  def missing_events
+    return @missing_events.uniq
   end
 
   def missing_assets
@@ -55,6 +61,9 @@ class RPGFactory
       events_hash[event.id] = event
     end
     map.events = events_hash
+    @used_events.each do |id|
+      @missing_events.push id if events_hash[id].nil?
+    end
     return map
   end
 
@@ -472,6 +481,7 @@ class RPGFactory
   end
 
   def character(id)
+    @used_events.push id
     return id
   end
 

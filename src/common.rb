@@ -644,8 +644,10 @@ def assets
   Parallel.each(
     files,
     in_threads: detect_cores,
-    finish: -> (file, index, missing_assets) {
-      success &&= missing_assets.length == 0
+    finish: -> (file, index, result) {
+      missing_assets = result[0]
+      missing_events = result[1]
+      success &&= missing_assets.length == 0 && missing_events.length == 0
 
       if missing_assets.length > 0
         str =  "Checked "
@@ -662,11 +664,27 @@ def assets
 
         $stdout.flush
       end
+
+      if missing_events.length > 0
+        str =  "Checked "
+        str += "#{file}".ljust(50)
+        str += "(" + "#{index}".rjust(3, '0')
+        str += "/"
+        str += "#{files.size}".rjust(3, '0') + ")"
+        str += "    #{missing_events.length} missing events"
+        puts str
+
+        missing_events.each do |id|
+          puts "  " + id.to_s
+        end
+
+        $stdout.flush
+      end
     }
   ) do |file|
     factory = RPGFactory.new
     factory.evaluate(File.read(input_dir + file))
-    next factory.missing_assets
+    next [factory.missing_assets, factory.missing_events]
   end
 
   puts "No missing files detected!" if success
