@@ -465,7 +465,56 @@ def has_command(page, code)
   return false
 end
 
-def transform_page(page, event, file)
+def used_in_animation(event, map)
+  map.events.each do |key, mapevent|
+    mapevent.pages.each do |page|
+      page.list.each do |command|
+        return true if command.code == 207 && command.parameters[0] == event.id
+      end
+    end
+  end
+
+  event.pages.each do |page|
+    page.list.each do |command|
+      return true if command.code == 207 && command.parameters[0] == 0
+    end
+  end
+
+  return false
+end
+
+def graphical(event, map)
+  event.pages.each do |page|
+    return true if page.graphic.tile_id != 0 || page.graphic.character_name != ""
+  end
+
+  event.pages.each do |page|
+    page.list.each do |command|
+      break if command.code == 207 && command.parameters[0] == 0
+      return true if command.code == 209 && command.parameters[0] == 0 && has_graphic_change(command.parameters[1])
+    end
+  end
+
+  map.events.each do |key, mapevent|
+    mapevent.pages.each do |page|
+      page.list.each do |command|
+        break if command.code == 207 && command.parameters[0] == 0
+        return true if command.code == 209 && command.parameters[0] == event.id && has_graphic_change(command.parameters[1])
+      end
+    end
+  end
+
+  return false
+end
+
+def has_graphic_change(route)
+  route.list.each do |move|
+    return true if move.code == 41
+  end
+  return false
+end
+
+def transform_page(page, event, map, file)
   # insert_rock_climb_scripts(page, event, name) if has_rock_climb(page)
   # insert_mine_cart_scripts(page, event, name) if has_mine_cart(page)
   # if has_scrap_train(page)
@@ -474,7 +523,7 @@ def transform_page(page, event, file)
   # enhance_jumps(page, event, name) unless has_dust_anim(page)
   # enhance_rock_climbs(page, event, name) if has_rock_climb(page) && !has_rock_climb_anim(page)
   # event.name = "RockClimb" if has_rock_climb(page) && ! event.name.start_with?("RockClimb")
-  event.name = "Boulder" if has_strength_boulder(page) && ! event.name.start_with?("Crustle")
+  # event.name = "Boulder" if has_strength_boulder(page) && ! event.name.start_with?("Crustle")
   # event.name = "Item" if page.graphic && page.graphic.character_name.start_with?("itemball") # also "rby_pokeball"
   # event.name = "Z-Cell" if page.graphic && page.graphic.character_name.start_with?("zycell")
   # event.name = "Glass" if has_se(page, "GlassBreak") && event.name == "Break"
@@ -490,6 +539,7 @@ def transform_page(page, event, file)
   # if page.graphic.character_name.start_with?("pkmn_") && page.trigger == 0 && has_command(page, 101) && !has_command(page, 250)
   #   puts file + " " + event.name + " " + page.graphic.character_name + " " + event.x.to_s + "/" + event.y.to_s
   # end
+  puts file + " event " + event.id.to_s if used_in_animation(event, map) && !graphical(event, map)
 end
 
 def export_file(file, checksums, maps, input_dir, output_dir)
@@ -544,8 +594,9 @@ def export_file(file, checksums, maps, input_dir, output_dir)
     data.events = data.events.sort.to_h
     data.events.each do |key, event|
       event.pages.each do |page|
-        transform_page(page, event, export_file)
+
       end
+      transform_page(nil, event, data, export_file)
     end
   end
 
