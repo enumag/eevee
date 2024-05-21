@@ -1,6 +1,18 @@
-/Data/*.rxdata
-!/Data/Scripts.rxdata
-!/Data/PkmnAnimations.rxdata
+/Data/Map*.rxdata
+/Data/Animations.rxdata
+/Data/CommonEvents.rxdata
+/Data/MapInfos.rxdata
+/Data/System.rxdata
+/Data/Tilesets.rxdata
+/Data/Actors.rxdata
+/Data/Armors.rxdata
+/Data/Classes.rxdata
+/Data/Enemies.rxdata
+/Data/Items.rxdata
+/Data/Skills.rxdata
+/Data/States.rxdata
+/Data/Troops.rxdata
+/Data/Weapons.rxdata
 
 /DataExport/checksums.csv
 /DataExport/*.local.yaml
