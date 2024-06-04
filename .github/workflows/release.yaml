@@ -37,6 +37,9 @@ jobs:
     name: Release
     timeout-minutes: 30
     runs-on: windows-latest
+    env:
+      # https://github.com/Maher4Ever/wdm/issues/27
+      BUNDLE_BUILD__WDM: "--with-cflags=-Wno-implicit-function-declaration"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
