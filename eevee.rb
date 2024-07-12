@@ -5,6 +5,7 @@ $VERSION = 'dev'
 
 require_relative 'rmxp/rgss'
 require_relative 'src/common'
+require_relative 'src/image'
 require_relative 'src/data_importer_exporter'
 
 # Setup config filename
@@ -93,6 +94,10 @@ elsif $COMMAND == "shuffle"
   target = ARGV[2] || nil
 
   shuffle(source, target)
+elsif $COMMAND == "pixels"
+  path = ARGV[1] || nil
+
+  pixels(path)
 elsif $COMMAND == "assets"
   assets
 elsif $COMMAND == "tiles"
@@ -112,6 +117,7 @@ else
   help "assets",  "Check ruby files for usage of missing assets"
   help "tiles",   "Check ruby files for invalid tiles"
   help "tree",    "Generate map tree of the game"
+  help "pixels",  "Detects incorrect pixels in images"
 
   if STDIN.isatty
     puts
