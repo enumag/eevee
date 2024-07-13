@@ -12,7 +12,7 @@ RUN ./configure && make && make install
 
 # Install ruby gems
 RUN gem install rubysdl -- --enable-bundled-sge && \
-    gem install parallel seven_zip_ruby rubyzip:'~> 2.3.2'
+    gem install parallel seven_zip_ruby rubyzip:'~> 2.3.2' chunky_png
 
 COPY . /eevee
 
