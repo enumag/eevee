@@ -109,6 +109,7 @@ else
   puts
   puts "Available commands:"
 
+  help "help",    "This help message"
   help "export",  "Export rxdata files to yaml/ruby"
   help "import",  "Import yaml/ruby files back to rxdata filed"
   help "rmxp",    "Open RPG Maker and watch for changes"
@@ -119,11 +120,13 @@ else
   help "tree",    "Generate map tree of the game"
   help "pixels",  "Detects incorrect pixels in images"
 
-  if STDIN.isatty
-    puts
-    puts "Press enter to exit..."
-    gets
-  end
+  if $COMMAND != "help"
+    if STDIN.isatty
+      puts
+      puts "Press enter to exit..."
+      gets
+    end
 
-  exit 1
+    exit false
+  end
 end

@@ -10,9 +10,13 @@ RUN git clone --depth 1 --branch SDL-1.2 https://github.com/libsdl-org/SDL_image
 WORKDIR /sdl-image
 RUN ./configure && make && make install
 
+COPY Gemfile /eevee/Gemfile
+
+WORKDIR /eevee
+
 # Install ruby gems
-RUN gem install rubysdl -- --enable-bundled-sge && \
-    gem install parallel seven_zip_ruby rubyzip:'~> 2.3.2' chunky_png
+RUN bundle install && \
+    gem install rubysdl -- --enable-bundled-sge
 
 COPY . /eevee
 
