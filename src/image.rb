@@ -62,7 +62,11 @@ def bad_pixels(file)
 end
 
 def same_colors?(c1, c2, c3, c4)
-  return c1 == c2 && c1 == c3 && c1 == c4
+  return same_color?(c1, c2) && same_color?(c1, c3) && same_color?(c1, c4)
+end
+
+def same_color?(c1, c2)
+  return c1 == c2 || (ChunkyPNG::Color.a(c1) == 0 && ChunkyPNG::Color.a(c2) == 0)
 end
 
 def has_partial_transparency?(color)
@@ -71,9 +75,9 @@ end
 
 def rgba(color)
   return [
-    ChunkyPNG::Color.r(img[1, 1]),
-    ChunkyPNG::Color.g(img[1, 1]),
-    ChunkyPNG::Color.b(img[1, 1]),
-    ChunkyPNG::Color.a(img[1, 1]),
+    ChunkyPNG::Color.r(color),
+    ChunkyPNG::Color.g(color),
+    ChunkyPNG::Color.b(color),
+    ChunkyPNG::Color.a(color),
   ]
 end
