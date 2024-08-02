@@ -25,6 +25,8 @@ def pixels(path)
     exit false
   end
 
+  start_time = Time.now
+
   files = Dir.glob(File.join(path, "**/*")).select do |file|
     !File.directory?(file) && !$CONFIG.half_pixels_list.include?(file)
   end
@@ -45,6 +47,9 @@ def pixels(path)
   end
 
   puts "#{total} incorrect files detected"
+
+  total_elapsed_time = Time.now - start_time
+  puts "Total time: #{total_elapsed_time} seconds."
 
   exit total == 0
 end
