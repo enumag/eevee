@@ -45,7 +45,12 @@ def pixels(path)
 end
 
 def bad_pixels(file)
-  img = ChunkyPNG::Image.from_file(file)
+  begin
+    img = ChunkyPNG::Image.from_file(file)
+  rescue => error
+    puts "Error while processing #{file}:"
+    raise error
+  end
   pixels = []
 
   (0...(img.width / 2)).each do |i|
