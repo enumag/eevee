@@ -10,7 +10,7 @@ data_dir: Data
 # Modify this path to specify where you want the game data emitted in YAML
 ruby_dir: DataExport
 
-# Modify this path to specify where to backup .rxdata files
+# Modify this path to specify where to back up .rxdata files
 backup_dir: DataBackup
 
 #-------------------------------------------------------------------------------
@@ -39,6 +39,9 @@ import_only_list:
   - "States.rxdata"
   - "Troops.rxdata"
   - "Weapons.rxdata"
+
+# List of Graphics assets with allowed half-pixels.
+half_pixels_list: []
 
 # This parameter determines whether the import/export scripts print verbose 
 # information such as each filename as it is imported or exported and timing 

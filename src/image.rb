@@ -2,7 +2,9 @@ require 'chunky_png'
 
 # Detects incorrect double pixels in given file or directory.
 def pixels(path)
-  if path.nil? || !File.exist?(path)
+  if path.nil?
+    path = "Graphics"
+  elsif !File.exist?(path)
     puts "Provide a path."
     exit false
   end
@@ -23,11 +25,13 @@ def pixels(path)
     exit false
   end
 
-  files = Dir.entries(path).select { |f| !File.directory?(f) }
+  files = Dir.glob(File.join(path, "**/*")).select do |file|
+    !File.directory?(file) && !$CONFIG.half_pixels_list.include?(file)
+  end
 
   total = 0
   files.each do |file|
-    result = bad_pixels(File.join(path, file))
+    result = bad_pixels(file)
 
     if result != []
       puts "#{file} has unexpected color in #{result.length} pixels, first is #{result[0]}"

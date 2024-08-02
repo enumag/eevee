@@ -74,7 +74,7 @@ We also found that some of our maps were using invalid tiles - index outside the
 
 Speaking of JoiPlay's map optimizer, I have found several bugs in it. As a result, this repository actually contains a fixed implementation which we're using internally. Running it, however, is a lot more difficult as I was unable to compile it into an exe. In case you need it, look into `Dockerfile`, `optimize.rb` and the `joiplay` directory.
 
-## Incorrect double pixels
+## Incorrect half pixels
 
 If the art in your games is using a double-pixel images, you can use this command to detect mistakes. The path can be either a single file or a directory. For a single file, it prints all incorrect pixels. For a directory, it only prints the first incorrect pixel for each file.
 

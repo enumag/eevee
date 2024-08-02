@@ -155,6 +155,7 @@ class Config
   attr_accessor :backup_dir
   attr_accessor :file_list
   attr_accessor :import_only_list
+  attr_accessor :half_pixels_list
   attr_accessor :verbose
   attr_accessor :magic_number
   attr_accessor :startup_map
@@ -172,6 +173,7 @@ class Config
     @backup_dir       = config['backup_dir']
     @file_list        = config['file_list']
     @import_only_list = config['import_only_list']
+    @half_pixels_list = config['half_pixels_list']
     @verbose          = config['verbose']
     @magic_number     = config['magic_number']
     @startup_map      = config['startup_map']
