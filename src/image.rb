@@ -30,13 +30,18 @@ def pixels(path)
   end
 
   total = 0
-  files.each do |file|
-    result = bad_pixels(file)
 
-    if result != []
-      puts "#{file} has unexpected color in #{result.length} pixels, first is #{result[0]}"
-      total += 1
-    end
+  Parallel.each(
+    files,
+    in_threads: detect_cores,
+    finish: -> (file, index, result) {
+      if result != []
+        puts "#{file} has unexpected color in #{result.length} pixels, first is #{result[0]}"
+        total += 1
+      end
+    }
+  ) do |file|
+    next bad_pixels(file)
   end
 
   puts "#{total} incorrect files detected"
