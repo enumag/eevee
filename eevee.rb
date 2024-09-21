@@ -124,7 +124,7 @@ else
     if STDIN.isatty
       puts
       puts "Press enter to exit..."
-      gets
+      $stdin.gets("\n")
     end
 
     exit false
