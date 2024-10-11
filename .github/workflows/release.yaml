@@ -50,15 +50,15 @@ jobs:
           ruby-version: '3.1'
           bundler-cache: true
 
-      - name: Aibika
-        run: gem install aibika
+      - name: Ocran
+        run: gem install ocran
 
       - name: Version
         run: sed -i "s~\$VERSION = 'dev'~\$VERSION = '${{ github.ref_name }}'~g" eevee.rb
 
       - name: Compile
         run: >
-          aibika
+          ocran
           eevee.rb
           src/*.rb
           rmxp/*.rb

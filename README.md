@@ -123,7 +123,7 @@ It is recommended to use eevee releases compiled automatically through GitHub Ac
 choco install ruby
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 ridk install
-gem install aibika listen
+gem install ocran listen
 ```
 
 Next on the list I needed `gem install wdm` but it's a native extension and needs C compiler.
