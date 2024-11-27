@@ -266,6 +266,7 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   import_only = $CONFIG.import_only_list.include?(file)
   export_checksum = File.exist?(export_file) ? calculate_checksum(export_file) : nil
   data_checksum = calculate_checksum(data_file)
+  now = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
   # Skip import if checksum matches
   return nil if skip_file(record, data_checksum, export_checksum, import_only)
@@ -325,13 +326,15 @@ def export_file(file, checksums, maps, input_dir, output_dir)
   # Delete other maps with same number to handle map rename
   Dir.glob(output_dir + name + ' - *' + $CONFIG.export_extension).each do |file|
     begin
-      File.delete(file)
+      # Create backup of .rb or .yaml file
+      FileUtils.move(file, $CONFIG.backup_dir + '/' + now + '.' + name + $CONFIG.export_extension)
     rescue Errno::ENOENT
     end
   end
   Dir.glob(output_dir + name + $CONFIG.export_extension).each do |file|
     begin
-      File.delete(file)
+      # Create backup of .rb or .yaml file
+      FileUtils.move(file, $CONFIG.backup_dir + '/' + now + '.' + name + $CONFIG.export_extension)
     rescue Errno::ENOENT
     end
   end
@@ -549,7 +552,7 @@ end
 
 def clear_backups()
   files = Dir.entries( $CONFIG.backup_dir )
-  files = files.select { |e| File.extname(e) == ".rxdata" }
+  files = files.select { |e| [".rxdata", ".yaml", ".rb"].include?(File.extname(e)) }
   files = files.select { |e| ! file_modified_since?($CONFIG.backup_dir + '/' + e, Time.now - 7*24*60*60) }
   files.each do |file|
     File.delete($CONFIG.backup_dir + '/' + file)
