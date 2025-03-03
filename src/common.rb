@@ -126,6 +126,7 @@ def load_checksums
   hash = {}
   if File.exist?($CONFIG.export_dir + '/' + CHECKSUMS_FILE)
     File.open($CONFIG.export_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
+      next unless line.include?(",")
       name, export_checksum, data_checksum = line.rstrip.split(',', 3)
       hash[name] = FileRecord.new(name, export_checksum, data_checksum)
     end
@@ -133,8 +134,9 @@ def load_checksums
   return hash
 end
 
-def save_checksums(hash)
+def save_checksums(commit, hash)
   File.open($CONFIG.export_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
+    output.print commit + "\n"
     hash.each_value do |record|
       output.print "#{record.name},#{record.export_checksum},#{record.data_checksum}\n"
     end
@@ -450,6 +452,25 @@ end
 
 def calculate_checksum(file)
   return File.mtime(file).to_i.to_s + '/' + File.size(file).to_s
+end
+
+def current_commit
+  require 'open3'
+
+  command = 'git rev-parse HEAD'
+  Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    out = stdout.read
+    err = stderr.read
+
+    if waiter.value.exitstatus != 0
+      puts 'Unable to get commit id'
+      puts out
+      puts err
+      exit(false)
+    end
+
+    return out.rstrip
+  end
 end
 
 def generate_patch(base_tag, password)

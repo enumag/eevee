@@ -1,5 +1,7 @@
 class DataImporterExporter
   def on_start
+    commit = current_commit
+
     # Set up the directory paths
     input_dir  = $PROJECT_DIR + $CONFIG.export_dir + '/'
     output_dir = $PROJECT_DIR + $CONFIG.data_dir + '/'
@@ -79,7 +81,7 @@ class DataImporterExporter
       end
     end
 
-    save_checksums(checksums)
+    save_checksums(commit, checksums)
 
     # Delete local copies of maps that were deleted by another contributor.
     maps = load_maps
@@ -212,7 +214,7 @@ class DataImporterExporter
       end
     end
 
-    save_checksums(checksums)
+    save_checksums("", checksums)
 
     # Calculate the total elapsed time
     total_elapsed_time = Time.now - total_start_time
