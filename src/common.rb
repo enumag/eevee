@@ -127,7 +127,7 @@ def load_checksums
   if File.exist?($CONFIG.export_dir + '/' + CHECKSUMS_FILE)
     File.open($CONFIG.export_dir + '/' + CHECKSUMS_FILE, 'r').each do |line|
       next unless line.include?(",")
-      name, export_checksum, data_checksum = line.rstrip.split(',', 3)
+      name, export_checksum, data_checksum = line.chomp.split(',', 3)
       hash[name] = FileRecord.new(name, export_checksum, data_checksum)
     end
   end
@@ -469,7 +469,7 @@ def current_commit
       exit(false)
     end
 
-    return out.rstrip
+    return out.chomp
   end
 end
 
