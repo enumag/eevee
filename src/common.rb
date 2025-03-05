@@ -455,21 +455,21 @@ def calculate_checksum(file)
 end
 
 def current_commit
-  require 'open3'
+  git_dir = ".git"
+  head_file = File.join(git_dir, "HEAD")
 
-  command = 'git rev-parse HEAD'
-  Open3.popen3(command) do |stdin, stdout, stderr, waiter|
-    out = stdout.read
-    err = stderr.read
+  begin
+    head_content = File.read(head_file).strip
 
-    if waiter.value.exitstatus != 0
-      puts 'Unable to get commit id'
-      puts out
-      puts err
-      exit(false)
+    if head_content.start_with?("ref: ")
+      ref = head_content[5..-1]
+      ref_file = File.join(git_dir, ref)
+      File.read(ref_file).strip
+    else
+      head_content
     end
-
-    return out.chomp
+  rescue Errno::ENOENT
+    nil
   end
 end
 
