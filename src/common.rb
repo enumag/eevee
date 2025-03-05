@@ -457,20 +457,15 @@ end
 def current_commit
   git_dir = ".git"
   head_file = File.join(git_dir, "HEAD")
+  head_content = File.read(head_file).strip
 
-  begin
-    head_content = File.read(head_file).strip
-
-    if head_content.start_with?("ref: ")
-      ref = head_content[5..-1]
-      ref_file = File.join(git_dir, ref)
-      File.read(ref_file).strip
-    else
-      head_content
-    end
-  rescue Errno::ENOENT
-    nil
+  if head_content.start_with?("ref: ")
+    ref = head_content[5..-1]
+    ref_file = File.join(git_dir, ref)
+    return File.read(ref_file).strip
   end
+
+  return head_content
 end
 
 def generate_patch(base_tag, password)
