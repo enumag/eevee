@@ -136,7 +136,7 @@ end
 
 def save_checksums(commit, hash)
   File.open($CONFIG.export_dir + '/' + CHECKSUMS_FILE, 'w') do |output|
-    output.print commit + "\n"
+    output.print commit.to_s + "\n"
     hash.each_value do |record|
       output.print "#{record.name},#{record.export_checksum},#{record.data_checksum}\n"
     end
@@ -456,6 +456,8 @@ end
 
 def current_commit
   git_dir = ".git"
+  return nil unless Dir.exist?(git_dir)
+
   head_file = File.join(git_dir, "HEAD")
   head_content = File.read(head_file).strip
 
