@@ -464,7 +464,19 @@ def current_commit
   if head_content.start_with?("ref: ")
     ref = head_content[5..-1]
     ref_file = File.join(git_dir, ref)
-    return File.read(ref_file).strip
+    if File.exist?(ref_file)
+      return File.read(ref_file).strip
+    else
+      packed_refs_file = File.join(git_dir, "packed-refs")
+      if File.exist?(packed_refs_file)
+        regex = /^([0-9a-f]{40})\s#{Regexp.escape(ref)}$/
+        File.foreach(packed_refs_file) do |line|
+          match = regex.match(line)
+          return match[1] if match
+        end
+      end
+      return nil
+    end
   end
 
   return head_content
