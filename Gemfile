@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'etc'
 gem 'digest'
 gem 'forwardable'
 gem 'strscan'

@@ -11,6 +11,7 @@
 # Add bin directory to the Ruby search path
 #$LOAD_PATH << "C:/bin"
 
+require 'etc'
 require 'yaml'
 require 'tmpdir'
 require 'parallel'
@@ -361,8 +362,7 @@ def detect_cores
   begin
     return Parallel.physical_processor_count
   rescue
-    # Fallback because so far I was unable to compile win32ole into the exe file
-    return `WMIC CPU Get NumberOfCores /Format:List`.match(/NumberOfCores=([0-9]++)/)[1].to_i
+    return [Etc.nprocessors / 2, 1].max
   end
 end
 
