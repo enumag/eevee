@@ -243,7 +243,7 @@ class RPGDumper
     value += indent(level + 1) + "move_type: " + RPGFactory::EVENT_MOVE_TYPE[page.move_type].inspect + ",\n" if page.move_type != 0
     value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
     value += indent(level + 1) + "move_frequency: " + page.move_frequency.inspect + ",\n" if page.move_frequency != 3
-    value += indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n" unless objects_equal?(page.move_route, DEFAULT_ROUTE)
+    value += indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n" if !objects_equal?(page.move_route, DEFAULT_ROUTE) && page.move_type == RPGFactory::EVENT_MOVE_TYPE_INVERSE[:custom]
     value += indent(level + 1) + "walk_anime: " + page.walk_anime.inspect + ",\n" if page.walk_anime != true
     value += indent(level + 1) + "step_anime: " + page.step_anime.inspect + ",\n" if page.step_anime != false
     value += indent(level + 1) + "direction_fix: " + page.direction_fix.inspect + ",\n" if page.direction_fix != false
