@@ -147,6 +147,8 @@ Now `build.bat` should be able to build `eevee.exe`. But it won't work because t
 
 To fix it I had to `gem install` all the gems listed in `Gemfile` and recompile. This can be done in bulk with `bundle install` from eevee's directory.
 
+Sometimes it is necessary to update the local gems using `bundle update`.
+
 Also ran into some issues with `gem install psych`, it was missing `yaml.h`. Fixed it by restricting it to 4.0 in `Gemfile`.
 
 Some tweaking of build.bat may be needed as well.

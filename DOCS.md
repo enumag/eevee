@@ -58,7 +58,7 @@ While RPG Maker is open:
 
 ## Missing assets
 
-Eevee can also check that the game events aren't using any missing assets.
+Eevee can also check that the game events aren't using any missing assets. It also detects some other mistakes like unused or conflicting events.
 
 ```sh
 ./eevee.exe assets
