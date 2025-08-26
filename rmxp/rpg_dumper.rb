@@ -130,7 +130,7 @@ class RPGDumper
       value += event(event, level + 2) + ",\n\n"
     end
     value += indent(level + 1) + "],\n"
-    value += indent(level + 1) + "data: " + table(map.data, level + 1, pretty: true) + ",\n"
+    value += indent(level + 1) + "data: " + table(map.data, level + 1, mode: :map, digits: 4) + ",\n"
     value += indent(level) + ")\n"
     return value
   end
@@ -163,7 +163,7 @@ class RPGDumper
     return value
   end
 
-  def table(table, level, pretty: false, inline: false)
+  def table(table, level, mode: nil, digits: 4, inline: false)
     value = "table("
     value += "\n" unless inline
 
@@ -183,20 +183,28 @@ class RPGDumper
       value += inline ? " " : "\n"
     end
 
-    if pretty
+    if mode == :map
       value += indent(level + 1) + "data: [\n"
       start = 0
       (0...table.zsize).each do
         (0...table.ysize).each do
-          value += (indent(level + 2) + table.data[start, table.xsize].inspect[1..-2] + ',').
-            gsub(/ ([0-9]{1}),/, "    \\1,").
-            gsub(/ ([0-9]{2}),/, "   \\1,").
-            gsub(/ ([0-9]{3}),/, "  \\1,") + "\n"
+          value += table_digits(indent(level + 2) + table.data[start, table.xsize].inspect[1..-2] + ',', digits) + "\n"
           start += table.xsize
         end
         value += "\n"
       end
       value = value.rstrip + "\n"
+      value += indent(level + 1) + "],\n"
+    elsif mode == :tileset && table.ysize == 1 && table.zsize == 1
+      value += indent(level + 1) + "data: [\n"
+      for i in 0...8
+        value += table_digits(indent(level + 2) + table.data[i * 48, 48].inspect[1..-2] + ',', digits) + "\n"
+      end
+      offset = 8 * 48
+      while offset < table.xsize
+        value += table_digits(indent(level + 2) + table.data[offset, 8].inspect[1..-2] + ',', digits) + "\n"
+        offset += 8
+      end
       value += indent(level + 1) + "],\n"
     else
       value += indent(level + 1) unless inline
@@ -207,6 +215,15 @@ class RPGDumper
     value += indent(level) unless inline
     value += ")"
     return value
+  end
+
+  def table_digits(data, digits)
+    i = digits - 1
+    while i >= 1
+      data = data.gsub(/ ([0-9]{#{i}}),/, " " * (digits - i + 1) + "\\1,")
+      i -= 1
+    end
+    return data
   end
 
   def event(event, level)
@@ -1235,9 +1252,9 @@ class RPGDumper
     value += indent(level + 1) + "fog_sx: " + tileset.fog_sx.inspect + ",\n" if tileset.fog_sx != 0
     value += indent(level + 1) + "fog_sy: " + tileset.fog_sy.inspect + ",\n" if tileset.fog_sy != 0
     value += indent(level + 1) + "battleback_name: " + tileset.battleback_name.inspect + ",\n" if tileset.battleback_name != ""
-    value += indent(level + 1) + "passages: " + table(tileset.passages, level + 1) + ",\n"
-    value += indent(level + 1) + "priorities: " + table(tileset.priorities, level + 1) + ",\n"
-    value += indent(level + 1) + "terrain_tags: " + table(tileset.terrain_tags, level + 1) + ",\n"
+    value += indent(level + 1) + "passages: " + table(tileset.passages, level + 1, mode: :tileset, digits: 3) + ",\n"
+    value += indent(level + 1) + "priorities: " + table(tileset.priorities, level + 1, mode: :tileset, digits: 2) + ",\n"
+    value += indent(level + 1) + "terrain_tags: " + table(tileset.terrain_tags, level + 1, mode: :tileset, digits: 2) + ",\n"
     value += indent(level) + "),\n"
     return value
   end
