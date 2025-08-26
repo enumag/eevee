@@ -3,6 +3,8 @@ class RPGFactory
     @used_events = []
     @missing_assets = []
     @missing_events = []
+    @conflicting_events = []
+    @conflicting_coordinates = []
   end
 
   def missing_events
@@ -11,6 +13,14 @@ class RPGFactory
 
   def missing_assets
     return @missing_assets.uniq
+  end
+
+  def conflicting_events
+    return @conflicting_events.uniq
+  end
+
+  def conflicting_coordinates
+    return @conflicting_coordinates.uniq
   end
 
   AUDIO_TYPE = {
@@ -66,8 +76,19 @@ class RPGFactory
     map.encounter_step = encounter_step
     map.data = data
     events_hash = {}
+    coords_hash = {}
     events.each do |event|
+      coords = [event.x, event.y]
+      if events_hash.has_key?(event.id)
+        @conflicting_events.push event.id
+      end
       events_hash[event.id] = event
+      coords_hash[coords] = [] unless coords_hash.has_key?(coords)
+      coords_hash[coords].push event.id
+    end
+    coords_hash.delete_if { |_, v| v.length == 1 }
+    coords_hash.each do |coords, events|
+      @conflicting_coordinates.push [coords, events]
     end
     map.events = events_hash
     @used_events.each do |id|
