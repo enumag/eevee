@@ -744,7 +744,7 @@ def assets
         puts str
 
         conflicting_coordinates.each do |data|
-          puts "  " + data.to_s
+          puts "  x: " + data[0][0].to_s + ", y: " + data[0][1].to_s + ", events: " + data[1].to_s
         end
 
         $stdout.flush
