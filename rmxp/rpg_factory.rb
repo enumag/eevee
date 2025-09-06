@@ -41,16 +41,26 @@ class RPGFactory
     TILESET: "Graphics/Tilesets/{1}",
   }
 
+  AUDIO_EXTENSIONS = ["ogg", "wav", "mp3", "mid"]
+
+  GRAPHIC_EXTENSIONS = ["png", "jpg", "gif"]
+
   def verify_audio(type, name)
     return if name == ""
     path = AUDIO_TYPE[type].gsub("{1}", name)
-    @missing_assets.push path unless File.exist?(path + ".ogg") || File.exist?(path + ".wav")
+    AUDIO_EXTENSIONS.each do |ext|
+      return if File.exist?(path + "." + ext)
+    end
+    @missing_assets.push path
   end
 
   def verify_graphic(type, name)
     return if name == ""
     path = GRAPHIC_TYPE[type].gsub("{1}", name)
-    @missing_assets.push path unless File.exist?(path + ".png") || File.exist?(path + ".gif")
+    GRAPHIC_EXTENSIONS.each do |ext|
+      return if File.exist?(path + "." + ext)
+    end
+    @missing_assets.push path
   end
 
   def map(
