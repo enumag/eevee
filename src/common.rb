@@ -689,10 +689,7 @@ def assets
       if missing_assets.length > 0
         str =  "Checked "
         str += "#{file}".ljust(50)
-        str += "(" + "#{index}".rjust(3, '0')
-        str += "/"
-        str += "#{files.size}".rjust(3, '0') + ")"
-        str += "    #{missing_assets.length} missing assets"
+        str += "#{missing_assets.length} missing assets"
         puts str
 
         missing_assets.each do |file|
@@ -705,10 +702,7 @@ def assets
       if missing_events.length > 0
         str =  "Checked "
         str += "#{file}".ljust(50)
-        str += "(" + "#{index}".rjust(3, '0')
-        str += "/"
-        str += "#{files.size}".rjust(3, '0') + ")"
-        str += "    #{missing_events.length} missing events"
+        str += "#{missing_events.length} missing events"
         puts str
 
         missing_events.each do |id|
@@ -721,10 +715,7 @@ def assets
       if conflicting_events.length > 0
         str =  "Checked "
         str += "#{file}".ljust(50)
-        str += "(" + "#{index}".rjust(3, '0')
-        str += "/"
-        str += "#{files.size}".rjust(3, '0') + ")"
-        str += "    #{conflicting_events.length} conflicting events"
+        str += "#{conflicting_events.length} conflicting events"
         puts str
 
         conflicting_events.each do |id|
@@ -737,10 +728,7 @@ def assets
       if conflicting_coordinates.length > 0
         str =  "Checked "
         str += "#{file}".ljust(50)
-        str += "(" + "#{index}".rjust(3, '0')
-        str += "/"
-        str += "#{files.size}".rjust(3, '0') + ")"
-        str += "    #{conflicting_coordinates.length} conflicting coordinates"
+        str += "#{conflicting_coordinates.length} conflicting coordinates"
         puts str
 
         conflicting_coordinates.each do |data|
