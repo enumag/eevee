@@ -43,7 +43,7 @@ class RPGFactory
 
   AUDIO_EXTENSIONS = ["ogg", "wav", "mp3", "mid"]
 
-  GRAPHIC_EXTENSIONS = ["png", "jpg", "gif"]
+  GRAPHIC_EXTENSIONS = ["png", "jpg", "gif", "bmp"]
 
   def verify_audio(type, name)
     return if name == ""
