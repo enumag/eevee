@@ -496,6 +496,23 @@ def generate_patch(base_tag, password)
     puts "Generating patch with changes since tag #{$CONFIG.base_tag} (#{base_commit})."
   end
 
+  # Find files in the current working tree.
+  tree = nil
+  Open3.popen3('git ls-tree -r --name-only HEAD') do |stdin, stdout, stderr, waiter|
+    stdin.close
+    out = stdout.read
+    err = stderr.read
+
+    if waiter.value.exitstatus != 0
+      puts 'Unable to get git ls-tree'
+      puts out
+      puts err
+      exit(false)
+    end
+
+    tree = out.split("\n")
+  end
+
   # Find all files changed between the two commits, including files that were reverted.
   # Files that were changed but deleted are included but that doesn't matter since they won't be found in current working tree.
   command = sprintf('git --no-pager log --first-parent --pretty=format: --name-status %s..HEAD | grep . | grep -v "^D" | awk \'BEGIN { FS = "\t" } { if (NF == 3) { print $3 } else { print $2 } }\' | awk \'!seen[$0]++\'', base_commit)
@@ -524,8 +541,9 @@ def generate_patch(base_tag, password)
     $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
   end
 
-  # Find files that were deleted at any point between the two commits and don't exist in current working tree (to exclude reversions)
-  command = sprintf('git --no-pager log --pretty=format: --name-status %s..HEAD | grep -E "^(D|R)" | awk \'BEGIN { FS="\t" } { print $2 }\' | awk \'!seen[$0]++\' | grep -v -x -f <(git ls-tree -r --name-only HEAD)', base_commit)
+  # Find files that were deleted at any point between the two commits.
+  command = sprintf('git --no-pager log --pretty=format: --name-status %s..HEAD | grep -E "^(D|R)" | awk \'BEGIN { FS="\t" } { print $2 }\' | awk \'!seen[$0]++\'', base_commit)
+  deletions = nil
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
     stdin.close
     out = stdout.read
@@ -538,8 +556,14 @@ def generate_patch(base_tag, password)
       exit(false)
     end
 
-    File.open(".deletions.txt", 'w') do |file|
-      file.write(out)
+    deletions = out.split("\n")
+  end
+
+  # Write .deletions.txt file
+  deletions -= tree
+  File.open(".deletions.txt", 'w') do |file|
+    deletions.each do |line|
+      file.puts line
     end
   end
 
