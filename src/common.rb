@@ -501,6 +501,7 @@ def generate_patch(base_tag, password)
   command = sprintf('git --no-pager log --first-parent --pretty=format: --name-status %s..HEAD | grep . | grep -v "^D" | awk \'BEGIN { FS = "\t" } { if (NF == 3) { print $3 } else { print $2 } }\' | awk \'!seen[$0]++\'', base_commit)
   files = nil
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    stdin.close
     out = stdout.read
     err = stderr.read
 
@@ -526,6 +527,7 @@ def generate_patch(base_tag, password)
   # Find files that were deleted at any point between the two commits and don't exist in current working tree (to exclude reversions)
   command = sprintf('git --no-pager log --pretty=format: --name-status %s..HEAD | grep -E "^(D|R)" | awk \'BEGIN { FS="\t" } { print $2 }\' | awk \'!seen[$0]++\' | grep -v -x -f <(git ls-tree -r --name-only HEAD)', base_commit)
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    stdin.close
     out = stdout.read
     err = stderr.read
 
@@ -571,16 +573,20 @@ def generate_patch(base_tag, password)
 end
 
 def get_base_commit_from_tag(tag)
-  command = 'git rev-list -n 1 tags/' + tag + ' --'
-  Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+  command = ['git', 'rev-list', '-n', '1', 'tags/' + tag, '--']
+  Open3.popen3(*command) do |stdin, stdout, stderr, waiter|
+    stdin.close
+    out = stdout.read
+    err = stderr.read
+
     if waiter.value.exitstatus != 0
       puts 'Unable to find tag: ' + tag
-      puts stdout.read
-      puts stderr.read
+      puts out
+      puts err
       exit(false)
     end
 
-    return stdout.read.strip
+    return out.strip
   end
   puts 'Unable to find tag: ' + tag
   exit(false)
