@@ -518,6 +518,14 @@ def generate_patch(base_tag, password)
 
   puts "Found #{files.length} changed files."
 
+  files = files.map do |file|
+    next file unless file.start_with?($CONFIG.export_dir + '/')
+    $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
+  end
+
+  # Add always included files
+  files.concat(Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB))
+
   if password
     require 'seven_zip_ruby'
 
@@ -526,13 +534,6 @@ def generate_patch(base_tag, password)
     File.open('patch.7z', 'wb') do |file|
       SevenZipRuby::Writer.open(file, { password: password }) do |sevenzip|
         files.each do |file|
-          if file.start_with?($CONFIG.export_dir + '/')
-            file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
-          end
-          sevenzip.add_file(file)
-        end
-        extra_files = Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB)
-        extra_files.each do |file|
           sevenzip.add_file(file)
         end
       end
@@ -544,13 +545,6 @@ def generate_patch(base_tag, password)
 
     Zip::File.open('patch.zip', create: true) do |zipfile|
       files.each do |file|
-        if file.start_with?($CONFIG.export_dir + '/')
-          file = $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
-        end
-        zipfile.add(file, file)
-      end
-      extra_files = Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB)
-      extra_files.each do |file|
         zipfile.add(file, file)
       end
     end
