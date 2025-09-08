@@ -523,8 +523,27 @@ def generate_patch(base_tag, password)
     $CONFIG.data_dir + '/' + format_rxdata_name(File.basename(file, $CONFIG.export_extension))
   end
 
+  # Find files that were deleted at any point between the two commits and don't exist in current working tree (to exclude reversions)
+  command = sprintf('git --no-pager log --pretty=format: --name-status %s..HEAD | grep -E "^(D|R)" | awk \'BEGIN { FS="\t" } { print $2 }\' | sort -u | grep -v -x -f <(git ls-tree -r --name-only HEAD)', base_commit)
+  Open3.popen3(command) do |stdin, stdout, stderr, waiter|
+    out = stdout.read
+    err = stderr.read
+
+    if waiter.value.exitstatus != 0
+      puts 'Unable to get git log'
+      puts out
+      puts err
+      exit(false)
+    end
+
+    File.open(".deletions.txt", 'w') do |file|
+      file.write(out)
+    end
+  end
+
   # Add always included files
   files.concat(Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB))
+  files.push(".deletions.txt")
 
   if password
     require 'seven_zip_ruby'
