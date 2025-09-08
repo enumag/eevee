@@ -596,6 +596,8 @@ def generate_patch(base_tag, password)
       end
     end
   end
+
+  File.unlink(".deletions.txt")
 end
 
 def get_base_commit_from_tag(tag)
