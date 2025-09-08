@@ -562,6 +562,7 @@ def generate_patch(base_tag, password)
 
   # Write .deletions.txt file
   deletions -= tree
+  deletions.select! { |file| File.fnmatch($CONFIG.patch_changed, file, File::FNM_EXTGLOB) }
   File.open(".deletions.txt", 'w') do |file|
     deletions.each do |line|
       file.puts line
