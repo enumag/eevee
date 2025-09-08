@@ -533,6 +533,7 @@ def generate_patch(base_tag, password)
   end
 
   files.select! { |file| File.fnmatch($CONFIG.patch_changed, file, File::FNM_EXTGLOB) }
+  files = files.intersection(tree)
 
   puts "Found #{files.length} changed files."
 
