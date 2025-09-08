@@ -496,14 +496,16 @@ def generate_patch(base_tag, password)
     puts "Generating patch with changes since tag #{$CONFIG.base_tag} (#{base_commit})."
   end
 
-  command = 'git --no-pager diff --ignore-submodules --name-only --diff-filter=ACMRTUX ' + base_commit + '..HEAD'
+  # Find all files changed between the two commits, including files that were reverted.
+  # Files that were changed but deleted are included but that doesn't matter since they won't be found in current working tree.
+  command = sprintf('git --no-pager log --first-parent --pretty=format: --name-status %s..HEAD | grep . | grep -v "^D" | awk \'BEGIN { FS = "\t" } { if (NF == 3) { print $3 } else { print $2 } }\' | sort -u', base_commit)
   files = nil
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
     out = stdout.read
     err = stderr.read
 
     if waiter.value.exitstatus != 0
-      puts 'Unable to get git diff'
+      puts 'Unable to get git log'
       puts out
       puts err
       exit(false)
