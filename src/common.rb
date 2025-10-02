@@ -482,7 +482,7 @@ def current_commit
   return head_content
 end
 
-def generate_patch(base_tag, password)
+def generate_patch(base_tag)
   require 'open3'
 
   if ! base_tag.nil?
@@ -573,27 +573,13 @@ def generate_patch(base_tag, password)
   files.concat(Dir.glob($CONFIG.patch_always, File::FNM_EXTGLOB) - Dir.glob($CONFIG.patch_never, File::FNM_EXTGLOB))
   files.push(".deletions.txt")
 
-  if password
-    require 'seven_zip_ruby'
+  require 'zip'
 
-    File.delete('patch.7z') if File.exist?('patch.7z')
+  File.delete('patch.zip') if File.exist?('patch.zip')
 
-    File.open('patch.7z', 'wb') do |file|
-      SevenZipRuby::Writer.open(file, { password: password }) do |sevenzip|
-        files.each do |file|
-          sevenzip.add_file(file)
-        end
-      end
-    end
-  else
-    require 'zip'
-
-    File.delete('patch.zip') if File.exist?('patch.zip')
-
-    Zip::File.open('patch.zip', create: true) do |zipfile|
-      files.each do |file|
-        zipfile.add(file, file)
-      end
+  Zip::File.open('patch.zip', create: true) do |zipfile|
+    files.each do |file|
+      zipfile.add(file, file)
     end
   end
 

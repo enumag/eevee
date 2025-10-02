@@ -86,9 +86,8 @@ elsif $COMMAND == "rmxp"
   clear_backups
 elsif $COMMAND == "patch"
   base_tag = ARGV[1] || nil
-  password = ARGV[2] || nil
 
-  generate_patch(base_tag, password)
+  generate_patch(base_tag)
 elsif $COMMAND == "shuffle"
   source = ARGV[1] || nil
   target = ARGV[2] || nil
