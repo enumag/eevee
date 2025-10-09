@@ -244,7 +244,7 @@ class CMap
     Dir.mkdir("patch") unless File.exist?("patch")
     Dir.mkdir("patch/Data") unless File.exist?("patch/Data")
     path = "patch/"+path unless path.include?("patch/")
-    path.gsub!("map","Map") if path.include?("map")
+    path.gsub!("map", "Map") if path.include?("map")
     File.delete(path) if File.file?(path)
     File.open(path, "wb"){ |f|
       Marshal.dump(nmap, f)
@@ -289,7 +289,7 @@ class CMap
           id = table[x, y, z]
           if id.is_a? Integer
             next if id < 384
-            cor = [x,y,z]
+            cor = [x, y, z]
             tilehash[cor] = id
           end
         end
@@ -300,8 +300,8 @@ class CMap
 
   def getEventTiles(events)
     tiles = Array.new
-    events.each_value{|event|
-      event.pages.each{|page|
+    events.each_value{ |event|
+      event.pages.each{ |page|
         graphic = page.graphic
         id = graphic.tile_id
         tiles.push(id) unless id == 0
@@ -317,11 +317,11 @@ class CMap
           oid = old[x, y, z]
           if oid.is_a? Integer
             if oid < 384
-              new[x,y,z] = old[x,y,z]
+              new[x, y, z] = old[x, y, z]
             else
               hid = hash[oid]
               if hid.is_a? Integer
-                new[x,y,z] = hid
+                new[x, y, z] = hid
               end
             end
           end
@@ -331,8 +331,8 @@ class CMap
   end
 
   def replaceTilesForEvents(events, hash)
-    events.each_value{|event|
-      event.pages.each{|page|
+    events.each_value{ |event|
+      event.pages.each{ |page|
         graphic = page.graphic
         id = graphic.tile_id
         graphic.tile_id = hash[id] unless id == 0
