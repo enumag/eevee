@@ -357,13 +357,21 @@ def convertAll
   converter = CMap.new("Data/Tilesets.rxdata")
   maps = converter.getMapList("Data")
 
-  mid = 0
-  maps.each { |mapfile|
-    mid = mid + 1
-    puts "Converting "+mapfile+"... "+mid.to_s+"/"+maps.length.to_s
-    $stdout.flush
-    converter.convertMap("Data/"+mapfile)
-  }
+  Parallel.each(
+    maps,
+    in_threads: Parallel.physical_processor_count,
+    finish: -> (file, index, result) {
+      str =  "Converted "
+      str += "#{file}".ljust(50)
+      str += "(" + "#{index}".rjust(3, '0')
+      str += "/"
+      str += "#{maps.size}".rjust(3, '0') + ")"
+      puts str
+    }
+  ) do |file|
+    converter.convertMap("Data/#{file}")
+  end
+
   puts "Writing tilesets..."
   converter.writeTilesets
   puts "Done"
