@@ -144,21 +144,21 @@ class CMap
   end
 
   def convertMap(path)
-    @mapid = path.downcase.gsub("data/map","").chomp(".rxdata") if path.downcase.include?("map")
+    mapid = path.downcase.gsub("data/map","").chomp(".rxdata") if path.downcase.include?("map")
 
-    @mapid.gsub!("patch/","") if @mapid.include?("patch/")
-    @map = nil
-    @nmap = nil
+    mapid.gsub!("patch/","") if mapid.include?("patch/")
+    map = nil
+    nmap = nil
     # Read map
     File.open(path, "rb"){ |file|
       mdata = file.read()
-      @map = Marshal.load(mdata)
-      @nmap = @map.clone
+      map = Marshal.load(mdata)
+      nmap = map.clone
     }
     # Check if it's a map or not
-    return unless @map.is_a? RPG::Map
+    return unless map.is_a? RPG::Map
     # Get tile table from map and create tile hash
-    table = @map.data.clone
+    table = map.data.clone
     ntable = Table.new(table.xsize, table.ysize, table.zsize)
     tilehash = self.getTilehash(table)
     # Create an array with tile ids
@@ -166,7 +166,7 @@ class CMap
     tilehash.each_value{ |value|
       tileArray.push(value) unless tileArray.include?(value)
     }
-    eventTiles = self.getEventTiles(@map.events)
+    eventTiles = self.getEventTiles(map.events)
     eventTiles.each{ |value|
       tileArray.push(value) unless tileArray.include?(value)
     }
@@ -175,7 +175,7 @@ class CMap
     tilesetheight = (tileArray.length/8.0).ceil * 32
     tilesetheight = 32 if tilesetheight == 0
     # Get tileset and it's attributes
-    tileset = self.getTileset(@map.tileset_id)
+    tileset = self.getTileset(map.tileset_id)
     priorities = tileset.priorities
     passages = tileset.passages
     terrain_tags = tileset.terrain_tags
@@ -222,13 +222,13 @@ class CMap
 
     # Replace tile ids in Table and Events
     self.recreateTable(ntable, table, newtilehash)
-    self.replaceTilesForEvents(@map.events, newtilehash)
+    self.replaceTilesForEvents(map.events, newtilehash)
 
     # Create new tileset
     ntileset = tileset.clone
-    ntileset.id = self.nextTilesetID(@mapid.to_i)
-    ntileset.name = "Map"+@mapid
-    ntileset.tileset_name = @mapid
+    ntileset.id = self.nextTilesetID(mapid.to_i)
+    ntileset.name = "Map"+mapid
+    ntileset.tileset_name = mapid
     ntileset.priorities = npriorities
     ntileset.passages = npassages
     ntileset.terrain_tags = nterrain_tags
@@ -236,9 +236,9 @@ class CMap
     self.addToTilesets(ntileset.id, ntileset)
 
     # Set data and tileset_id of new map
-    @nmap.data = ntable
-    @nmap.tileset_id = ntileset.id
-    @nmap.events = @map.events.clone
+    nmap.data = ntable
+    nmap.tileset_id = ntileset.id
+    nmap.events = map.events.clone
 
     # Save map and create missing directories
     Dir.mkdir("patch") unless File.exist?("patch")
@@ -247,13 +247,13 @@ class CMap
     path.gsub!("map","Map") if path.include?("map")
     File.delete(path) if File.file?(path)
     File.open(path, "wb"){ |f|
-      Marshal.dump(@nmap, f)
+      Marshal.dump(nmap, f)
     }
     Dir.mkdir("patch/Graphics") unless File.exist?("patch/Graphics")
     Dir.mkdir("patch/Graphics/Tilesets") unless File.exist?("patch/Graphics/Tilesets")
 
     # Save new tileset as png
-    newtileset.make_png(@mapid, "patch/Graphics/Tilesets/")
+    newtileset.make_png(mapid, "patch/Graphics/Tilesets/")
   end
 
   def writeTilesets
