@@ -1274,12 +1274,43 @@ class RPGFactory
     return object
   end
 
-  # TODO: Data can be analyzed similar to move commands
-  def frame(max:, data:)
+  def frame(*objects, max: 0, data: nil)
+    # backwards compatibility, next major can drop max and data parameters
+    if data == nil
+      values = []
+      objects.each do |object|
+        raise "unexpected frame object length" if object.length != 8
+        for i in 0...8
+          values[i] = [] if values[i].nil?
+          values[i].push object[i]
+        end
+      end
+      max = objects.length
+      data = table(x: max, y: max > 0 ? 8 : 0, data: values.flatten)
+    end
+
     object = RPG::Animation::Frame.new
     object.cell_max = max
     object.cell_data = data
     return object
+  end
+
+  def object(
+    pattern: 1,
+    x: 0,
+    y: 0,
+    zoom: 100,
+    angle: 0,
+    flip: false,
+    opacity: 255,
+    blending: :normal
+  )
+    return [pattern, animation_coord(x), animation_coord(y), zoom, angle, flip ? 1 : 0, opacity, BLENDING_INVERSE[blending]]
+  end
+
+  def animation_coord(value)
+    value += 65536 if value < 0
+    return value
   end
 
   TIMING_CONDITION = {

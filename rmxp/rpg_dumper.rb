@@ -1309,9 +1309,37 @@ class RPGDumper
 
   def frame(frame, level)
     value = "frame("
-    value += "max: " + frame.cell_max.inspect + ", "
-    value += "data: " + table(frame.cell_data, level + 1, inline: true)
+    table = frame.cell_data
+    for i in 0...table.xsize
+      value += "\n" + indent(level + 1) if table.xsize > 1
+      data = []
+      for j in 0...table.ysize
+        data.push(table.data[j * table.xsize + i])
+      end
+      value += object(data, level + 1)
+      value += "," if table.xsize > 1
+    end
+    value += "\n" + indent(level) if table.xsize > 1
     value += "),"
+    return value
+  end
+
+  def object(data, level)
+    value = "object("
+    value += "pattern: " + data[0].inspect + ", "
+    value += "x: " + animation_coord(data[1]).inspect + ", "
+    value += "y: " + animation_coord(data[2]).inspect + ", "
+    value += "zoom: " + data[3].inspect + ", "
+    value += "angle: " + data[4].inspect + ", "
+    value += "flip: " + (data[5] == 1).inspect + ", "
+    value += "opacity: " + data[6].inspect + ", "
+    value += "blending: " + RPGFactory::BLENDING[data[7]].inspect
+    value += ")"
+    return value
+  end
+
+  def animation_coord(value)
+    value -= 65536 if value > 32767
     return value
   end
 
