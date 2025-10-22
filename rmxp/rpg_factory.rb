@@ -1282,12 +1282,28 @@ class RPGFactory
     return object
   end
 
-  # TODO: Use enum for scope and condition
+  TIMING_CONDITION = {
+    0 => :none,
+    1 => :hit,
+    2 => :miss,
+  }
+
+  TIMING_CONDITION_INVERSE = TIMING_CONDITION.invert
+
+  TIMING_FLASH_SCOPE = {
+    0 => :none,
+    1 => :target,
+    2 => :screen,
+    3 => :hide_target,
+  }
+
+  TIMING_FLASH_SCOPE_INVERSE = TIMING_FLASH_SCOPE.invert
+
   def timing(
     frame:,
     se: RPG::AudioFile.new("", 80),
-    condition: 0,
-    scope: 0,
+    condition: :none,
+    scope: :none,
     duration:,
     red:,
     green:,
@@ -1298,7 +1314,11 @@ class RPGFactory
     object = RPG::Animation::Timing.new
     object.frame = frame
     object.se = se
+    # backwards compatibility, next major can simply always use TIMING_CONDITION_INVERSE
+    condition = TIMING_CONDITION_INVERSE[condition] unless condition.is_a?(Integer)
     object.condition = condition
+    # backwards compatibility, next major can simply always use TIMING_FLASH_SCOPE_INVERSE
+    scope = TIMING_FLASH_SCOPE_INVERSE[scope] unless scope.is_a?(Integer)
     object.flash_scope = scope
     object.flash_duration = duration
     object.flash_color = Color.new(red, green, blue, alpha)

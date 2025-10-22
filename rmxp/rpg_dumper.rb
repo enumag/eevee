@@ -1319,8 +1319,8 @@ class RPGDumper
     value = "timing("
     value += "frame: " + timing.frame.inspect + ", "
     value += "se: " + audio(timing.se) + ", " unless objects_equal?(timing.se, DEFAULT_BGS)
-    value += "condition: " + timing.condition.inspect + ", " if timing.condition != 0
-    value += "scope: " + timing.flash_scope.inspect + ", " if timing.flash_scope != 0
+    value += "condition: " + RPGFactory::TIMING_CONDITION[timing.condition].inspect + ", " if timing.condition != 0
+    value += "scope: " + RPGFactory::TIMING_FLASH_SCOPE[timing.flash_scope].inspect + ", " if timing.flash_scope != 0
     value += "duration: " + timing.flash_duration.inspect + ", "
     value += "red: " + timing.flash_color.red.to_i.inspect + ", "
     value += "green: " + timing.flash_color.green.to_i.inspect + ", "
