@@ -1286,7 +1286,7 @@ class RPGDumper
     value += indent(level + 1) + "name: " + animation.name.inspect + ",\n" if animation.name != ""
     value += indent(level + 1) + "animation: " + animation.animation_name.inspect + ",\n" if animation.animation_name != ""
     value += indent(level + 1) + "hue: " + animation.animation_hue.inspect + ",\n" if animation.animation_hue != 0
-    value += indent(level + 1) + "position: " + animation.position.inspect + ",\n" if animation.position != 1
+    value += indent(level + 1) + "position: " + RPGFactory::ANIMATION_POSITION[animation.position].inspect + ",\n" if animation.position != 1
     value += indent(level + 1) + "frame_max: " + animation.frame_max.inspect + ",\n" if animation.frame_max != 1
 
     value += indent(level + 1) + "frames: [\n"

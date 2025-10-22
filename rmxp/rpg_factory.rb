@@ -1240,13 +1240,21 @@ class RPGFactory
     return mapinfo
   end
 
-  # TODO: Use enum for position
+  ANIMATION_POSITION = {
+    0 => :top,
+    1 => :middle,
+    2 => :bottom,
+    3 => :screen,
+  }
+
+  ANIMATION_POSITION_INVERSE = ANIMATION_POSITION.invert
+
   def animation(
     id:,
     name: "",
     animation: "",
     hue: 0,
-    position: 1,
+    position: :middle,
     frame_max: 1,
     frames:,
     timings: []
@@ -1257,6 +1265,8 @@ class RPGFactory
     object.name = name
     object.animation_name = animation
     object.animation_hue = hue
+    # backwards compatibility, next major can simply always use ANIMATION_POSITION_INVERSE
+    position = ANIMATION_POSITION_INVERSE[position] unless position.is_a?(Integer)
     object.position = position
     object.frame_max = frame_max
     object.frames = frames
