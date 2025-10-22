@@ -419,7 +419,7 @@ class RPGDumper
       when 103 # input number
         value += command_input_number(command, level)
       when 104 # change text options
-        value += command_simple("change_text_options", 2, command, level)
+        value += command_change_text_options(command, level)
       when 105 # button input processing
         value += command_button_input_processing(command, level)
       when 106 # wait
@@ -769,6 +769,15 @@ class RPGDumper
     value = indent(level) + "input_number("
     value += "v(" + command.parameters[0].inspect + "), "
     value += "digits: " + command.parameters[1].inspect
+    value += "),\n"
+    return value
+  end
+
+  def command_change_text_options(command, level)
+    raise "unexpected command parameters" if command.parameters.count != 2
+    value = indent(level) + "change_text_options("
+    value += RPGFactory::TEXT_POSITION[command.parameters[0]].inspect + ", "
+    value += RPGFactory::TEXT_WINDOW[command.parameters[1]].inspect
     value += "),\n"
     return value
   end

@@ -294,9 +294,25 @@ class RPGFactory
     return command(103, variable, digits)
   end
 
-  # TODO: this can use enums for improved serialization but it's rarely used
-  # Similar position is used for animations (with an extra value)
+  TEXT_POSITION = {
+    0 => :top,
+    1 => :middle,
+    2 => :bottom,
+  }
+
+  TEXT_POSITION_INVERSE = TEXT_POSITION.invert
+
+  TEXT_WINDOW = {
+    0 => :show,
+    1 => :hide,
+  }
+
+  TEXT_WINDOW_INVERSE = TEXT_WINDOW.invert
+
   def change_text_options(position, window)
+    # backwards compatibility, next major can simply always use TEXT_POSITION_INVERSE / TEXT_WINDOW_INVERSE
+    position = TEXT_POSITION_INVERSE[position] unless position.is_a?(Integer)
+    window = TEXT_WINDOW_INVERSE[window] unless window.is_a?(Integer)
     return command(104, position, window)
   end
 
