@@ -7,10 +7,10 @@
 # Modify this path to specify where your .rxdata files reside
 data_dir: Data
 
-# Modify this path to specify where you want the game data emitted in YAML
+# Modify this path to specify where you want the game data emitted in ruby
 ruby_dir: DataExport
 
-# Modify this path to specify where to back up .rxdata files
+# Modify this path to specify where to backup .rxdata files
 backup_dir: DataBackup
 
 #-------------------------------------------------------------------------------
@@ -43,29 +43,29 @@ import_only_list:
 # List of Graphics assets with allowed half-pixels.
 half_pixels_list: []
 
-# This parameter determines whether the import/export scripts print verbose 
-# information such as each filename as it is imported or exported and timing 
+# This parameter determines whether the import/export scripts print verbose
+# information such as each filename as it is imported or exported and timing
 # information.  Errors are always printed.
 #   Valid values:  [true || false]
 verbose: true
 
 # This is the value always used for System object's magic_number field.  RMXP
-# changes this value whenever System.rxdata is modified, so having a default 
+# changes this value whenever System.rxdata is modified, so having a default
 # value prevents unnecessary conflicts when versioning the System.yaml file.
 # If, for any reason, this causes problems, you can disable the default magic
 # number functionality by setting the value -1.
 magic_number: 1
 
 # This is the value always used for System object's edit_map_id field.  RMXP
-# changes this value whenever the editor changes maps.  When exiting the 
+# changes this value whenever the editor changes maps.  When exiting the
 # program, the currently selected map's id is saved in this field.  To prevent
-# unnecessary conflicts, we are using a default map id.  If, for any reason, 
-# this causes problems, you can disable the default functionality by setting 
+# unnecessary conflicts, we are using a default map id.  If, for any reason,
+# this causes problems, you can disable the default functionality by setting
 # the value -1.
 startup_map: 1
 
 # Run ResizeEnableRunner.exe if it exists.
-resizer: true
+resizer: false
 
 # Glob mask for files that should always be included in a patch.
 patch_always: '{Scripts/*}'
