@@ -61,6 +61,7 @@ class RPGDumper
   DEFAULT_ROUTE = RPG::MoveRoute.new
   DEFAULT_MOVE = RPG::MoveCommand.new
   DEFAULT_PAGE = RPG::Event::Page.new
+  DEFAULT_FRAME = RPG::Animation::Frame.new
 
   def objects_equal?(obj1, obj2)
     return true if obj1.equal?(obj2)
@@ -1289,11 +1290,13 @@ class RPGDumper
     value += indent(level + 1) + "position: " + RPGFactory::ANIMATION_POSITION[animation.position].inspect + ",\n" if animation.position != 1
     value += indent(level + 1) + "frame_max: " + animation.frame_max.inspect + ",\n" if animation.frame_max != 1
 
-    value += indent(level + 1) + "frames: [\n"
-    animation.frames.each do |frame|
-      value += indent(level + 2) + frame(frame, level + 2) + "\n"
+    if animation.frames.length > 1 || !objects_equal?(animation.frames[0], DEFAULT_FRAME)
+      value += indent(level + 1) + "frames: [\n"
+      animation.frames.each do |frame|
+        value += indent(level + 2) + frame(frame, level + 2) + "\n"
+      end
+      value += indent(level + 1) + "],\n"
     end
-    value += indent(level + 1) + "],\n"
 
     if animation.timings != []
       value += indent(level + 1) + "timings: [\n"

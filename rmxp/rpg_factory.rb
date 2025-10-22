@@ -1256,7 +1256,7 @@ class RPGFactory
     hue: 0,
     position: :middle,
     frame_max: 1,
-    frames:,
+    frames: [],
     timings: []
   )
     verify_graphic(:ANIMATION, animation)
@@ -1269,7 +1269,7 @@ class RPGFactory
     position = ANIMATION_POSITION_INVERSE[position] unless position.is_a?(Integer)
     object.position = position
     object.frame_max = frame_max
-    object.frames = frames
+    object.frames = frames if frames != []
     object.timings = timings
     return object
   end
@@ -1286,7 +1286,7 @@ class RPGFactory
         end
       end
       max = objects.length
-      data = table(x: max, y: max > 0 ? 8 : 0, data: values.flatten)
+      data = table(x: max, y: 8, data: values.flatten)
     end
 
     object = RPG::Animation::Frame.new
