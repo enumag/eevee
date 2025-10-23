@@ -888,15 +888,17 @@ class RPGDumper
   end
 
   def graphic(graphic, level)
-    value = "graphic(\n"
-    value += indent(level + 1) + "tile_id: " + graphic.tile_id.inspect + ",\n" if graphic.tile_id != 0
-    value += indent(level + 1) + "name: " + graphic.character_name.inspect + ",\n" if graphic.character_name != ""
-    value += indent(level + 1) + "hue: " + graphic.character_hue.inspect + ",\n" if graphic.character_hue != 0
-    value += indent(level + 1) + "direction: " + RPGFactory::DIRECTION[graphic.direction].inspect + ",\n" if graphic.direction != 2
-    value += indent(level + 1) + "pattern: " + graphic.pattern.inspect + ",\n" if graphic.pattern != 0
-    value += indent(level + 1) + "opacity: " + graphic.opacity.inspect + ",\n" if graphic.opacity != 255
-    value += indent(level + 1) + "blending: " + RPGFactory::BLENDING[graphic.blend_type].inspect + ",\n" if graphic.blend_type != 0
-    value += indent(level) + ")"
+    value = "graphic("
+    parameters = []
+    parameters.push "tile_id: " + graphic.tile_id.inspect if graphic.tile_id != 0
+    parameters.push "name: " + graphic.character_name.inspect if graphic.character_name != ""
+    parameters.push "hue: " + graphic.character_hue.inspect if graphic.character_hue != 0
+    parameters.push "direction: " + RPGFactory::DIRECTION[graphic.direction].inspect if graphic.direction != 2
+    parameters.push "pattern: " + graphic.pattern.inspect if graphic.pattern != 0
+    parameters.push "opacity: " + graphic.opacity.inspect if graphic.opacity != 255
+    parameters.push "blending: " + RPGFactory::BLENDING[graphic.blend_type].inspect if graphic.blend_type != 0
+    value += parameters.join(", ")
+    value += ")"
     return value
   end
 
