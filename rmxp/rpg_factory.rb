@@ -199,19 +199,18 @@ class RPGFactory
     through: false,
     always_on_top: false,
     trigger: :action,
-    commands: [],
-    **args # backwards compatibility
+    commands: []
   )
     condition = RPG::Event::Page::Condition.new
-    condition.switch1_valid = switch1 != nil && args[:switch1_valid] != false
-    condition.switch2_valid = switch2 != nil && args[:switch2_valid] != false
-    condition.variable_valid = variable != nil && args[:variable_valid] != false
-    condition.self_switch_valid = self_switch != nil && args[:self_switch_valid] != false
-    condition.switch1_id = switch1 != nil && args[:switch1_valid] != false ? switch1 : 1
-    condition.switch2_id = switch2 != nil && args[:switch2_valid] != false ? switch2 : 1
-    condition.variable_id = variable != nil && args[:variable_valid] != false ? variable : 1
+    condition.switch1_valid = switch1 != nil
+    condition.switch2_valid = switch2 != nil
+    condition.variable_valid = variable != nil
+    condition.self_switch_valid = self_switch != nil
+    condition.switch1_id = switch1 != nil ? switch1 : 1
+    condition.switch2_id = switch2 != nil ? switch2 : 1
+    condition.variable_id = variable != nil ? variable : 1
     condition.variable_value = at_least
-    condition.self_switch_ch = self_switch != nil && args[:self_switch_valid] != false ? self_switch : "A"
+    condition.self_switch_ch = self_switch != nil ? self_switch : "A"
 
     page = RPG::Event::Page.new
     page.condition = condition
@@ -251,8 +250,7 @@ class RPGFactory
     direction: :down,
     pattern: 0,
     opacity: 255,
-    blending: :normal,
-    blend_type: nil
+    blending: :normal
   )
     verify_graphic(:CHARACTER, name)
     graphic = RPG::Event::Page::Graphic.new
@@ -263,7 +261,6 @@ class RPGFactory
     graphic.pattern = pattern
     graphic.opacity = opacity
     graphic.blend_type = BLENDING_INVERSE[blending]
-    graphic.blend_type = blend_type if blend_type != nil # backwards compatibility
     return graphic
   end
 
@@ -330,9 +327,8 @@ class RPGFactory
   TEXT_WINDOW_INVERSE = TEXT_WINDOW.invert
 
   def change_text_options(position, window)
-    # backwards compatibility, next major can simply always use TEXT_POSITION_INVERSE / TEXT_WINDOW_INVERSE
-    position = TEXT_POSITION_INVERSE[position] unless position.is_a?(Integer)
-    window = TEXT_WINDOW_INVERSE[window] unless window.is_a?(Integer)
+    position = TEXT_POSITION_INVERSE[position]
+    window = TEXT_WINDOW_INVERSE[window]
     return command(104, position, window)
   end
 
@@ -526,29 +522,21 @@ class RPGFactory
     if args[:parameters] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[args[:type]], *args[:parameters])
     elsif args[:switch] != nil
-      value = args[:value] # backwards compatibility, next major can simply always use SWITCH_VALUE_INVERSE
-      value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
-      commands.append command(111, CONDITION_TYPE_INVERSE[:switch], args[:switch], value)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:switch], args[:switch], SWITCH_VALUE_INVERSE[args[:value]])
     elsif args[:self_switch] != nil
-      value = args[:value] # backwards compatibility, next major can simply always use SWITCH_VALUE_INVERSE
-      value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
-      commands.append command(111, CONDITION_TYPE_INVERSE[:self_switch], args[:self_switch], value)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:self_switch], args[:self_switch], SWITCH_VALUE_INVERSE[args[:value]])
     elsif args[:variable] != nil && args[:constant] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 0, args[:constant], COMPARISON_INVERSE[args[:operation]])
     elsif args[:variable] != nil && args[:other_variable] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 1, args[:other_variable], COMPARISON_INVERSE[args[:operation]])
     elsif args[:timer] != nil
-      value = args[:operation] # backwards compatibility, next major can simply always use SIMPLE_COMPARISON_INVERSE
-      value = SIMPLE_COMPARISON_INVERSE[value] unless value.is_a?(Integer)
-      commands.append command(111, CONDITION_TYPE_INVERSE[:timer], args[:timer], value)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:timer], args[:timer], SIMPLE_COMPARISON_INVERSE[args[:operation]])
     elsif args[:character] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:character], args[:character], DIRECTION_INVERSE[args[:facing]])
     elsif args[:gold] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:gold], args[:gold], SIMPLE_COMPARISON_INVERSE[args[:operation]])
     elsif args[:button] != nil
-      value = args[:button] # backwards compatibility, next major can simply always use BUTTON_INVERSE
-      value = BUTTON_INVERSE[value] unless value.is_a?(Integer)
-      commands.append command(111, CONDITION_TYPE_INVERSE[:button], value)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:button], BUTTON_INVERSE[args[:button]])
     elsif args[:script] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:script], args[:script])
     end
@@ -766,8 +754,7 @@ class RPGFactory
   SWITCH_VALUE_INVERSE = SWITCH_VALUE.invert
 
   def control_switches(switches, value)
-    value = value ? 1 : 0 if [true, false].include?(value) # backwards compatibility
-    value = SWITCH_VALUE_INVERSE[value] unless value.is_a?(Integer)
+    value = SWITCH_VALUE_INVERSE[value]
     if switches.is_a?(Range)
       return command(121, switches.begin, switches.end, value)
     end
@@ -1320,33 +1307,25 @@ class RPGFactory
     object.name = name
     object.animation_name = animation
     object.animation_hue = hue
-    # backwards compatibility, next major can simply always use ANIMATION_POSITION_INVERSE
-    position = ANIMATION_POSITION_INVERSE[position] unless position.is_a?(Integer)
-    object.position = position
+    object.position = ANIMATION_POSITION_INVERSE[position]
     object.frame_max = frame_max
     object.frames = frames if frames != []
     object.timings = timings
     return object
   end
 
-  def frame(*objects, max: 0, data: nil)
-    # backwards compatibility, next major can drop max and data parameters
-    if data == nil
-      values = []
-      objects.each do |object|
-        raise "unexpected frame object length" if object.length != 8
-        for i in 0...8
-          values[i] = [] if values[i].nil?
-          values[i].push object[i]
-        end
+  def frame(*objects)
+    values = []
+    objects.each do |object|
+      raise "unexpected frame object length" if object.length != 8
+      for i in 0...8
+        values[i] = [] if values[i].nil?
+        values[i].push object[i]
       end
-      max = objects.length
-      data = table(x: max, y: 8, data: values.flatten)
     end
-
     object = RPG::Animation::Frame.new
-    object.cell_max = max
-    object.cell_data = data
+    object.cell_max = objects.length
+    object.cell_data = table(x: objects.length, y: 8, data: values.flatten)
     return object
   end
 
@@ -1400,12 +1379,8 @@ class RPGFactory
     object = RPG::Animation::Timing.new
     object.frame = frame
     object.se = se
-    # backwards compatibility, next major can simply always use TIMING_CONDITION_INVERSE
-    condition = TIMING_CONDITION_INVERSE[condition] unless condition.is_a?(Integer)
-    object.condition = condition
-    # backwards compatibility, next major can simply always use TIMING_FLASH_SCOPE_INVERSE
-    scope = TIMING_FLASH_SCOPE_INVERSE[scope] unless scope.is_a?(Integer)
-    object.flash_scope = scope
+    object.condition = TIMING_CONDITION_INVERSE[condition]
+    object.flash_scope = TIMING_FLASH_SCOPE_INVERSE[scope]
     object.flash_duration = duration
     object.flash_color = Color.new(red, green, blue, alpha)
     return object
