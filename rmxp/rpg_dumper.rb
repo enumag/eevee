@@ -2,6 +2,21 @@ class RPGDumper
   def initialize(name:, maps:)
     @name = name
     @maps = maps
+
+    # File containing the replacement pairs
+    filename = './tts.txt'
+
+    @replacements = {}
+
+    # Read all lines, remove trailing newlines
+    lines = File.readlines(filename, chomp: true)
+
+    lines.each_slice(2) do |pair|
+      # Skip if the last line has no pair
+      next if pair.size < 2
+      key, value = pair
+      @replacements[key] = value
+    end
   end
 
   def dump_ruby(object, level = 0)
@@ -559,6 +574,19 @@ class RPGDumper
   end
 
   def command_text(commands, level)
+    text = ""
+    commands.each do |command|
+      text += command.parameters[0]
+    end
+    if !@replacements[text].nil?
+      original = text
+      text, _, _ = original.partition("\\tts[")
+      text = text + "\\tts[" + @replacements[original] + "]"
+      value = indent(level) + "text("
+      value += text.inspect + "),\n"
+      return value
+    end
+
     if commands.count == 1
       value = indent(level) + "text("
       raise "unexpected command parameters" if commands[0].parameters.count != 1
