@@ -433,9 +433,13 @@ end
 def format_export_name(name, maps)
   match = name.match(/^Map0*+(?<number>[0-9]++)$/)
   return name + $CONFIG.export_extension if match.nil?
-  map_name = maps.fetch(match[:number].to_i).name.gsub(/[^0-9A-Za-z ]/, '')
+  map_name = remove_diacritics(maps.fetch(match[:number].to_i).name).gsub(/[^0-9A-Za-z ]/, '')
   return name + $CONFIG.export_extension if map_name == ''
   return name + ' - ' + map_name + $CONFIG.export_extension
+end
+
+def remove_diacritics(str)
+  return str.unicode_normalize(:nfkd).gsub(/\p{Mn}/, '')
 end
 
 def format_rxdata_name(name)
