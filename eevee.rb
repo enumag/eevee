@@ -16,8 +16,8 @@ $CONFIG_PATH = $PROJECT_DIR + config_filename
 if File.exist?($CONFIG_PATH)
   # Read the config YAML file
   config = nil
-  File.open( $CONFIG_PATH, "r+" ) do |configfile|
-    config = YAML::load( configfile )
+  File.open($CONFIG_PATH, "r+:UTF-8") do |configfile|
+    config = YAML::safe_load(configfile)
   end
 
   # Initialize configuration parameters

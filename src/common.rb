@@ -368,8 +368,8 @@ end
 
 def load_yaml(export_file)
   data = nil
-  File.open( export_file, "r+" ) do |input_file|
-    data = YAML::unsafe_load( input_file )
+  File.open(export_file, "r+:UTF-8") do |input_file|
+    data = YAML::unsafe_load(input_file)
   end
   return data['root']
 end

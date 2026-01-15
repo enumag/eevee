@@ -11,7 +11,10 @@ aibika ^
   --gemfile Gemfile ^
   --gem-full ^
   --dll ruby_builtin_dlls\libyaml-0-2.dll ^
+  --dll ruby_builtin_dlls\libgmp-10.dll ^
   --dll ruby_builtin_dlls\zlib1.dll ^
+  --add-all-core ^
+  --no-enc ^
   --icon eevee.ico ^
   --output eevee.exe ^
   --no-dep-run ^
