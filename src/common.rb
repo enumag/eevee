@@ -583,7 +583,7 @@ def generate_patch(base_tag)
 
   Zip::File.open('patch.zip', create: true) do |zipfile|
     files.each do |file|
-      zipfile.add(file, file)
+      zipfile.add(file, file) if File.exist?(file)
     end
   end
 
