@@ -486,8 +486,25 @@ def current_commit
   return head_content
 end
 
-def generate_patch(base_tag)
+def generate_patch(base_tag, safe_dir)
   require 'open3'
+
+  if safe_dir
+    puts "Setting #{safe_dir} as safe.directory."
+    command = ["git", "config", "--global", "--add", "safe.directory", safe_dir]
+    Open3.popen3(*command) do |stdin, stdout, stderr, waiter|
+      stdin.close
+      out = stdout.read
+      err = stderr.read
+
+      if waiter.value.exitstatus != 0
+        puts 'Unable to set safe.directory'
+        puts out
+        puts err
+        exit(false)
+      end
+    end
+  end
 
   if ! base_tag.nil?
     base_commit = get_base_commit_from_tag(base_tag)
