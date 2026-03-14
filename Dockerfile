@@ -21,3 +21,5 @@ RUN bundle install && \
 COPY . /eevee
 
 WORKDIR /app
+
+ENTRYPOINT ["ruby", "/eevee/eevee.rb"]

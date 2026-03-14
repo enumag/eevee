@@ -103,6 +103,17 @@ elsif $COMMAND == "tiles"
   tiles
 elsif $COMMAND == "tree"
   mapTree
+elsif $COMMAND == "optimize"
+  puts "Warning: optimize command only works when running as a script inside enumag/eevee docker image."
+
+  require 'sdl'
+  require 'zlib'
+  require_relative 'joiplay/font'
+  require_relative 'joiplay/rect'
+  require_relative 'joiplay/bitmap'
+  require_relative 'joiplay/map_converter'
+
+  convertAll
 else
   puts "eevee version: " + $VERSION
   puts
