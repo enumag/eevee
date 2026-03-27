@@ -11,10 +11,11 @@ class RPGDumper
     # Read all lines, remove trailing newlines
     lines = File.readlines(filename, chomp: true)
 
-    lines.each_slice(2) do |pair|
+    lines.each_slice(3) do |pair|
       # Skip if the last line has no pair
-      next if pair.size < 2
-      key, value = pair
+      next if pair.size < 3
+      key, value, empty = pair
+      raise "unexpected string: " + empty if empty != ""
       @replacements[key] = value
     end
   end
