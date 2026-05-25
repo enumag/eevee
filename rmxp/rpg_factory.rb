@@ -5,6 +5,7 @@ class RPGFactory
     @missing_events = []
     @conflicting_events = []
     @conflicting_coordinates = []
+    @dir_cache = {}
   end
 
   def missing_events
@@ -49,7 +50,7 @@ class RPGFactory
     return if name == ""
     path = AUDIO_TYPE[type].gsub("{1}", name)
     AUDIO_EXTENSIONS.each do |ext|
-      return if File.exist?(path + "." + ext)
+      return if fileExistsCaseSensitive(path + "." + ext)
     end
     @missing_assets.push path
   end
@@ -58,9 +59,23 @@ class RPGFactory
     return if name == ""
     path = GRAPHIC_TYPE[type].gsub("{1}", name)
     GRAPHIC_EXTENSIONS.each do |ext|
-      return if File.exist?(path + "." + ext)
+      return if fileExistsCaseSensitive(path + "." + ext)
     end
     @missing_assets.push path
+  end
+
+  def fileExistsCaseSensitive(path)
+    parts = path.split(/[\\\/]/)
+    current_dir = Dir.pwd
+
+    parts.each do |part|
+      @dir_cache[current_dir] = (Dir.entries(current_dir) - [".", ".."]) unless @dir_cache[current_dir]
+      entries = @dir_cache[current_dir]
+      return false unless entries.include?(part)
+      current_dir = File.join(current_dir, part)
+    end
+
+    return true
   end
 
   def map(
