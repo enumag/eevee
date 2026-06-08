@@ -443,6 +443,8 @@ class RPGDumper
         value += command_variable(command, level)
       when 123 # control self switch
         value += command_self_switch(command, level)
+      when 124 # control timer
+        value += command_timer(command, level)
       when 125 # change gold
         value += command_change_gold(command, level)
       when 131 # change windowskin
@@ -856,6 +858,20 @@ class RPGDumper
     value = indent(level) + "control_self_switch("
     value += command.parameters[0].inspect + ", " + RPGFactory::SWITCH_VALUE[command.parameters[1]].inspect
     value += "),\n"
+    return value
+  end
+
+  def command_timer(command, level)
+    value = indent(level)
+    if command.parameters[0] == 0
+      raise "unexpected command parameters" if command.parameters.count != 2
+      value += "start_timer("
+      value += command.parameters[1].inspect
+      value += "),\n"
+    else
+      raise "unexpected command parameters" if command.parameters.count != 1
+      value += "stop_timer,\n"
+    end
     return value
   end
 

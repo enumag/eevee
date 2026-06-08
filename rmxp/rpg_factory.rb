@@ -747,6 +747,14 @@ class RPGFactory
     return command(123, switch, value)
   end
 
+  def start_timer(seconds)
+    return command(124, 0, seconds)
+  end
+
+  def stop_timer
+    return command(124, 1)
+  end
+
   GOLD_OPERATION = {
     0 => "+=",
     1 => "-=",
