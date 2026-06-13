@@ -5,6 +5,7 @@ class RPGFactory
     @missing_events = []
     @conflicting_events = []
     @conflicting_coordinates = []
+    @invalid_cancellations = []
     @dir_cache = {}
   end
 
@@ -22,6 +23,10 @@ class RPGFactory
 
   def conflicting_coordinates
     return @conflicting_coordinates.uniq
+  end
+
+  def invalid_cancellations
+    return @invalid_cancellations.uniq
   end
 
   AUDIO_TYPE = {
@@ -615,6 +620,8 @@ class RPGFactory
         commands.append command
       end
       commands.append end_block
+    elsif cancellation > choices.count
+      @invalid_cancellations.push [choices, cancellation]
     end
 
     commands.append command(404)

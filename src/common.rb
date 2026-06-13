@@ -740,7 +740,8 @@ def assets
       missing_events = result[1]
       conflicting_events = result[2]
       conflicting_coordinates = result[3]
-      success &&= missing_assets.length == 0 && missing_events.length == 0 && conflicting_events.length == 0 && conflicting_coordinates.length == 0
+      invalid_cancellations = result[4]
+      success &&= missing_assets.length == 0 && missing_events.length == 0 && conflicting_events.length == 0 && conflicting_coordinates.length == 0 && invalid_cancellations.length == 0
 
       if missing_assets.length > 0
         str =  "Checked "
@@ -793,11 +794,22 @@ def assets
 
         $stdout.flush
       end
+
+      if invalid_cancellations.length > 0
+        str =  "Checked "
+        str += "#{file}".ljust(50)
+        str += "#{conflicting_coordinates.length} invalid cancellations"
+        puts str
+
+        invalid_cancellations.each do |data|
+          puts "  choices: " + data[0].inspect + ", cancellation: " + data[1].to_s
+        end
+      end
     }
   ) do |file|
     factory = RPGFactory.new
     factory.evaluate(File.read(input_dir + file))
-    next [factory.missing_assets, factory.missing_events, factory.conflicting_events, factory.conflicting_coordinates]
+    next [factory.missing_assets, factory.missing_events, factory.conflicting_events, factory.conflicting_coordinates, factory.invalid_cancellations]
   end
 
   puts "No missing files detected!" if success
