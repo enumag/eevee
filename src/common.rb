@@ -798,7 +798,7 @@ def assets
       if invalid_cancellations.length > 0
         str =  "Checked "
         str += "#{file}".ljust(50)
-        str += "#{conflicting_coordinates.length} invalid cancellations"
+        str += "#{invalid_cancellations.length} invalid cancellations"
         puts str
 
         invalid_cancellations.each do |data|
