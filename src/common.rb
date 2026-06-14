@@ -804,6 +804,8 @@ def assets
         invalid_cancellations.each do |data|
           puts "  choices: " + data[0].inspect + ", cancellation: " + data[1].to_s
         end
+
+        $stdout.flush
       end
     }
   ) do |file|
