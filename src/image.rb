@@ -28,7 +28,7 @@ def pixels(path)
   start_time = Time.now
 
   files = Dir.glob(File.join(path, "**/*")).select do |file|
-    !File.directory?(file) && !$CONFIG.half_pixels_list.include?(file)
+    !File.directory?(file) && !$CONFIG.half_pixels_list.include?(file) && File.extname(file).downcase == ".png"
   end
 
   total = 0
@@ -58,8 +58,8 @@ def bad_pixels(file)
   begin
     img = ChunkyPNG::Image.from_file(file)
   rescue => error
-    puts "Error while processing #{file}:"
-    raise error
+    puts "Error while processing #{file}: #{error}"
+    return []
   end
   pixels = []
 
