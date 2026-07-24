@@ -536,7 +536,7 @@ def generate_patch(base_tag, safe_dir)
 
   # Find all files changed between the two commits, including files that were reverted.
   # Files that were changed but deleted are included but that doesn't matter since they won't be found in current working tree.
-  command = sprintf('git --no-pager log --first-parent --pretty=format: --name-status %s..HEAD | grep . | grep -v "^D" | awk \'BEGIN { FS = "\t" } { if (NF == 3) { print $3 } else { print $2 } }\' | awk \'!seen[$0]++\'', base_commit)
+  command = sprintf('git -c core.quotepath=false --no-pager log --first-parent --pretty=format: --name-status %s..HEAD | grep . | grep -v "^D" | awk \'BEGIN { FS = "\t" } { if (NF == 3) { print $3 } else { print $2 } }\' | awk \'!seen[$0]++\'', base_commit)
   files = nil
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
     stdin.close
@@ -564,7 +564,7 @@ def generate_patch(base_tag, safe_dir)
   end
 
   # Find files that were deleted at any point between the two commits.
-  command = sprintf('git --no-pager log --pretty=format: --name-status %s..HEAD | grep -E "^(D|R)" | awk \'BEGIN { FS="\t" } { print $2 }\' | awk \'!seen[$0]++\'', base_commit)
+  command = sprintf('git -c core.quotepath=false --no-pager log --pretty=format: --name-status %s..HEAD | grep -E "^(D|R)" | awk \'BEGIN { FS="\t" } { print $2 }\' | awk \'!seen[$0]++\'', base_commit)
   deletions = nil
   Open3.popen3(command) do |stdin, stdout, stderr, waiter|
     stdin.close
