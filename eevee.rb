@@ -95,9 +95,9 @@ elsif $COMMAND == "shuffle"
 
   shuffle(source, target)
 elsif $COMMAND == "pixels"
-  path = ARGV[1] || nil
+  paths = ARGV[1..] || ["Graphics"]
 
-  pixels(path)
+  pixels(paths)
 elsif $COMMAND == "assets"
   assets
 elsif $COMMAND == "tiles"
