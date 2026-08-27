@@ -497,12 +497,29 @@ class RPGFactory
 
   COMPARISON_INVERSE = COMPARISON.invert
 
-  GOLD_COMPARISON = {
+  SIMPLE_COMPARISON = {
     0 => ">=",
     1 => "<=",
   }
 
-  GOLD_COMPARISON_INVERSE = GOLD_COMPARISON.invert
+  SIMPLE_COMPARISON_INVERSE = SIMPLE_COMPARISON.invert
+
+  BUTTON = {
+    2 => :down,
+    4 => :left,
+    6 => :right,
+    8 => :up,
+    11 => :A,
+    12 => :B,
+    13 => :C,
+    14 => :X,
+    15 => :Y,
+    16 => :Z,
+    17 => :L,
+    18 => :R,
+  }
+
+  BUTTON_INVERSE = BUTTON.invert
 
   def condition(**args)
     commands = []
@@ -520,10 +537,18 @@ class RPGFactory
       commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 0, args[:constant], COMPARISON_INVERSE[args[:operation]])
     elsif args[:variable] != nil && args[:other_variable] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:variable], args[:variable], 1, args[:other_variable], COMPARISON_INVERSE[args[:operation]])
+    elsif args[:timer] != nil
+      value = args[:operation] # backwards compatibility, next major can simply always use SIMPLE_COMPARISON_INVERSE
+      value = SIMPLE_COMPARISON_INVERSE[value] unless value.is_a?(Integer)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:timer], args[:timer], value)
     elsif args[:character] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:character], args[:character], DIRECTION_INVERSE[args[:facing]])
     elsif args[:gold] != nil
-      commands.append command(111, CONDITION_TYPE_INVERSE[:gold], args[:gold], GOLD_COMPARISON_INVERSE[args[:operation]])
+      commands.append command(111, CONDITION_TYPE_INVERSE[:gold], args[:gold], SIMPLE_COMPARISON_INVERSE[args[:operation]])
+    elsif args[:button] != nil
+      value = args[:button] # backwards compatibility, next major can simply always use BUTTON_INVERSE
+      value = BUTTON_INVERSE[value] unless value.is_a?(Integer)
+      commands.append command(111, CONDITION_TYPE_INVERSE[:button], value)
     elsif args[:script] != nil
       commands.append command(111, CONDITION_TYPE_INVERSE[:script], args[:script])
     end

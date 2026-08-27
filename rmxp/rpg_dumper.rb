@@ -1017,12 +1017,21 @@ class RPGDumper
       raise "unexpected command parameters" if command.parameters.count != 3
       value += indent(level + 1) + "self_switch: " + command.parameters[1].inspect + ",\n"
       value += indent(level + 1) + "value: " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect + ",\n"
+    when :timer
+      raise "unexpected command parameters" if command.parameters.count != 3
+      value += indent(level + 1) + "timer: " + command.parameters[1].inspect + ",\n"
+      value += indent(level + 1) + "operation: " + RPGFactory::SIMPLE_COMPARISON[command.parameters[2]].inspect + ",\n"
     when :character
+      raise "unexpected command parameters" if command.parameters.count != 3
       value += indent(level + 1) + "character: " + character(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "facing: " + RPGFactory::DIRECTION[command.parameters[2]].inspect + ",\n"
     when :gold
+      raise "unexpected command parameters" if command.parameters.count != 3
       value += indent(level + 1) + "gold: " + command.parameters[1].inspect + ",\n"
-      value += indent(level + 1) + "operation: " + RPGFactory::GOLD_COMPARISON[command.parameters[2]].inspect + ",\n"
+      value += indent(level + 1) + "operation: " + RPGFactory::SIMPLE_COMPARISON[command.parameters[2]].inspect + ",\n"
+    when :button
+      raise "unexpected command parameters" if command.parameters.count != 2
+      value += indent(level + 1) + "button: " + RPGFactory::BUTTON[command.parameters[1]].inspect + ",\n"
     when :script
       raise "unexpected command parameters" if command.parameters.count != 2
       value += indent(level + 1) + "script: " + command.parameters[1].inspect + ",\n"
