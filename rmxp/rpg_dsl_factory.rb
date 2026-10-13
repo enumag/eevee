@@ -715,7 +715,7 @@ module RPGDSLFactory
       end
 
       def [](idx)
-        return EventProxy.new(dsl, character(idx))
+        return EventProxy.new(dsl, @dsl.character(idx))
       end
     end
 
