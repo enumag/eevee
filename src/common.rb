@@ -32,7 +32,7 @@ def recursive_mkdir( directory )
     # Failed, so let's use recursion on the parent directory
     base_dir = File.dirname( directory )
     recursive_mkdir( base_dir )
-    
+
     # Make the original directory
     Dir.mkdir( directory )
   end
@@ -155,6 +155,7 @@ class Config
   attr_accessor :data_dir
   attr_accessor :yaml_dir
   attr_accessor :ruby_dir
+  attr_accessor :use_dsl
   attr_accessor :backup_dir
   attr_accessor :file_list
   attr_accessor :import_only_list
@@ -173,6 +174,7 @@ class Config
     @data_dir         = config['data_dir']
     @yaml_dir         = config['yaml_dir']
     @ruby_dir         = config['ruby_dir']
+    @use_dsl          = config['use_dsl']
     @backup_dir       = config['backup_dir']
     @file_list        = config['file_list']
     @import_only_list = config['import_only_list']
@@ -381,11 +383,15 @@ def save_yaml(export_file, data)
 end
 
 def load_ruby(export_file)
-  return (RPGFactory.new).evaluate(File.read(export_file))
+  return (RPGFactory.new).evaluate(File.read(export_file), file: export_file)
 end
 
 def save_ruby(export_file, data, name: nil, maps: nil)
-  File.write(export_file, (RPGDumper.new(name: name, maps: maps)).dump_ruby(data))
+  if $CONFIG.use_dsl
+    File.write(export_file, (RPGDSLDumper.new(name: name, maps: maps)).dump_ruby(data))
+  else
+    File.write(export_file, (RPGDumper.new(name: name, maps: maps)).dump_ruby(data))
+  end
 end
 
 def load_rxdata(data_file)
@@ -810,7 +816,7 @@ def assets
     }
   ) do |file|
     factory = RPGFactory.new
-    factory.evaluate(File.read(input_dir + file))
+    factory.evaluate(File.read(input_dir + file), file: input_dir + file)
     next [factory.missing_assets, factory.missing_events, factory.conflicting_events, factory.conflicting_coordinates, factory.invalid_cancellations]
   end
 
