@@ -9,6 +9,7 @@ data_dir: Data
 
 # Modify this path to specify where you want the game data emitted in ruby
 ruby_dir: DataExport
+use_dsl: true
 
 # Modify this path to specify where to backup .rxdata files
 backup_dir: DataBackup
