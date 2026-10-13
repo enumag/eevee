@@ -1503,7 +1503,11 @@ class RPGFactory
     return object
   end
 
-  def evaluate(script)
-    return eval(script)
+  def dsl(&block)
+    return RPGDSLFactory.parse([], self, &block)
+  end
+
+  def evaluate(script, file: '')
+    return eval(script, nil, file)
   end
 end
