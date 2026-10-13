@@ -252,7 +252,7 @@ class RPGDSLDumper < RPGDumper
   def character(id)
     return "player" if id == -1
     return "this" if id == 0
-    return "events[character(" + id.to_s + ")]"
+    return "events[" + id.to_s + "]"
   end
 
   def command_indented_simple(command, parts, level)
