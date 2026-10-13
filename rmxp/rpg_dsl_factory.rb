@@ -468,10 +468,12 @@ module RPGDSLFactory
         return holders.any? { |it| it.is_a?(RPGDSLFactory::Wrappers::HolderProxy) }
       end
 
+      # following are legacy holdovers
       def s(id) = @factory.s(id)
       def v(id) = @factory.v(id)
       def anim(id) = @factory.anim(id)
       def character(id) = @factory.character(id)
+
       def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
 
       def variables() = RPGDSLFactory::Wrappers::Variables.new(self)
@@ -713,7 +715,7 @@ module RPGDSLFactory
       end
 
       def [](idx)
-        return EventProxy.new(dsl, idx)
+        return EventProxy.new(dsl, character(idx))
       end
     end
 
