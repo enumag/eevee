@@ -155,7 +155,7 @@ class Config
   attr_accessor :data_dir
   attr_accessor :yaml_dir
   attr_accessor :ruby_dir
-  attr_accessor :use_dsl
+  attr_accessor :use_imperative
   attr_accessor :backup_dir
   attr_accessor :file_list
   attr_accessor :import_only_list
@@ -174,7 +174,7 @@ class Config
     @data_dir         = config['data_dir']
     @yaml_dir         = config['yaml_dir']
     @ruby_dir         = config['ruby_dir']
-    @use_dsl          = config['use_dsl']
+    @use_imperative   = config['use_imperative']
     @backup_dir       = config['backup_dir']
     @file_list        = config['file_list']
     @import_only_list = config['import_only_list']
@@ -388,7 +388,7 @@ end
 
 def save_ruby(export_file, data, name: nil, maps: nil)
   if $CONFIG.use_dsl
-    File.write(export_file, (RPGDSLDumper.new(name: name, maps: maps)).dump_ruby(data))
+    File.write(export_file, (RPGImperativeDumper.new(name: name, maps: maps)).dump_ruby(data))
   else
     File.write(export_file, (RPGDumper.new(name: name, maps: maps)).dump_ruby(data))
   end

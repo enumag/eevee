@@ -1,14 +1,24 @@
-class RPGDSLDumper < RPGDumper
+class RPGImperativeDumper < RPGDumper
   def command_array(commands, level)
-    value = indent(level) + "commands: dsl {\n"
+    value = indent(level) + "commands: event_code {\n"
     value += command_list(commands, level + 1)
     value += indent(level) + "},\n"
     return value
   end
 
+  def page_route(page, level)
+    return "" if objects_equal?(page.move_route, DEFAULT_ROUTE) || page.move_type != RPGFactory::EVENT_MOVE_TYPE_INVERSE[:custom]
+    return indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n"
+  end
+
+  def route(route, level)
+    value = "route_code {\n"
+    value += format_move_route(route, level)
+    return value
+  end
+
   # nesting reduction isn't relevant for dsl
   def command_list(commands, level, nesting_reduction = false)
-
     commands.pop if !commands.empty? && commands[-1].code == 0
 
     choices_stack = []
@@ -238,9 +248,6 @@ class RPGDSLDumper < RPGDumper
       i += 1
     end
     if level > start_level
-      if level - start_level > 1
-        print "oh fuck this isn't good"
-      end
       (level - start_level).times do
         level -= 1
         value += indent(level) + "}\n"
@@ -791,14 +798,19 @@ class RPGDSLDumper < RPGDumper
     end
 
     value += "\n"
+    value += format_move_route(route, level)
+    value += ".wait" if next_wait
+    value += "\n"
+    return value
+  end
+
+  def format_move_route(route, level)
     value += indent(level + 1) + "mark_as_repeat\n" if route.repeat
     value += indent(level + 1) + "mark_as_skippable\n" if route.skippable
     route.list.each do |move|
       value += indent(level + 1) + move_dsl(move, level + 1) + "\n"
     end
     value += indent(level) + "}"
-    value += ".wait" if next_wait
-    value += "\n"
     return value
   end
 
