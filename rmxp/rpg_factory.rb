@@ -1478,8 +1478,12 @@ class RPGFactory
     return object
   end
 
-  def dsl(&block)
-    return RPGDSLFactory.parse([], self, &block)
+  def event_code(&block)
+    return RPGImperativeFactory.parse([], self, &block)
+  end
+
+  def route_code(&block)
+    return RPGImperativeFactory.parse_move_route(self, &block)
   end
 
   def evaluate(script, file: '')
