@@ -44,9 +44,9 @@ module RPGImperativeFactory
       ###         COMMANDS
       ### ========================
 
-      def script(script) = @insns.push(@factory.script(script))
-      def text(*parts) = @insns.push(@factory.text(*parts))
-      def comment(*parts) = @insns.push(@factory.comment(*parts))
+      def script(script) = @insns.push(*@factory.script(script))
+      def text(*parts) = @insns.push(*@factory.text(*parts))
+      def comment(*parts) = @insns.push(*@factory.comment(*parts))
 
       def input_number(variable, digits:) = @insns.push(@factory.input_number(unwrap(variable), digits: digits))
       def change_text_options(position, window) = @insns.push(@factory.change_text_options(position, window))
@@ -140,7 +140,7 @@ module RPGImperativeFactory
       end
 
       def loop(&block)
-        @insns.push(@factory.repeat(commands: ExecutionContext.compile(@factory, &block)))
+        @insns.push(*@factory.repeat(commands: ExecutionContext.compile(@factory, &block)))
       end
 
       def break_loop() = @insns.push(@factory.break_loop)
@@ -152,7 +152,7 @@ module RPGImperativeFactory
 
       def set_move_route(character, &block)
         route, repeat, skippable = MoveRouteContext.compile(@factory, &block)
-        @insns.push(@factory.move_route(unwrap(character), *route, repeat: repeat, skippable: skippable))
+        @insns.push(*@factory.move_route(unwrap(character), *route, repeat: repeat, skippable: skippable))
         return RPGImperativeFactory::Wrappers::MoveRouteWaiter.new(self)
       end
 
