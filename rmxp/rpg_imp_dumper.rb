@@ -326,21 +326,10 @@ class RPGImperativeDumper < RPGDumper
   end
 
   def command_script(commands, level)
-    if commands.count == 1
-      value = indent(level) + "script "
-      raise "unexpected command parameters" if commands[0].parameters.count != 1
-      value += commands[0].parameters[0].inspect + "\n"
-      return value
-    end
-    command = "script \""
-    spacer = "\n" + " " * command.length
-    value = indent(level) + command
-    value += commands.map { |command|
+    return command_indented_simple("script", commands.map { |command|
       raise "unexpected command parameters" if command.parameters.count != 1
-      next command.parameters[0].inspect.delete_prefix("\"").delete_suffix("\"")
-    }.join(spacer)
-    value += "\"\n"
-    return value
+      next command.parameters[0].inspect
+    }, level)
   end
 
   def command_scroll_map(command, level)
