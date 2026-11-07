@@ -92,7 +92,7 @@ module RPGImperativeFactory
         end
       end
 
-      def swap_event_locations(character, target:, direction:) = @insns.push(@factory.event_location_swap(character, target: target, direction: direction))
+      def swap_event_locations(character, target:, direction:) = @insns.push(@factory.event_location_swap(unwrap(character), target: unwrap(target), direction: direction))
 
       def branch(on, *args, &block)
         params = {}
