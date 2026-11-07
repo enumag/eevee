@@ -538,9 +538,6 @@ module RPGImperativeFactory
       end
 
       def [](idx)
-        if idx.is_a?(Range)
-          return Variable.new(idx.begin)..Variable.new(idx.end)
-        end
         return Variable.new(idx)
       end
 
@@ -579,9 +576,6 @@ module RPGImperativeFactory
       end
 
       def [](idx)
-        if idx.is_a?(Range)
-          return Switch.new(idx.begin)..Switch.new(idx.end)
-        end
         return Switch.new(idx)
       end
 
