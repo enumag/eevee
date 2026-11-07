@@ -667,7 +667,7 @@ class RPGImperativeDumper < RPGDumper
       end
     when :self_switch
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += command.parameters[1].inspect + ", "
+      value += "self_switch[" + command.parameters[1].inspect + "], "
       value += RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     when :timer
       raise "unexpected command parameters" if command.parameters.count != 3
