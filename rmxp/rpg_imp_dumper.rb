@@ -333,7 +333,7 @@ class RPGImperativeDumper < RPGDumper
       return value
     end
     command = "script \""
-    spacer = "\n" + indent(level) + " " * command.length
+    spacer = "\n" + " " * command.length
     value = indent(level) + command
     value += commands.map { |command|
       raise "unexpected command parameters" if command.parameters.count != 1
