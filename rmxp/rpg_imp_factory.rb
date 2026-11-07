@@ -44,7 +44,7 @@ module RPGImperativeFactory
       ###         COMMANDS
       ### ========================
 
-      def script(script) = @insns.push(*@factory.script(script))
+      def script(*parts) = @insns.push(*@factory.script(parts.join("\n")))
       def text(*parts) = @insns.push(*@factory.text(*parts))
       def comment(*parts) = @insns.push(*@factory.comment(*parts))
 
