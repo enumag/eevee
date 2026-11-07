@@ -289,17 +289,15 @@ module RPGImperativeFactory
         @contexts << ExecutionContext.create(@factory, &block)
       end
 
-      def when_cancel(value = nil, &block)
-        if value
-          @cancel = value
-        elsif block_given?
+      def when_cancel(&block)
+        if block_given?
           @cancelcode = ExecutionContext.create(@factory, &block)
         end
       end
 
       def default_choice(name, &block)
         choice(name, &block)
-        when_cancel(name)
+        @cancel = @choices.length
       end
 
       ### ============================
@@ -309,7 +307,7 @@ module RPGImperativeFactory
       def compile
         params = {
           choices: @choices,
-          cancellation: 0
+          cancellation: 0,
         }
 
         params[:choice1] = @contexts[0].compile if @contexts.size >= 1
@@ -322,8 +320,6 @@ module RPGImperativeFactory
           params[:cancel] = @cancelcode.compile
         elsif @cancel.is_a?(Numeric)
           params[:cancellation] = @cancel
-        elsif @cancel.is_a?(String)
-          params[:cancellation] = (@choices.index(@cancel) || -1) + 1
         end
 
         return @factory.show_choices(**params)
