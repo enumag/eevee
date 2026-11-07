@@ -805,6 +805,7 @@ class RPGImperativeDumper < RPGDumper
   end
 
   def format_move_route(route, level)
+    value = ""
     value += indent(level + 1) + "mark_as_repeat\n" if route.repeat
     value += indent(level + 1) + "mark_as_skippable\n" if route.skippable
     route.list.each do |move|
