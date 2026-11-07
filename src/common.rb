@@ -387,7 +387,7 @@ def load_ruby(export_file)
 end
 
 def save_ruby(export_file, data, name: nil, maps: nil)
-  if $CONFIG.use_dsl
+  if $CONFIG.use_imperative
     File.write(export_file, (RPGImperativeDumper.new(name: name, maps: maps)).dump_ruby(data))
   else
     File.write(export_file, (RPGDumper.new(name: name, maps: maps)).dump_ruby(data))
