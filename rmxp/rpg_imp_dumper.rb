@@ -776,9 +776,7 @@ class RPGImperativeDumper < RPGDumper
   def command_move_route(command, next_wait, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     route = command.parameters[1]
-    last = route.list.pop
     value = indent(level) + character(command.parameters[0]) + ".set_move_route {"
-    raise "unexpected last route command" unless objects_equal?(last, DEFAULT_MOVE)
     if route.list.empty? && !route.repeat && !route.skippable
       value += "}"
       value += ".wait" if next_wait
@@ -797,6 +795,8 @@ class RPGImperativeDumper < RPGDumper
     value = ""
     value += indent(level + 1) + "mark_as_repeat\n" if route.repeat
     value += indent(level + 1) + "mark_as_skippable\n" if route.skippable
+    last = route.list.pop
+    raise "unexpected last route command" unless objects_equal?(last, DEFAULT_MOVE)
     route.list.each do |move|
       value += indent(level + 1) + move_dsl(move, level + 1) + "\n"
     end
