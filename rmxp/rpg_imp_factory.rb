@@ -78,17 +78,17 @@ module RPGImperativeFactory
 
       def transfer_player(map:, x:, y:, direction:, fading:)
         if any_variable?(map, x, y)
-          @insns.push(@factory.transfer_player_variables(map: map, x: unwrap(x), y: unwrap(y), direction: direction, fading: fading))
+          @insns.push(@factory.transfer_player_variables(map: unwrap(map), x: unwrap(x), y: unwrap(y), direction: direction, fading: fading))
         else
-          @insns.push(@factory.transfer_player(map: map, x: x, y: unwrap(y), direction: direction, fading: fading))
+          @insns.push(@factory.transfer_player(map: map, x: x, y: y, direction: direction, fading: fading))
         end
       end
 
       def set_event_location(character, x:, y:, direction:)
         if any_variable?(x, y)
-          @insns.push(@factory.event_location(unwrap(character), x: unwrap(x), y: unwrap(y), direction: direction))
+          @insns.push(@factory.event_location_variables(unwrap(character), x: unwrap(x), y: unwrap(y), direction: direction))
         else
-          @insns.push(@factory.event_location_variables(unwrap(character), x: x, y: y, direction: direction))
+          @insns.push(@factory.event_location(unwrap(character), x: x, y: y, direction: direction))
         end
       end
 
