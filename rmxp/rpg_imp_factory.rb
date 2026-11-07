@@ -515,7 +515,7 @@ module RPGImperativeFactory
       # Enables creating ranges with holder proxies
       def <=>(other)
         other = other.key if other.is_a?(RPGImperativeFactory::Wrappers::HolderProxy)
-        return key <=> other
+        return @key <=> other
       end
     end
 
