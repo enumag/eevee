@@ -38,6 +38,11 @@ class RPGImperativeDumper < RPGDumper
         parts = collect(commands, i + 1, 0)
         i += parts.count
       when 404 # show choices end
+        current_choices, current_cancellation, _ = choices_stack[-1]
+        if current_cancellation != 5 && current_cancellation > current_choices.count
+          current_choices.push("")
+          value += command_when(current_cancellation - 1, true, current_cancellation, current_choices, level)
+        end
         level -= 1
         value += indent(level) + "}\n"
         choices_stack.pop
@@ -50,7 +55,8 @@ class RPGImperativeDumper < RPGDumper
       when 402 # show choices - when
         empty = commands[i + 1].code == 0
         current_choices, current_cancellation, _ = choices_stack[-1]
-        value += command_when(command, empty, current_cancellation, current_choices, level)
+        raise "unexpected command parameters" if command.parameters.count != 2
+        value += command_when(command.parameters[0], empty, current_cancellation, current_choices, level)
         level += 1 unless empty
         i += 1 if empty
       when 403 # show choices - when cancel
@@ -727,12 +733,11 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
-  def command_when(command, empty, current_cancellation, current_choices, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
+  def command_when(choice, empty, current_cancellation, current_choices, level)
     choice_type = "choice"
-    choice_type = "default_choice" if command.parameters[0] + 1 == current_cancellation
+    choice_type = "default_choice" if choice + 1 == current_cancellation
 
-    value = indent(level) + choice_type + "(" + current_choices[command.parameters[0]].inspect + ") {"
+    value = indent(level) + choice_type + "(" + current_choices[choice].inspect + ") {"
     value += "}" if empty
     value += "\n"
     return value

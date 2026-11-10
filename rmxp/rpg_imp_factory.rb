@@ -296,6 +296,10 @@ module RPGImperativeFactory
       end
 
       def default_choice(name, &block)
+        if name == ""
+          @cancel = @choices.length + 1
+          return
+        end
         choice(name, &block)
         @cancel = @choices.length
       end
