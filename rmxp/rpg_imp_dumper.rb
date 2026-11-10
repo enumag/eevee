@@ -277,6 +277,14 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
+  def command_spaced_simple(command, parts, level)
+    command = command + " " unless parts.empty?
+    value = indent(level) + command
+    value += parts.join(", ")
+    value += "\n"
+    return value
+  end
+
   def command_parameterized_simple(command, level, **kwargs)
     parts = []
     kwargs.each { |kw, value|
@@ -288,7 +296,7 @@ class RPGImperativeDumper < RPGDumper
         parts << kw.to_s + ": " + value.inspect
       end
     }
-    return command_indented_simple(command, parts, level)
+    return command_spaced_simple(command, parts, level)
   end
 
   def command_simple(function, count, command, level)
@@ -432,7 +440,7 @@ class RPGImperativeDumper < RPGDumper
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     parts << "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
-    return command_indented_simple("transfer_player", parts, level)
+    return command_spaced_simple("transfer_player", parts, level)
   end
 
   def command_event_location(command, level)
@@ -451,7 +459,7 @@ class RPGImperativeDumper < RPGDumper
       parts << "target: " + character(command.parameters[2])
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
-    return command_indented_simple(char + "." + command_name, parts, level)
+    return command_spaced_simple(char + "." + command_name, parts, level)
   end
 
   def command_input_number(command, level)
@@ -850,7 +858,7 @@ class RPGImperativeDumper < RPGDumper
     parts << "zoom_y: " + command.parameters[7].inspect if command.parameters[7] != 100
     parts << "opacity: " + command.parameters[8].inspect if command.parameters[8] != 255
     parts << "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect
-    return command_indented_simple("show_picture", parts, level)
+    return command_spaced_simple("show_picture", parts, level)
   end
 
   def command_move_picture(command, level)
@@ -870,7 +878,7 @@ class RPGImperativeDumper < RPGDumper
     parts << "zoom_y: " + command.parameters[7].inspect if command.parameters[7] != 100
     parts << "opacity: " + command.parameters[8].inspect if command.parameters[8] != 255
     parts << "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect
-    return command_indented_simple("move_picture", parts, level)
+    return command_spaced_simple("move_picture", parts, level)
   end
 
   def command_rotate_picture(command, level)
