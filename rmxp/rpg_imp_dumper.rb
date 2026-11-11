@@ -191,9 +191,9 @@ class RPGImperativeDumper < RPGDumper
       when 208 # change transparent flag
         value += command_change_transparent_flag(command, level)
       when 210 # wait for move's completion
-        value += command_simple("wait_for_move_completion", 0, command, level)
+        value += command_simple("wait_completion", 0, command, level)
       when 221 # prepare for transition
-        value += command_simple("prepare_for_transition", 0, command, level)
+        value += command_simple("prepare_transition", 0, command, level)
       when 222 # execute transition
         value += command_simple("execute_transition", 1, command, level)
       when 223 # change screen color tone
@@ -446,7 +446,7 @@ class RPGImperativeDumper < RPGDumper
   def command_event_location(command, level)
     raise "unexpected command parameters" if command.parameters.count != 5
     char = character(command.parameters[0])
-    command_name = "set_event_location"
+    command_name = "event_location"
     parts = []
     if command.parameters[1] == 0
       parts << "x: " + command.parameters[2].inspect
@@ -455,7 +455,7 @@ class RPGImperativeDumper < RPGDumper
       parts << "x: " + variable(command.parameters[2])
       parts << "y: " + variable(command.parameters[3])
     else
-      command_name = "swap_event_locations"
+      command_name = "event_location_swap"
       parts << "target: " + character(command.parameters[2])
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect

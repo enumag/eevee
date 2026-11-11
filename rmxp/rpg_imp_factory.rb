@@ -86,7 +86,7 @@ class RPGImperativeFactory < RPGFactory
       def change_text_options(position, window) = @insns.push(@factory.change_text_options(position, window))
       def button_input_processing(variable) = @insns.push(@factory.button_input_processing(unwrap(variable)))
       def wait(time) = @insns.push(@factory.wait(time))
-      def wait_for_move_completion() = @insns.push(@factory.wait_completion)
+      def wait_completion() = @insns.push(@factory.wait_completion)
       def exit_event_processing() = @insns.push(@factory.exit_event_processing)
       def erase_event() = @insns.push(@factory.erase_event)
       def call_common_event(id) = @insns.push(@factory.call_common_event(id))
@@ -118,7 +118,7 @@ class RPGImperativeFactory < RPGFactory
         end
       end
 
-      def set_event_location(character, x:, y:, direction:)
+      def event_location(character, x:, y:, direction:)
         if any_variable?(x, y)
           @insns.push(@factory.event_location_variables(unwrap(character), x: unwrap(x), y: unwrap(y), direction: direction))
         else
@@ -126,7 +126,7 @@ class RPGImperativeFactory < RPGFactory
         end
       end
 
-      def swap_event_locations(character, target:, direction:) = @insns.push(@factory.event_location_swap(unwrap(character), target: unwrap(target), direction: direction))
+      def event_location_swap(character, target:, direction:) = @insns.push(@factory.event_location_swap(unwrap(character), target: unwrap(target), direction: direction))
 
       def branch(on, *args, &block)
         if on.is_a?(Array)
@@ -186,7 +186,7 @@ class RPGImperativeFactory < RPGFactory
 
       def break_loop() = @insns.push(@factory.break_loop)
 
-      def show_choices(text=nil, &block)
+      def show_choices(text = nil, &block)
         @insns.push(@factory.text(text)) if text
         @insns.push(@factory.create_context(ChoiceContext, &block))
       end
@@ -244,7 +244,7 @@ class RPGImperativeFactory < RPGFactory
       def change_save_access(flag) = @insns.push(@factory.change_save_access(flag))
       def change_menu_access(flag) = @insns.push(@factory.change_menu_access(flag))
       def change_encounters(flag) = @insns.push(@factory.change_encounter(flag))
-      def prepare_for_transition() = @insns.push(@factory.prepare_transition)
+      def prepare_transition() = @insns.push(@factory.prepare_transition)
       def execute_transition(graphic) = @insns.push(@factory.execute_transition(graphic))
       def call_menu_screen() = @insns.push(@factory.call_menu_screen)
       def call_save_screen() = @insns.push(@factory.call_save_screen)
@@ -672,8 +672,8 @@ class RPGImperativeFactory < RPGFactory
       def screen_y() = CharacterValue.new(@event, :screen_y)
       def terrain_tag() = CharacterValue.new(@event, :terrain_tag)
 
-      def set_event_location(x:, y:, direction:) = @context.set_event_location(self, x: x, y: y, direction: direction)
-      def swap_event_locations(target:, direction:) = @context.swap_event_locations(self, target: target, direction: direction)
+      def event_location(x:, y:, direction:) = @context.event_location(self, x: x, y: y, direction: direction)
+      def event_location_swap(target:, direction:) = @context.event_location_swap(self, target: target, direction: direction)
       def set_move_route(&block) = @context.set_move_route(self, &block)
       def show_animation(animation) = @context.show_animation(self, animation)
     end
@@ -722,7 +722,7 @@ class RPGImperativeFactory < RPGFactory
       end
 
       def wait
-        @context.wait_for_move_completion
+        @context.wait_completion
       end
     end
 
