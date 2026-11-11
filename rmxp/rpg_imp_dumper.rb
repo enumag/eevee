@@ -616,33 +616,33 @@ class RPGImperativeDumper < RPGDumper
     when 11 then return "move_away_from_player"
     when 12 then return "move_forward"
     when 13 then return "move_backward"
-    when 14 then return "jump_to x: " + move.parameters[0].inspect + ", y: " + move.parameters[1].inspect
+    when 14 then return "jump x: " + move.parameters[0].inspect + ", y: " + move.parameters[1].inspect
     when 15 then return "wait " + move.parameters[0].inspect
-    when 16 then return "face_down"
-    when 17 then return "face_left"
-    when 18 then return "face_right"
-    when 19 then return "face_up"
-    when 20 then return "turn_right"
-    when 21 then return "turn_left"
-    when 22 then return "turn_around"
-    when 23 then return "turn_randomly"
-    when 24 then return "face_randomly"
-    when 25 then return "face_toward_player"
-    when 26 then return "face_away_from_player"
+    when 16 then return "turn_down"
+    when 17 then return "turn_left"
+    when 18 then return "turn_right"
+    when 19 then return "turn_up"
+    when 20 then return "turn_right_90"
+    when 21 then return "turn_left_90"
+    when 22 then return "turn_180"
+    when 23 then return "turn_right_or_left_90"
+    when 24 then return "turn_random"
+    when 25 then return "turn_toward_player"
+    when 26 then return "turn_away_from_player"
     when 27 then return switch(move.parameters[0]) + " = :ON"
     when 28 then return switch(move.parameters[0]) + " = :OFF"
     when 29 then return "change_speed " + move.parameters[0].inspect
     when 30 then return "change_frequency " + move.parameters[0].inspect
-    when 31 then return "animate_walking"
-    when 32 then return "animate_walking false"
-    when 33 then return "animate_steps"
-    when 34 then return "animate_steps false"
-    when 35 then return "lock_direction"
-    when 36 then return "lock_direction false"
-    when 37 then return "set_intangible"
-    when 38 then return "set_intangible false"
-    when 39 then return "set_always_foreground"
-    when 40 then return "set_always_foreground false"
+    when 31 then return "walking_animation"
+    when 32 then return "walking_animation false"
+    when 33 then return "stop_animation"
+    when 34 then return "stop_animation false"
+    when 35 then return "direction_fix"
+    when 36 then return "direction_fix false"
+    when 37 then return "through"
+    when 38 then return "through false"
+    when 39 then return "always_on_top"
+    when 40 then return "always_on_top false"
     when 41
       parameters = []
       parameters.append "name: " + move.parameters[0].inspect if move.parameters[0] != ""
@@ -650,9 +650,9 @@ class RPGImperativeDumper < RPGDumper
       parameters.append "direction: " + RPGFactory::DIRECTION[move.parameters[2]].inspect if move.parameters[2] != 2
       parameters.append "pattern: " + move.parameters[3].inspect if move.parameters[3] != 0
       return "remove_graphic" if parameters == []
-      return "set_character " + parameters.join(", ")
-    when 42 then return "set_opacity " + move.parameters[0].inspect
-    when 43 then return "set_blend_type " + RPGFactory::BLENDING[move.parameters[0]].inspect
+      return "change_graphic " + parameters.join(", ")
+    when 42 then return "change_opacity " + move.parameters[0].inspect
+    when 43 then return "change_blending " + RPGFactory::BLENDING[move.parameters[0]].inspect
     when 44 then return "play_se " + audio(move.parameters[0])
     when 45 then return "script " + move.parameters[0].inspect
     else
@@ -805,8 +805,8 @@ class RPGImperativeDumper < RPGDumper
 
   def format_move_route(route, level)
     value = ""
-    value += indent(level + 1) + "mark_as_repeat\n" if route.repeat
-    value += indent(level + 1) + "mark_as_skippable\n" if route.skippable
+    value += indent(level + 1) + "repeat\n" if route.repeat
+    value += indent(level + 1) + "skippable\n" if route.skippable
     last = route.list.pop
     raise "unexpected last route command" unless objects_equal?(last, DEFAULT_MOVE)
     route.list.each do |move|

@@ -406,10 +406,8 @@ module RPGImperative
       ###         COMMANDS
       ### ========================
 
-      def mark_as_repeat() = @repeat = true
-
-      def mark_as_skippable() = @skippable = true
-
+      def repeat() = @repeat = true
+      def skippable() = @skippable = true
 
       def move_down() = @insns.push(@factory.move_down)
       def move_left() = @insns.push(@factory.move_left)
@@ -424,39 +422,35 @@ module RPGImperative
       def move_away_from_player() = @insns.push(@factory.move_away_from_player)
       def move_forward() = @insns.push(@factory.move_forward)
       def move_backward() = @insns.push(@factory.move_backward)
-      def jump_to(x:, y:) = @insns.push(@factory.jump(x: x, y: y))
+      def jump(x:, y:) = @insns.push(@factory.jump(x: x, y: y))
       def wait(frames) = @insns.push(@factory.route_wait(frames))
-      def face_down() = @insns.push(@factory.turn_down)
-      def face_left() = @insns.push(@factory.turn_left)
-      def face_right() = @insns.push(@factory.turn_right)
-      def face_up() = @insns.push(@factory.turn_up)
-      def turn_right() = @insns.push(@factory.turn_right_90)
-      def turn_left() = @insns.push(@factory.turn_left_90)
-      def turn_around() = @insns.push(@factory.turn_180)
-      def turn_randomly() = @insns.push(@factory.turn_right_or_left_90)
-      def face_randomly() = @insns.push(@factory.turn_random)
-      def face_toward_player() = @insns.push(@factory.turn_toward_player)
-      def face_away_from_player() = @insns.push(@factory.turn_away_from_player)
-
-      def control_switches(switch, value) = set_switch(switch, state: value)
-
-      def set_switch(switch, state:) = @insns.push(state == :ON ? @factory.switch_on(unwrap(switch)) : @factory.switch_off(unwrap(switch)))
+      def turn_down() = @insns.push(@factory.turn_down)
+      def turn_left() = @insns.push(@factory.turn_left)
+      def turn_right() = @insns.push(@factory.turn_right)
+      def turn_up() = @insns.push(@factory.turn_up)
+      def turn_right_90() = @insns.push(@factory.turn_right_90)
+      def turn_left_90() = @insns.push(@factory.turn_left_90)
+      def turn_180() = @insns.push(@factory.turn_180)
+      def turn_right_or_left_90() = @insns.push(@factory.turn_right_or_left_90)
+      def turn_random() = @insns.push(@factory.turn_random)
+      def turn_toward_player() = @insns.push(@factory.turn_toward_player)
+      def turn_away_from_player() = @insns.push(@factory.turn_away_from_player)
       def change_speed(speed) = @insns.push(@factory.change_speed(speed))
       def change_frequency(freq) = @insns.push(@factory.change_frequency(freq))
-
-      def animate_walking(state=true) = @insns.push(state ? @factory.walk_anime_on : @factory.walk_anime_off)
-      def animate_steps(state=true) = @insns.push(state ? @factory.step_anime_on : @factory.step_anime_off)
-      def lock_direction(state=true) = @insns.push(state ? @factory.direction_fix_on : @factory.direction_fix_off)
-      def set_intangible(state=true) = @insns.push(state ? @factory.through_on : @factory.through_off)
-      def set_always_foreground(state=true) = @insns.push(state ? @factory.always_on_top_on : @factory.always_on_top_off)
-      def set_character(name: "", hue: 0, direction: :down, pattern: 0) = @insns.push(@factory.change_graphic(name: name, hue: hue, direction: direction, pattern: pattern))
-      def remove_graphic = set_character
-      def set_opacity(opacity) = @insns.push(@factory.change_opacity(opacity))
-      def set_blend_type(blend) = @insns.push(@factory.change_blending(blend))
-
+      def walking_animation(state = true) = @insns.push(state ? @factory.walk_anime_on : @factory.walk_anime_off)
+      def stop_animation(state = true) = @insns.push(state ? @factory.step_anime_on : @factory.step_anime_off)
+      def direction_fix(state = true) = @insns.push(state ? @factory.direction_fix_on : @factory.direction_fix_off)
+      def through(state = true) = @insns.push(state ? @factory.through_on : @factory.through_off)
+      def always_on_top(state = true) = @insns.push(state ? @factory.always_on_top_on : @factory.always_on_top_off)
+      def change_graphic(name: "", hue: 0, direction: :down, pattern: 0) = @insns.push(@factory.change_graphic(name: name, hue: hue, direction: direction, pattern: pattern))
+      def remove_graphic = change_graphic
+      def change_opacity(opacity) = @insns.push(@factory.change_opacity(opacity))
+      def change_blending(blend) = @insns.push(@factory.change_blending(blend))
       def play_se(audio) = @insns.push(@factory.route_play_se(audio))
       def script(script) = @insns.push(@factory.route_script(script))
 
+      def control_switches(switch, value) = set_switch(switch, state: value)
+      def set_switch(switch, state:) = @insns.push(state == :ON ? @factory.switch_on(unwrap(switch)) : @factory.switch_off(unwrap(switch)))
       def command(code, *parameters) = @insns.push(@factory.move(code, *parameters))
 
       ### ============================
