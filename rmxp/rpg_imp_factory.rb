@@ -7,30 +7,27 @@ class RPGImperativeFactory < RPGFactory
     return Wrappers::ArraySyntax.new
   end
 
+  def create_context(context_class, *args, &block)
+    context = context_class.new(self, *args)
+    context.instance_exec(&block)
+    return context
+  end
+
+  def compile_context(context_class, *args, &block)
+    context = create_context(context_class, &block)
+    return context.compile(*args)
+  end
+
   def event_code(&block)
-    return Contexts::ExecutionContext.compile(self, &block)
+    return compile_context(Contexts::ExecutionContext, &block)
   end
 
   def route_code(&block)
-    route, repeat, skippable = Contexts::MoveRouteContext.compile(self, &block)
+    route, repeat, skippable = compile_context(Contexts::MoveRouteContext, &block)
     return self.route(*route, repeat: repeat, skippable: skippable)
   end
 
   module Contexts
-    module Context
-      def self.included(othermod)
-        othermod.define_singleton_method(:create) { |*args, &block|
-          inst = self.new(*args)
-          inst.instance_exec(&block)
-          next inst
-        }
-
-        othermod.define_singleton_method(:compile) { |*args, &block|
-          next self.create(*args, &block).compile
-        }
-      end
-    end
-
     class ExecutionContext
       include Context
 
@@ -140,28 +137,28 @@ class RPGImperativeFactory < RPGFactory
           raise "Invalid branch condition: #{on.class}"
         end
 
-        context = BranchExecutionContext.create(@factory, params, &block)
+        context = @factory.create_context(BranchExecutionContext, params, &block)
         @insns.push(context)
         return context
       end
 
       def battle(*parameters, &block)
-        @insns.push(BattleContext.compile(@factory, parameters, &block))
+        @insns.push(@factory.compile_context(BattleContext, parameters, &block))
       end
 
       def loop(&block)
-        @insns.push(*@factory.repeat(commands: ExecutionContext.compile(@factory, &block)))
+        @insns.push(*@factory.repeat(commands: @factory.compile_context(ExecutionContext, &block)))
       end
 
       def break_loop() = @insns.push(@factory.break_loop)
 
       def show_choices(text=nil, &block)
         @insns.push(@factory.text(text)) if text
-        @insns.push(ChoiceContext.create(@factory, &block))
+        @insns.push(@factory.create_context(ChoiceContext, &block))
       end
 
       def set_move_route(character, &block)
-        route, repeat, skippable = MoveRouteContext.compile(@factory, &block)
+        route, repeat, skippable = @factory.compile_context(MoveRouteContext, &block)
         @insns.push(*@factory.move_route(unwrap(character), *route, repeat: repeat, skippable: skippable))
         return Wrappers::MoveRouteWaiter.new(self)
       end
@@ -245,8 +242,6 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class BranchExecutionContext < ExecutionContext
-      include Context
-
       def initialize(factory, parameters)
         super(factory)
         @parameters = parameters
@@ -255,7 +250,7 @@ class RPGImperativeFactory < RPGFactory
       ### ========================
       ###         COMMANDS
       ### ========================
-      def else(&block) = @else = ExecutionContext.create(@factory, &block)
+      def else(&block) = @else = @factory.create_context(ExecutionContext, &block)
       ### ============================
       ###         END COMMANDS
       ### ============================
@@ -296,12 +291,12 @@ class RPGImperativeFactory < RPGFactory
 
       def choice(name, &block)
         @choices << name
-        @contexts << ExecutionContext.create(@factory, &block)
+        @contexts << @factory.create_context(ExecutionContext, &block)
       end
 
       def when_cancel(&block)
         if block_given?
-          @cancelcode = ExecutionContext.create(@factory, &block)
+          @cancelcode = @factory.create_context(ExecutionContext, &block)
         end
       end
 
@@ -356,15 +351,15 @@ class RPGImperativeFactory < RPGFactory
       ### ========================
 
       def when_win(&block)
-        @win = ExecutionContext.create(@factory, &block)
+        @win = @factory.create_context(ExecutionContext, &block)
       end
 
       def when_escape(&block)
-        @escape = ExecutionContext.create(@factory, &block)
+        @escape = @factory.create_context(ExecutionContext, &block)
       end
 
       def when_lose(&block)
-        @lose = ExecutionContext.create(@factory, &block)
+        @lose = @factory.create_context(ExecutionContext, &block)
       end
 
       ### ============================
