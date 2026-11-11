@@ -17,7 +17,7 @@ class RPGImperativeFactory < RPGFactory
   end
 
   module Contexts
-    module DSLLike
+    module Context
       def self.included(othermod)
         othermod.define_singleton_method(:create) { |*args, &block|
           inst = self.new(*args)
@@ -32,7 +32,7 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class ExecutionContext
-      include DSLLike
+      include Context
 
       def initialize(factory)
         @insns = []
@@ -245,7 +245,7 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class BranchExecutionContext < ExecutionContext
-      include DSLLike
+      include Context
 
       def initialize(factory, parameters)
         super(factory)
@@ -280,7 +280,7 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class ChoiceContext
-      include DSLLike
+      include Context
 
       def initialize(factory)
         @choices = []
@@ -341,7 +341,7 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class BattleContext
-      include DSLLike
+      include Context
 
       def initialize(factory, parameters)
         @win = nil
@@ -380,7 +380,7 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class MoveRouteContext
-      include DSLLike
+      include Context
 
       def initialize(factory)
         @repeat = false
@@ -462,7 +462,7 @@ class RPGImperativeFactory < RPGFactory
     ###         Syntactic Sugar goes below
     ### ==========================================
 
-    module DSLLike
+    module Context
       def unwrap(holder)
         if holder.is_a?(Range)
           return unwrap(holder.begin)..unwrap(holder.end)
