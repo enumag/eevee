@@ -66,7 +66,7 @@ class DataImporterExporter
         str += "(" + "#{index}".rjust(3, '0')
         str += "/"
         str += "#{files.size}".rjust(3, '0') + ")"
-        str += "    #{dump_time} seconds"
+        str += "    #{sprintf("%0.2f", dump_time)} seconds"
         puts_verbose str
         $stdout.flush
 
@@ -103,8 +103,8 @@ class DataImporterExporter
 
     # Report the times
     print_separator
-    puts_verbose "rxdata dump time: #{total_dump_time} seconds."
-    puts_verbose "Total import time: #{total_elapsed_time} seconds."
+    puts_verbose "rxdata dump time: #{sprintf("%0.2f", total_dump_time)} seconds."
+    puts_verbose "Total import time: #{sprintf("%0.2f", total_elapsed_time)} seconds."
     print_separator
     puts_verbose
   end
@@ -199,7 +199,7 @@ class DataImporterExporter
         str += "(" + "#{index}".rjust(3, '0')
         str += "/"
         str += "#{files.size}".rjust(3, '0') + ")"
-        str += "    #{dump_time} seconds"
+        str += "    #{sprintf("%0.2f", dump_time)} seconds"
         puts_verbose str
         $stdout.flush
 
@@ -221,8 +221,8 @@ class DataImporterExporter
  
     # Report the times
     print_separator
-    puts_verbose "Dump time: #{total_dump_time} seconds."
-    puts_verbose "Total export time: #{total_elapsed_time} seconds."
+    puts_verbose "Dump time: #{sprintf("%0.2f", total_dump_time)} seconds."
+    puts_verbose "Total export time: #{sprintf("%0.2f", total_elapsed_time)} seconds."
     print_separator
     puts_verbose
   end
