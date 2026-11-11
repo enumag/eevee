@@ -86,9 +86,11 @@ class RPGImperativeFactory < RPGFactory
         @factory = factory
       end
 
-      ### ========================
-      ###         COMMANDS
-      ### ========================
+      def compile
+        return @factory.compile_list(@insns)
+      end
+
+      # Commands
 
       def script(*parts) = @insns.push(*@factory.script(parts.join("\n")))
       def text(*parts) = @insns.push(*@factory.text(*parts))
@@ -268,14 +270,6 @@ class RPGImperativeFactory < RPGFactory
       def stop_timer() = @insns.push(@factory.stop_timer)
 
       def command(code, *parameters) = @insns.push(@factory.command(code, *parameters))
-
-      ### ============================
-      ###         END COMMANDS
-      ### ============================
-
-      def compile
-        return @factory.compile_list(@insns)
-      end
     end
 
     class BranchExecutionContext < ExecutionContext
@@ -284,16 +278,6 @@ class RPGImperativeFactory < RPGFactory
         @parameters = parameters
       end
 
-      ### ========================
-      ###         COMMANDS
-      ### ========================
-      def else(&block)
-        @else = @factory.create_context(ExecutionContext, &block)
-      end
-
-      ### ============================
-      ###         END COMMANDS
-      ### ============================
       def compile
         @parameters[:then] = @factory.compile_list(@insns)
 
@@ -302,6 +286,12 @@ class RPGImperativeFactory < RPGFactory
         end
 
         return @factory.condition(**@parameters)
+      end
+
+      # Commands
+
+      def else(&block)
+        @else = @factory.create_context(ExecutionContext, &block)
       end
     end
 
@@ -315,34 +305,6 @@ class RPGImperativeFactory < RPGFactory
         @cancelcode = nil
         @factory = factory
       end
-
-      ### ========================
-      ###         COMMANDS
-      ### ========================
-
-      def choice(name, &block)
-        @choices << name
-        @contexts << @factory.create_context(ExecutionContext, &block)
-      end
-
-      def when_cancel(&block)
-        if block_given?
-          @cancelcode = @factory.create_context(ExecutionContext, &block)
-        end
-      end
-
-      def default_choice(name, &block)
-        if name == ""
-          @cancel = @choices.length + 1
-          return
-        end
-        choice(name, &block)
-        @cancel = @choices.length
-      end
-
-      ### ============================
-      ###         END COMMANDS
-      ### ============================
 
       def compile
         params = {
@@ -364,6 +326,28 @@ class RPGImperativeFactory < RPGFactory
 
         return @factory.show_choices(**params)
       end
+
+      # Commands
+
+      def choice(name, &block)
+        @choices << name
+        @contexts << @factory.create_context(ExecutionContext, &block)
+      end
+
+      def when_cancel(&block)
+        if block_given?
+          @cancelcode = @factory.create_context(ExecutionContext, &block)
+        end
+      end
+
+      def default_choice(name, &block)
+        if name == ""
+          @cancel = @choices.length + 1
+          return
+        end
+        choice(name, &block)
+        @cancel = @choices.length
+      end
     end
 
     class BattleContext
@@ -377,9 +361,14 @@ class RPGImperativeFactory < RPGFactory
         @params = parameters
       end
 
-      ### ========================
-      ###         COMMANDS
-      ### ========================
+      def compile
+        win = @win ? @win.compile : []
+        escape = @escape ? @escape.compile : nil
+        lose = @lose ? @lose.compile : []
+        return @factory.battle(parameters: @params, win: win, escape: escape, lose: lose)
+      end
+
+      # Commands
 
       def when_win(&block)
         @win = @factory.create_context(ExecutionContext, &block)
@@ -391,17 +380,6 @@ class RPGImperativeFactory < RPGFactory
 
       def when_lose(&block)
         @lose = @factory.create_context(ExecutionContext, &block)
-      end
-
-      ### ============================
-      ###         END COMMANDS
-      ### ============================
-
-      def compile
-        win = @win ? @win.compile : []
-        escape = @escape ? @escape.compile : nil
-        lose = @lose ? @lose.compile : []
-        return @factory.battle(parameters: @params, win: win, escape: escape, lose: lose)
       end
     end
 
@@ -415,9 +393,11 @@ class RPGImperativeFactory < RPGFactory
         @factory = factory
       end
 
-      ### ========================
-      ###         COMMANDS
-      ### ========================
+      def compile
+        return @factory.compile_list(@insns), @repeat, @skippable
+      end
+
+      # Commands
 
       def repeat() = @repeat = true
       def skippable() = @skippable = true
@@ -465,14 +445,6 @@ class RPGImperativeFactory < RPGFactory
       def control_switches(switch, value) = set_switch(switch, state: value)
       def set_switch(switch, state:) = @insns.push(state == :ON ? @factory.switch_on(unwrap(switch)) : @factory.switch_off(unwrap(switch)))
       def command(code, *parameters) = @insns.push(@factory.move(code, *parameters))
-
-      ### ============================
-      ###         END COMMANDS
-      ### ============================
-
-      def compile
-        return @factory.compile_list(@insns), @repeat, @skippable
-      end
     end
   end
 
