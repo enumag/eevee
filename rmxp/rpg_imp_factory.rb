@@ -6,6 +6,15 @@ class RPGImperativeFactory < RPGFactory
   def s
     return ArraySyntax.new
   end
+
+  def event_code(&block)
+    return RPGImperative::Contexts::ExecutionContext.compile(self, &block)
+  end
+
+  def route_code(&block)
+    route, repeat, skippable = RPGImperative::Contexts::MoveRouteContext.compile(self, &block)
+    return self.route(*route, repeat: repeat, skippable: skippable)
+  end
 end
 
 class ArraySyntax
@@ -15,20 +24,6 @@ class ArraySyntax
 end
 
 module RPGImperative
-
-  def self.parse(params = [], factory = nil, &block)
-    factory = RPGFactory.new if factory.nil?
-    list = params.clone
-    list.push *Contexts::ExecutionContext.compile(factory, &block)
-    return list
-  end
-
-  def self.parse_move_route(factory = nil, &block)
-    factory = RPGFactory.new if factory.nil?
-    route, repeat, skippable = Contexts::MoveRouteContext.compile(factory, &block)
-    return factory.route(*route, repeat: repeat, skippable: skippable)
-  end
-
   module Contexts
     module DSLLike
       def self.included(othermod)
