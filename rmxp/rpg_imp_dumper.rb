@@ -17,7 +17,7 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
-  # nesting reduction isn't relevant for dsl
+  # nesting reduction isn't relevant for imperative syntax
   def command_list(commands, level, nesting_reduction = false)
     commands.pop if !commands.empty? && commands[-1].code == 0
 
@@ -601,7 +601,7 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
-  def move_dsl(move, level)
+  def move_imp(move, level)
     case move.code
     when 1 then return "move_down"
     when 2 then return "move_left"
@@ -810,7 +810,7 @@ class RPGImperativeDumper < RPGDumper
     last = route.list.pop
     raise "unexpected last route command" unless objects_equal?(last, DEFAULT_MOVE)
     route.list.each do |move|
-      value += indent(level + 1) + move_dsl(move, level + 1) + "\n"
+      value += indent(level + 1) + move_imp(move, level + 1) + "\n"
     end
     value += indent(level) + "}"
     return value
