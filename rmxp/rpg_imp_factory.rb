@@ -1,29 +1,21 @@
 class RPGImperativeFactory < RPGFactory
   def v
-    return ArraySyntax.new
+    return Wrappers::ArraySyntax.new
   end
 
   def s
-    return ArraySyntax.new
+    return Wrappers::ArraySyntax.new
   end
 
   def event_code(&block)
-    return RPGImperative::Contexts::ExecutionContext.compile(self, &block)
+    return Contexts::ExecutionContext.compile(self, &block)
   end
 
   def route_code(&block)
-    route, repeat, skippable = RPGImperative::Contexts::MoveRouteContext.compile(self, &block)
+    route, repeat, skippable = Contexts::MoveRouteContext.compile(self, &block)
     return self.route(*route, repeat: repeat, skippable: skippable)
   end
-end
 
-class ArraySyntax
-  def [](id)
-    return id
-  end
-end
-
-module RPGImperative
   module Contexts
     module DSLLike
       def self.included(othermod)
@@ -112,13 +104,13 @@ module RPGImperative
         end
 
         params = {}
-        if on.is_a?(RPGImperative::Wrappers::Switch)
+        if on.is_a?(Wrappers::Switch)
           params[:switch] = unwrap(on)
           params[:value] = args.empty? ? :ON : args[0]
-        elsif on.is_a?(RPGImperative::Wrappers::SelfSwitch)
+        elsif on.is_a?(Wrappers::SelfSwitch)
           params[:self_switch] = unwrap(on)
           params[:value] = args.empty? ? :ON : args[0]
-        elsif on.is_a?(RPGImperative::Wrappers::Variable)
+        elsif on.is_a?(Wrappers::Variable)
           operation = args[0]
           state = args[1]
           params[:variable] = unwrap(on)
@@ -128,15 +120,15 @@ module RPGImperative
           else
             params[:constant] = state
           end
-        elsif on.is_a?(RPGImperative::Wrappers::TimerValue)
+        elsif on.is_a?(Wrappers::TimerValue)
           params[:timer] = args[1]
           params[:operation] = args[0]
-        elsif on.is_a?(RPGImperative::Wrappers::GoldValue)
+        elsif on.is_a?(Wrappers::GoldValue)
           params[:gold] = args[1]
           params[:operation] = args[0]
         elsif on.is_a?(String)
           params[:script] = on
-        elsif on.is_a?(RPGImperative::Wrappers::EventProxy)
+        elsif on.is_a?(Wrappers::EventProxy)
           params[:character] = unwrap(on)
           params[:facing] = args[0]
         elsif on.is_a?(Numeric) || on.is_a?(Symbol)
@@ -171,7 +163,7 @@ module RPGImperative
       def set_move_route(character, &block)
         route, repeat, skippable = MoveRouteContext.compile(@factory, &block)
         @insns.push(*@factory.move_route(unwrap(character), *route, repeat: repeat, skippable: skippable))
-        return RPGImperative::Wrappers::MoveRouteWaiter.new(self)
+        return Wrappers::MoveRouteWaiter.new(self)
       end
 
       def control_variables(variables, operator = "=", **args) = @insns.push(@factory.control_variables(unwrap(variables), operator, **args))
@@ -475,13 +467,13 @@ module RPGImperative
         if holder.is_a?(Range)
           return unwrap(holder.begin)..unwrap(holder.end)
         end
-        return holder.event if holder.is_a?(RPGImperative::Wrappers::EventProxy)
-        return holder.key if holder.is_a?(RPGImperative::Wrappers::HolderProxy)
+        return holder.event if holder.is_a?(Wrappers::EventProxy)
+        return holder.key if holder.is_a?(Wrappers::HolderProxy)
         return holder
       end
 
       def any_variable?(*holders)
-        return holders.any? { |it| it.is_a?(RPGImperative::Wrappers::HolderProxy) }
+        return holders.any? { |it| it.is_a?(Wrappers::HolderProxy) }
       end
 
       # following two are legacy holdovers
@@ -490,30 +482,36 @@ module RPGImperative
 
       def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
 
-      def v() = RPGImperative::Wrappers::Variables.new(self)
-      def s() = RPGImperative::Wrappers::Switches.new(self)
-      def events() = RPGImperative::Wrappers::EventSourceProxy.new(self)
-      def self_switch() = RPGImperative::Wrappers::OwnSelfSwitches.new(self)
+      def v() = Wrappers::Variables.new(self)
+      def s() = Wrappers::Switches.new(self)
+      def events() = Wrappers::EventSourceProxy.new(self)
+      def self_switch() = Wrappers::OwnSelfSwitches.new(self)
 
-      def items() = RPGImperative::Wrappers::Items.new(self)
-      def actors() = RPGImperative::Wrappers::Actors.new(self)
-      def enemies() = RPGImperative::Wrappers::Enemies.new(self)
+      def items() = Wrappers::Items.new(self)
+      def actors() = Wrappers::Actors.new(self)
+      def enemies() = Wrappers::Enemies.new(self)
 
-      def map_id() = RPGImperative::Wrappers::GlobalValue.new(:map_id)
-      def party_members() = RPGImperative::Wrappers::GlobalValue.new(:party_members)
-      def steps() = RPGImperative::Wrappers::GlobalValue.new(:steps)
-      def play_time() = RPGImperative::Wrappers::GlobalValue.new(:play_time)
-      def timer() = RPGImperative::Wrappers::TimerValue.new(:timer)
-      def save_count() = RPGImperative::Wrappers::GlobalValue.new(:save_count)
+      def map_id() = Wrappers::GlobalValue.new(:map_id)
+      def party_members() = Wrappers::GlobalValue.new(:party_members)
+      def steps() = Wrappers::GlobalValue.new(:steps)
+      def play_time() = Wrappers::GlobalValue.new(:play_time)
+      def timer() = Wrappers::TimerValue.new(:timer)
+      def save_count() = Wrappers::GlobalValue.new(:save_count)
 
-      def player() = RPGImperative::Wrappers::PlayerEventProxy.new(self)
-      def this() = RPGImperative::Wrappers::OwnEventProxy.new(self)
+      def player() = Wrappers::PlayerEventProxy.new(self)
+      def this() = Wrappers::OwnEventProxy.new(self)
     end
   end
 
   module Wrappers
 
     ### Proxies for passing around variables
+
+    class ArraySyntax
+      def [](id)
+        return id
+      end
+    end
 
     class HolderProxy
       attr_reader :key
@@ -524,7 +522,7 @@ module RPGImperative
 
       # Enables creating ranges with holder proxies
       def <=>(other)
-        other = other.key if other.is_a?(RPGImperative::Wrappers::HolderProxy)
+        other = other.key if other.is_a?(self)
         return @key <=> other
       end
     end
