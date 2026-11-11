@@ -111,6 +111,11 @@ module RPGImperative
       def swap_event_locations(character, target:, direction:) = @insns.push(@factory.event_location_swap(unwrap(character), target: unwrap(target), direction: direction))
 
       def branch(on, *args, &block)
+        if on.is_a?(Array)
+          args = on[1..]
+          on = on[0]
+        end
+
         params = {}
         if on.is_a?(RPGImperative::Wrappers::Switch)
           params[:switch] = unwrap(on)
@@ -144,6 +149,8 @@ module RPGImperative
         elsif on.is_a?(Hash)
           params[:type] = on[:type]
           params[:parameters] = on[:parameters]
+        else
+          raise "Invalid branch condition: #{on.class}"
         end
 
         context = BranchExecutionContext.create(@factory, params, &block)
@@ -755,15 +762,32 @@ module RPGImperative
       def *(value) = ["*=", value]
       def /(value) = ["/=", value]
       def %(value) = ["%=", value]
+
+      def <(value)  = [self, "<",  value]
+      def <=(value) = [self, "<=", value]
+      def ==(value) = [self, "==", value]
+      def >=(value) = [self, ">=", value]
+      def >(value)  = [self, ">",  value]
+      def !=(value) = [self, "!=", value]
     end
-    class Switch < HolderProxy; end
-    class SelfSwitch < EventHolderProxy; end
+    class Switch < HolderProxy
+      def ==(value) = [self, value]
+    end
+    class SelfSwitch < EventHolderProxy
+      def ==(value) = [self, value]
+    end
 
     class GlobalValue < HolderProxy; end
-    class TimerValue < GlobalValue; end
+    class TimerValue < GlobalValue
+      def <=(value) = [self, "<=", value]
+      def >=(value) = [self, ">=", value]
+    end
     class GoldValue < GlobalValue
       def +(value) = ["+=", value]
       def -(value) = ["-=", value]
+
+      def <=(value) = [self, "<=", value]
+      def >=(value) = [self, ">=", value]
     end
   end
 end

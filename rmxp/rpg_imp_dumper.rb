@@ -672,12 +672,12 @@ class RPGImperativeDumper < RPGDumper
     case type
     when :switch
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += switch(command.parameters[1]) + ", "
+      value += switch(command.parameters[1]) + " == "
       value += RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     when :variable
       raise "unexpected command parameters" if command.parameters.count != 5
-      value += variable(command.parameters[1]) + ", "
-      value += RPGFactory::COMPARISON[command.parameters[4]].inspect + ", "
+      value += variable(command.parameters[1]) + " "
+      value += RPGFactory::COMPARISON[command.parameters[4]] + " "
       if command.parameters[2] == 0
         value += command.parameters[3].inspect
       else
@@ -685,12 +685,12 @@ class RPGImperativeDumper < RPGDumper
       end
     when :self_switch
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += "self_switch[" + command.parameters[1].inspect + "], "
+      value += "self_switch[" + command.parameters[1].inspect + "] == "
       value += RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     when :timer
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += "timer, "
-      value += RPGFactory::SIMPLE_COMPARISON[command.parameters[2]].inspect + ", "
+      value += "timer "
+      value += RPGFactory::SIMPLE_COMPARISON[command.parameters[2]] + " "
       value += command.parameters[1].inspect
     when :character
       raise "unexpected command parameters" if command.parameters.count != 3
@@ -698,8 +698,8 @@ class RPGImperativeDumper < RPGDumper
       value += RPGFactory::DIRECTION[command.parameters[2]].inspect
     when :gold
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += "player.gold, "
-      value += RPGFactory::SIMPLE_COMPARISON[command.parameters[2]].inspect + ", "
+      value += "player.gold "
+      value += RPGFactory::SIMPLE_COMPARISON[command.parameters[2]] + " "
       value += command.parameters[1].inspect
     when :button
       raise "unexpected command parameters" if command.parameters.count != 2
