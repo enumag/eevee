@@ -51,7 +51,7 @@ def pixels(paths)
   puts "#{total} incorrect files detected"
 
   total_elapsed_time = Time.now - start_time
-  puts "Total time: #{total_elapsed_time} seconds."
+  puts "Total time: #{sprintf("%0.2f", total_elapsed_time)} seconds."
 
   exit total == 0
 end
