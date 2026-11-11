@@ -42,10 +42,8 @@ class RPGImperativeFactory < RPGFactory
         return holders.any? { |it| it.is_a?(Wrappers::HolderProxy) }
       end
 
-      # following two are legacy holdovers
       def anim(id) = @factory.anim(id)
       def character(id) = @factory.character(id)
-
       def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
 
       def v() = Wrappers::Variables.new(self)
@@ -74,10 +72,6 @@ class RPGImperativeFactory < RPGFactory
       def initialize(factory)
         @insns = []
         @factory = factory
-      end
-
-      def anim(id)
-        return id
       end
 
       ### ========================
@@ -290,7 +284,10 @@ class RPGImperativeFactory < RPGFactory
       ### ========================
       ###         COMMANDS
       ### ========================
-      def else(&block) = @else = @factory.create_context(ExecutionContext, &block)
+      def else(&block)
+        @else = @factory.create_context(ExecutionContext, &block)
+      end
+
       ### ============================
       ###         END COMMANDS
       ### ============================
