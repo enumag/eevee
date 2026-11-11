@@ -708,12 +708,7 @@ class RPGImperativeDumper < RPGDumper
       raise "unexpected command parameters" if command.parameters.count != 2
       value += command.parameters[1].inspect
     else
-      # TODO print a warning that this condition type isn't supported
-      # raise "unexpected condition type " + type.to_s
-      value += "{\n"
-      value += indent(level + 1) + "type: " + type.inspect + ",\n"
-      value += indent(level + 1) + "parameters: " + command.parameters[1..].inspect + " }\n"
-      value += indent(level)
+      raise "unexpected condition type " + type.to_s
     end
 
     value += ") {"
