@@ -28,6 +28,46 @@ class RPGImperativeFactory < RPGFactory
   end
 
   module Contexts
+    module Context
+      def unwrap(holder)
+        if holder.is_a?(Range)
+          return unwrap(holder.begin)..unwrap(holder.end)
+        end
+        return holder.event if holder.is_a?(Wrappers::EventProxy)
+        return holder.key if holder.is_a?(Wrappers::HolderProxy)
+        return holder
+      end
+
+      def any_variable?(*holders)
+        return holders.any? { |it| it.is_a?(Wrappers::HolderProxy) }
+      end
+
+      # following two are legacy holdovers
+      def anim(id) = @factory.anim(id)
+      def character(id) = @factory.character(id)
+
+      def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
+
+      def v() = Wrappers::Variables.new(self)
+      def s() = Wrappers::Switches.new(self)
+      def events() = Wrappers::EventSourceProxy.new(self)
+      def self_switch() = Wrappers::OwnSelfSwitches.new(self)
+
+      def items() = Wrappers::Items.new(self)
+      def actors() = Wrappers::Actors.new(self)
+      def enemies() = Wrappers::Enemies.new(self)
+
+      def map_id() = Wrappers::GlobalValue.new(:map_id)
+      def party_members() = Wrappers::GlobalValue.new(:party_members)
+      def steps() = Wrappers::GlobalValue.new(:steps)
+      def play_time() = Wrappers::GlobalValue.new(:play_time)
+      def timer() = Wrappers::TimerValue.new(:timer)
+      def save_count() = Wrappers::GlobalValue.new(:save_count)
+
+      def player() = Wrappers::PlayerEventProxy.new(self)
+      def this() = Wrappers::OwnEventProxy.new(self)
+    end
+
     class ExecutionContext
       include Context
 
@@ -451,50 +491,6 @@ class RPGImperativeFactory < RPGFactory
 
         return list, @repeat, @skippable
       end
-    end
-
-    ### ==========================================
-    ###         Syntactic Sugar goes below
-    ### ==========================================
-
-    module Context
-      def unwrap(holder)
-        if holder.is_a?(Range)
-          return unwrap(holder.begin)..unwrap(holder.end)
-        end
-        return holder.event if holder.is_a?(Wrappers::EventProxy)
-        return holder.key if holder.is_a?(Wrappers::HolderProxy)
-        return holder
-      end
-
-      def any_variable?(*holders)
-        return holders.any? { |it| it.is_a?(Wrappers::HolderProxy) }
-      end
-
-      # following two are legacy holdovers
-      def anim(id) = @factory.anim(id)
-      def character(id) = @factory.character(id)
-
-      def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
-
-      def v() = Wrappers::Variables.new(self)
-      def s() = Wrappers::Switches.new(self)
-      def events() = Wrappers::EventSourceProxy.new(self)
-      def self_switch() = Wrappers::OwnSelfSwitches.new(self)
-
-      def items() = Wrappers::Items.new(self)
-      def actors() = Wrappers::Actors.new(self)
-      def enemies() = Wrappers::Enemies.new(self)
-
-      def map_id() = Wrappers::GlobalValue.new(:map_id)
-      def party_members() = Wrappers::GlobalValue.new(:party_members)
-      def steps() = Wrappers::GlobalValue.new(:steps)
-      def play_time() = Wrappers::GlobalValue.new(:play_time)
-      def timer() = Wrappers::TimerValue.new(:timer)
-      def save_count() = Wrappers::GlobalValue.new(:save_count)
-
-      def player() = Wrappers::PlayerEventProxy.new(self)
-      def this() = Wrappers::OwnEventProxy.new(self)
     end
   end
 
