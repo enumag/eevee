@@ -141,7 +141,7 @@ class RPGDumper
     value += indent(level + 1) + "id: " + event.id.inspect + ",\n" if event.id != 0
     value += indent(level + 1) + "name: " + event.name.inspect + ",\n" if event.name != ""
     value += indent(level + 1) + "trigger: " + RPGFactory::COMMON_EVENT_TRIGGER[event.trigger].inspect + ",\n" if event.trigger != 0
-    value += indent(level + 1) + "switch: s(" + event.switch_id.inspect + "),\n" if event.trigger != 0
+    value += indent(level + 1) + "switch: " + switch(event.switch_id) + ",\n" if event.trigger != 0
 
     commands = event.list.clone
     last = commands.pop
@@ -250,9 +250,9 @@ class RPGDumper
     value = "page(\n"
 
     unless objects_equal?(page.condition, DEFAULT_CONDITION)
-      value += indent(level + 1) + "switch1: s(" + page.condition.switch1_id.inspect + "),\n" if page.condition.switch1_valid
-      value += indent(level + 1) + "switch2: s(" + page.condition.switch2_id.inspect + "),\n" if page.condition.switch2_valid
-      value += indent(level + 1) + "variable: v(" + page.condition.variable_id.inspect + "),\n" if page.condition.variable_valid
+      value += indent(level + 1) + "switch1: " + switch(page.condition.switch1_id) + ",\n" if page.condition.switch1_valid
+      value += indent(level + 1) + "switch2: " + switch(page.condition.switch2_id) + ",\n" if page.condition.switch2_valid
+      value += indent(level + 1) + "variable: " + variable(page.condition.variable_id) + ",\n" if page.condition.variable_valid
       value += indent(level + 1) + "at_least: " + page.condition.variable_value.inspect + ",\n" if page.condition.variable_valid
       value += indent(level + 1) + "self_switch: " + page.condition.self_switch_ch.inspect + ",\n" if page.condition.self_switch_valid
     end
@@ -739,9 +739,9 @@ class RPGDumper
       value += "y: " + command.parameters[3].inspect + ", "
     else
       value += "transfer_player_variables("
-      value += "map: v(" + command.parameters[1].inspect + "), "
-      value += "x: v(" + command.parameters[2].inspect + "), "
-      value += "y: v(" + command.parameters[3].inspect + "), "
+      value += "map: " + variable(command.parameters[1]) + ", "
+      value += "x: " + variable(command.parameters[2]) + ", "
+      value += "y: " + variable(command.parameters[3]) + ", "
     end
     value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect + ", "
     value += "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
@@ -760,8 +760,8 @@ class RPGDumper
     elsif command.parameters[1] == 1
       value += "event_location_variables("
       value += character(command.parameters[0]) + ", "
-      value += "x: v(" + command.parameters[2].inspect + "), "
-      value += "y: v(" + command.parameters[3].inspect + "), "
+      value += "x: " + variable(command.parameters[2]) + ", "
+      value += "y: " + variable(command.parameters[3]) + ", "
     else
       value += "event_location_swap("
       value += character(command.parameters[0]) + ", "
@@ -775,7 +775,7 @@ class RPGDumper
   def command_input_number(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "input_number("
-    value += "v(" + command.parameters[0].inspect + "), "
+    value += variable(command.parameters[0]) + ", "
     value += "digits: " + command.parameters[1].inspect
     value += "),\n"
     return value
@@ -793,7 +793,7 @@ class RPGDumper
   def command_button_input_processing(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "button_input_processing("
-    value += "v(" + command.parameters[0].inspect + ")"
+    value += variable(command.parameters[0])
     value += "),\n"
     return value
   end
@@ -816,29 +816,31 @@ class RPGDumper
   def command_switch(command, level)
     raise "unexpected command parameters" if command.parameters.count != 3
     value = indent(level) + "control_switches("
-    value += "s(" + command.parameters[0].inspect
-    if command.parameters[0] != command.parameters[1]
-      value += ".." + command.parameters[1].inspect
+    if command.parameters[0] == command.parameters[1]
+      value += switch(command.parameters[0])
+    else
+      value += switch(command.parameters[0]..command.parameters[1])
     end
-    value += "), " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
+    value += ", " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     value += "),\n"
     return value
   end
 
   def command_variable(command, level)
     value = indent(level) + "control_variables("
-    value += "v(" + command.parameters[0].inspect
-    if command.parameters[0] != command.parameters[1]
-      value += ".." + command.parameters[1].inspect
+    if command.parameters[0] == command.parameters[1]
+      value += variable(command.parameters[0])
+    else
+      value += variable(command.parameters[0]..command.parameters[1])
     end
-    value += "), "
+    value += ", "
     value += RPGFactory::OPERATION[command.parameters[2]].inspect + ", " if command.parameters[2] != 0
 
     case command.parameters[3]
     when 0
       value += "constant: " + command.parameters[4].inspect
     when 1
-      value += "variable: v(" + command.parameters[4].inspect + ")"
+      value += "variable: " + variable(command.parameters[4])
     when 2
       value += "random: " + command.parameters[4].inspect + ".." + command.parameters[5].inspect
     when 3
@@ -889,7 +891,7 @@ class RPGDumper
     when 0
       value += "constant: " + command.parameters[2].inspect
     when 1
-      value += "variable: v(" + command.parameters[2].inspect + ")"
+      value += "variable: " + variable(command.parameters[2])
     end
 
     value += "),\n"
@@ -964,8 +966,8 @@ class RPGDumper
     when 24 then return "turn_random"
     when 25 then return "turn_toward_player"
     when 26 then return "turn_away_from_player"
-    when 27 then return "switch_on(s(" + move.parameters[0].inspect + "))"
-    when 28 then return "switch_off(s(" + move.parameters[0].inspect + "))"
+    when 27 then return "switch_on(" + switch(move.parameters[0]) + ")"
+    when 28 then return "switch_off(" + switch(move.parameters[0]) + ")"
     when 29 then return "change_speed(" + move.parameters[0].inspect + ")"
     when 30 then return "change_frequency(" + move.parameters[0].inspect + ")"
     when 31 then return "walk_anime_on"
@@ -1007,16 +1009,16 @@ class RPGDumper
     case type
     when :switch
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += indent(level + 1) + "switch: s(" + command.parameters[1].inspect + "),\n"
+      value += indent(level + 1) + "switch: " + switch(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "value: " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect + ",\n"
     when :variable
       raise "unexpected command parameters" if command.parameters.count != 5
-      value += indent(level + 1) + "variable: v(" + command.parameters[1].inspect + "),\n"
+      value += indent(level + 1) + "variable: " + variable(command.parameters[1]) + ",\n"
       value += indent(level + 1) + "operation: " + RPGFactory::COMPARISON[command.parameters[4]].inspect + ",\n"
       if command.parameters[2] == 0
         value += indent(level + 1) + "constant: " + command.parameters[3].inspect + ",\n"
       else
-        value += indent(level + 1) + "other_variable: v(" + command.parameters[3].inspect + "),\n"
+        value += indent(level + 1) + "other_variable: " + variable(command.parameters[3]) + ",\n"
       end
     when :self_switch
       raise "unexpected command parameters" if command.parameters.count != 3
@@ -1162,8 +1164,8 @@ class RPGDumper
       value += indent(level + 1) + "x: " + command.parameters[4].inspect + ",\n" if command.parameters[4] != 0
       value += indent(level + 1) + "y: " + command.parameters[5].inspect + ",\n" if command.parameters[5] != 0
     else
-      value += indent(level + 1) + "x: v(" + command.parameters[4].inspect + "),\n"
-      value += indent(level + 1) + "y: v(" + command.parameters[5].inspect + "),\n"
+      value += indent(level + 1) + "x: " + variable(command.parameters[4]) + ",\n"
+      value += indent(level + 1) + "y: " + variable(command.parameters[5]) + ",\n"
     end
     value += indent(level + 1) + "zoom_x: " + command.parameters[6].inspect + ",\n" if command.parameters[6] != 100
     value += indent(level + 1) + "zoom_y: " + command.parameters[7].inspect + ",\n" if command.parameters[7] != 100
@@ -1188,8 +1190,8 @@ class RPGDumper
       value += indent(level + 1) + "x: " + command.parameters[4].inspect + ",\n" if command.parameters[4] != 0
       value += indent(level + 1) + "y: " + command.parameters[5].inspect + ",\n" if command.parameters[5] != 0
     else
-      value += indent(level + 1) + "x: v(" + command.parameters[4].inspect + "),\n"
-      value += indent(level + 1) + "y: v(" + command.parameters[5].inspect + "),\n"
+      value += indent(level + 1) + "x: " + variable(command.parameters[4]) + ",\n"
+      value += indent(level + 1) + "y: " + variable(command.parameters[5]) + ",\n"
     end
     value += indent(level + 1) + "zoom_x: " + command.parameters[6].inspect + ",\n" if command.parameters[6] != 100
     value += indent(level + 1) + "zoom_y: " + command.parameters[7].inspect + ",\n" if command.parameters[7] != 100
@@ -1393,6 +1395,14 @@ class RPGDumper
     return value
   end
 
+  def variable(id)
+    return "v(" + id.inspect + ")"
+  end
+
+  def switch(id)
+    return "s(" + id.inspect + ")"
+  end
+
   def system(system, level)
     value = indent(level) + "system(\n"
 
@@ -1436,13 +1446,13 @@ class RPGDumper
 
     value += indent(level + 1) + "switches: [\n"
     system.switches.each_with_index do |switch, index|
-      value += indent(level + 2) + switch.inspect + ", # s(" + index.to_s + ")\n"
+      value += indent(level + 2) + switch.inspect + ", # " + switch(index) + "\n"
     end
     value += indent(level + 1) + "],\n"
 
     value += indent(level + 1) + "variables: [\n"
     system.variables.each_with_index do |variable, index|
-      value += indent(level + 2) + variable.inspect + ", # v(" + index.to_s + ")\n"
+      value += indent(level + 2) + variable.inspect + ", # " + variable(index) + "\n"
     end
     value += indent(level + 1) + "],\n"
 

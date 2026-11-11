@@ -1479,11 +1479,11 @@ class RPGFactory
   end
 
   def event_code(&block)
-    return RPGImperativeFactory.parse([], self, &block)
+    return RPGImperative.parse([], self, &block)
   end
 
   def route_code(&block)
-    return RPGImperativeFactory.parse_move_route(self, &block)
+    return RPGImperative.parse_move_route(self, &block)
   end
 
   def evaluate(script, file: '')

@@ -434,9 +434,9 @@ class RPGImperativeDumper < RPGDumper
       parts << "x: " + command.parameters[2].inspect
       parts << "y: " + command.parameters[3].inspect
     else
-      parts << "map: variables[" + command.parameters[1].inspect + "]"
-      parts << "x: variables[" + command.parameters[2].inspect + "]"
-      parts << "y: variables[" + command.parameters[3].inspect + "]"
+      parts << "map: " + variable(command.parameters[1])
+      parts << "x: " + variable(command.parameters[2])
+      parts << "y: " + variable(command.parameters[3])
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     parts << "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
@@ -452,8 +452,8 @@ class RPGImperativeDumper < RPGDumper
       parts << "x: " + command.parameters[2].inspect
       parts << "y: " + command.parameters[3].inspect
     elsif command.parameters[1] == 1
-      parts << "x: variables[" + command.parameters[2].inspect + "]"
-      parts << "y: variables[" + command.parameters[3].inspect + "]"
+      parts << "x: " + variable(command.parameters[2])
+      parts << "y: " + variable(command.parameters[3])
     else
       command_name = "swap_event_locations"
       parts << "target: " + character(command.parameters[2])
@@ -465,7 +465,7 @@ class RPGImperativeDumper < RPGDumper
   def command_input_number(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "input_number "
-    value += "variables[" + command.parameters[0].inspect + "], "
+    value += variable(command.parameters[0]) + ", "
     value += "digits: " + command.parameters[1].inspect
     value += "\n"
     return value
@@ -483,18 +483,20 @@ class RPGImperativeDumper < RPGDumper
   def command_button_input_processing(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
     value = indent(level) + "button_input_processing "
-    value += "variables[" + command.parameters[0].inspect + "]"
+    value += variable(command.parameters[0])
     value += "\n"
     return value
   end
 
   def command_switch(command, level)
     raise "unexpected command parameters" if command.parameters.count != 3
-    value = indent(level) + "switches[" + command.parameters[0].inspect
-    if command.parameters[0] != command.parameters[1]
-      value += ".." + command.parameters[1].inspect
+    value = indent(level)
+    if command.parameters[0] == command.parameters[1]
+      value += switch(command.parameters[0])
+    else
+      value += switch(command.parameters[0]..command.parameters[1])
     end
-    value += "] = " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
+    value += " = " + RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     value += "\n"
     return value
   end
@@ -520,16 +522,18 @@ class RPGImperativeDumper < RPGDumper
   }
 
   def command_variable(command, level)
-    value = indent(level) + "variables[" + command.parameters[0].inspect
-    if command.parameters[0] != command.parameters[1]
-      value += ".." + command.parameters[1].inspect
+    value = indent(level)
+    if command.parameters[0] == command.parameters[1]
+      value += variable(command.parameters[0])
+    else
+      value += variable(command.parameters[0]..command.parameters[1])
     end
-    value += "] " + RPGFactory::OPERATION[command.parameters[2]] + " "
+    value += " " + RPGFactory::OPERATION[command.parameters[2]] + " "
     case command.parameters[3]
     when 0
       value += command.parameters[4].inspect
     when 1
-      value += "variables[" + command.parameters[4].inspect + "]"
+      value += variable(command.parameters[4])
     when 2
       value += command.parameters[4].inspect + ".." + command.parameters[5].inspect
     when 3
@@ -578,7 +582,7 @@ class RPGImperativeDumper < RPGDumper
     when 0
       value += command.parameters[2].inspect
     when 1
-      value += "variables[" + command.parameters[2].inspect + "]"
+      value += variable(command.parameters[2])
     end
 
     value += "\n"
@@ -625,8 +629,8 @@ class RPGImperativeDumper < RPGDumper
     when 24 then return "face_randomly"
     when 25 then return "face_toward_player"
     when 26 then return "face_away_from_player"
-    when 27 then return "switches[" + move.parameters[0].inspect + "] = :ON"
-    when 28 then return "switches[" + move.parameters[0].inspect + "] = :OFF"
+    when 27 then return switch(move.parameters[0]) + " = :ON"
+    when 28 then return switch(move.parameters[0]) + " = :OFF"
     when 29 then return "change_speed " + move.parameters[0].inspect
     when 30 then return "change_frequency " + move.parameters[0].inspect
     when 31 then return "animate_walking"
@@ -668,16 +672,16 @@ class RPGImperativeDumper < RPGDumper
     case type
     when :switch
       raise "unexpected command parameters" if command.parameters.count != 3
-      value += "switches[" + command.parameters[1].inspect + "], "
+      value += switch(command.parameters[1]) + ", "
       value += RPGFactory::SWITCH_VALUE[command.parameters[2]].inspect
     when :variable
       raise "unexpected command parameters" if command.parameters.count != 5
-      value += "variables[" + command.parameters[1].inspect + "], "
+      value += variable(command.parameters[1]) + ", "
       value += RPGFactory::COMPARISON[command.parameters[4]].inspect + ", "
       if command.parameters[2] == 0
         value += command.parameters[3].inspect
       else
-        value += "variables[" + command.parameters[3].inspect + "]"
+        value += variable(command.parameters[3])
       end
     when :self_switch
       raise "unexpected command parameters" if command.parameters.count != 3
@@ -851,8 +855,8 @@ class RPGImperativeDumper < RPGDumper
       parts << "x: " + command.parameters[4].inspect
       parts << "y: " + command.parameters[5].inspect
     else
-      parts << "x: variables[" + command.parameters[4].inspect + "]"
-      parts << "y: variables[" + command.parameters[5].inspect + "]"
+      parts << "x: " + variable(command.parameters[4])
+      parts << "y: " + variable(command.parameters[5])
     end
     parts << "zoom_x: " + command.parameters[6].inspect if command.parameters[6] != 100
     parts << "zoom_y: " + command.parameters[7].inspect if command.parameters[7] != 100
@@ -871,8 +875,8 @@ class RPGImperativeDumper < RPGDumper
       parts << "x: " + command.parameters[4].inspect if command.parameters[4] != 0
       parts << "y: " + command.parameters[5].inspect if command.parameters[5] != 0
     else
-      parts << "x: variables[" + command.parameters[4].inspect + "]"
-      parts << "y: variables[" + command.parameters[5].inspect + "]"
+      parts << "x: " + variable(command.parameters[4])
+      parts << "y: " + variable(command.parameters[5])
     end
     parts << "zoom_x: " + command.parameters[6].inspect if command.parameters[6] != 100
     parts << "zoom_y: " + command.parameters[7].inspect if command.parameters[7] != 100
@@ -918,5 +922,13 @@ class RPGImperativeDumper < RPGDumper
     value += RPGFactory::ACCESS[command.parameters[0]].inspect
     value += "\n"
     return value
+  end
+
+  def variable(id)
+    return "v[" + id.inspect + "]"
+  end
+
+  def switch(id)
+    return "s[" + id.inspect + "]"
   end
 end

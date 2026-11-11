@@ -383,7 +383,11 @@ def save_yaml(export_file, data)
 end
 
 def load_ruby(export_file)
-  return (RPGFactory.new).evaluate(File.read(export_file), file: export_file)
+  if $CONFIG.use_imperative
+    return (RPGImperativeFactory.new).evaluate(File.read(export_file), file: export_file)
+  else
+    return (RPGFactory.new).evaluate(File.read(export_file), file: export_file)
+  end
 end
 
 def save_ruby(export_file, data, name: nil, maps: nil)
