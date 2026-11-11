@@ -18,6 +18,18 @@ class RPGImperativeFactory < RPGFactory
     return context.compile(*args)
   end
 
+  def compile_list(instructions)
+    list = []
+    for instruction in instructions
+      if instruction.is_a?(RPG::EventCommand) || instruction.is_a?(RPG::MoveCommand)
+        list << instruction
+      elsif instruction.respond_to?("compile")
+        list.push *instruction.compile
+      end
+    end
+    return list
+  end
+
   def event_code(&block)
     return compile_context(Contexts::ExecutionContext, &block)
   end
@@ -262,16 +274,7 @@ class RPGImperativeFactory < RPGFactory
       ### ============================
 
       def compile
-        list = []
-        for insn in @insns
-          if insn.is_a?(RPG::EventCommand)
-            list << insn
-          elsif insn.respond_to?("compile")
-            list.push *insn.compile
-          end
-        end
-
-        return list
+        return @factory.compile_list(@insns)
       end
     end
 
@@ -292,16 +295,7 @@ class RPGImperativeFactory < RPGFactory
       ###         END COMMANDS
       ### ============================
       def compile
-        list = []
-        for insn in @insns
-          if insn.is_a?(RPG::EventCommand)
-            list << insn
-          elsif insn.respond_to?("compile")
-            list.push *insn.compile
-          end
-        end
-
-        @parameters[:then] = list
+        @parameters[:then] = @factory.compile_list(@insns)
 
         if @else
           @parameters[:else] = @else.compile
@@ -477,16 +471,7 @@ class RPGImperativeFactory < RPGFactory
       ### ============================
 
       def compile
-        list = []
-        for insn in @insns
-          if insn.is_a?(RPG::MoveCommand)
-            list.push(insn)
-          elsif insn.respond_to?("compile")
-            list.push(insn.compile)
-          end
-        end
-
-        return list, @repeat, @skippable
+        return @factory.compile_list(@insns), @repeat, @skippable
       end
     end
   end
