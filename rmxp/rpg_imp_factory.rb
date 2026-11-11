@@ -539,10 +539,10 @@ class RPGImperativeFactory < RPGFactory
     ### End proxies
 
     class Variables
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def [](idx)
@@ -551,21 +551,21 @@ class RPGImperativeFactory < RPGFactory
 
       def operate(idx, operator, value)
         if value.is_a?(Variable)
-          dsl.control_variables(idx, operator, variable: value.key)
+          @context.control_variables(idx, operator, variable: value.key)
         elsif value.is_a?(Range)
-          dsl.control_variables(idx, operator, random: value)
+          @context.control_variables(idx, operator, random: value)
         elsif value.is_a?(ItemValue)
-          dsl.control_variables(idx, operator, item: value.key)
+          @context.control_variables(idx, operator, item: value.key)
         elsif value.is_a?(ActorValue)
-          dsl.control_variables(idx, operator, actor: value.key)
+          @context.control_variables(idx, operator, actor: value.key)
         elsif value.is_a?(EnemyValue)
-          dsl.control_variables(idx, operator, enemy: value.key)
+          @context.control_variables(idx, operator, enemy: value.key)
         elsif value.is_a?(CharacterValue)
-          dsl.control_variables(idx, operator, character: value.event, property: value.key)
+          @context.control_variables(idx, operator, character: value.event, property: value.key)
         elsif value.is_a?(GlobalValue)
-          dsl.control_variables(idx, operator, property: value.key)
+          @context.control_variables(idx, operator, property: value.key)
         elsif value.is_a?(Numeric)
-          dsl.control_variables(idx, operator, constant: value)
+          @context.control_variables(idx, operator, constant: value)
         end
       end
 
@@ -577,10 +577,10 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class Switches
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def [](idx)
@@ -588,17 +588,17 @@ class RPGImperativeFactory < RPGFactory
       end
 
       def []=(idx, value)
-        dsl.control_switches(idx, value)
+        @context.control_switches(idx, value)
       end
     end
 
     class SelfSwitches
       attr_reader :event
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(event, dsl)
+      def initialize(event, context)
         @event = event
-        @dsl = dsl
+        @context = context
       end
 
       def [](idx)
@@ -607,20 +607,20 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class OwnSelfSwitches < SelfSwitches
-      def initialize(dsl)
-        super(:This, dsl)
+      def initialize(context)
+        super(:This, context)
       end
 
       def []=(idx, value)
-        dsl.control_self_switch(idx, value)
+        @context.control_self_switch(idx, value)
       end
     end
 
     class Items
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def [](idx)
@@ -629,10 +629,10 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class Actors
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def [](idx)
@@ -641,10 +641,10 @@ class RPGImperativeFactory < RPGFactory
     end
 
     class Enemies
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def [](idx)
@@ -654,87 +654,87 @@ class RPGImperativeFactory < RPGFactory
 
     class SelfSwitches
       attr_reader :event
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(event, dsl)
+      def initialize(event, context)
         @event = event
-        @dsl = dsl
+        @context = context
       end
 
       def [](idx)
-        return SelfSwitch.new(event, idx)
+        return SelfSwitch.new(@event, idx)
       end
     end
 
     class EventProxy
       attr_reader :event
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl, event)
-        @dsl = dsl
+      def initialize(context, event)
+        @context = context
         @event = event
       end
 
-      def self_switch() = SelfSwitches.new(event, dsl)
+      def self_switch() = SelfSwitches.new(@event, @context)
 
-      def x() = CharacterValue.new(event, :map_x)
-      def y() = CharacterValue.new(event, :map_y)
-      def direction() = CharacterValue.new(event, :direction)
-      def screen_x() = CharacterValue.new(event, :screen_x)
-      def screen_y() = CharacterValue.new(event, :screen_y)
-      def terrain_tag() = CharacterValue.new(event, :terrain_tag)
+      def x() = CharacterValue.new(@event, :map_x)
+      def y() = CharacterValue.new(@event, :map_y)
+      def direction() = CharacterValue.new(@event, :direction)
+      def screen_x() = CharacterValue.new(@event, :screen_x)
+      def screen_y() = CharacterValue.new(@event, :screen_y)
+      def terrain_tag() = CharacterValue.new(@event, :terrain_tag)
 
-      def set_event_location(x:, y:, direction:) = dsl.set_event_location(self, x: x, y: y, direction: direction)
-      def swap_event_locations(target:, direction:) = dsl.swap_event_locations(self, target: target, direction: direction)
-      def set_move_route(&block) = dsl.set_move_route(self, &block)
-      def show_animation(animation) = dsl.show_animation(self, animation)
+      def set_event_location(x:, y:, direction:) = @context.set_event_location(self, x: x, y: y, direction: direction)
+      def swap_event_locations(target:, direction:) = @context.swap_event_locations(self, target: target, direction: direction)
+      def set_move_route(&block) = @context.set_move_route(self, &block)
+      def show_animation(animation) = @context.show_animation(self, animation)
     end
 
     class OwnEventProxy < EventProxy
-      def initialize(dsl)
-        super(dsl, 0)
+      def initialize(context)
+        super(context, 0)
       end
 
-      def self_switch() = OwnSelfSwitches.new(dsl)
+      def self_switch() = OwnSelfSwitches.new(@context)
     end
 
     class PlayerEventProxy < EventProxy
-      def initialize(dsl)
-        super(dsl, -1)
+      def initialize(context)
+        super(context, -1)
       end
 
-      def self_switch() = OwnSelfSwitches.new(dsl)
+      def self_switch() = OwnSelfSwitches.new(@context)
 
       def gold() = GoldValue.new(:gold)
 
       def gold=(operation)
         raise "Gold cannot be directly set via an event command" unless operation.is_a?(Array)
         operator, value = operation
-        dsl.change_gold(operator, value)
+        @context.change_gold(operator, value)
       end
     end
 
     class EventSourceProxy
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def [](idx)
-        return EventProxy.new(dsl, @dsl.character(idx))
+        return EventProxy.new(context, @context.character(idx))
       end
     end
 
     class MoveRouteWaiter
-      attr_reader :dsl
+      attr_reader :context
 
-      def initialize(dsl)
-        @dsl = dsl
+      def initialize(context)
+        @context = context
       end
 
       def wait
-        dsl.wait_for_move_completion
+        @context.wait_for_move_completion
       end
     end
 
