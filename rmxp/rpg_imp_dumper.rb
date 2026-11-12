@@ -284,20 +284,6 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
-  def command_parameterized_simple(command, level, **kwargs)
-    parts = []
-    kwargs.each { |kw, value|
-      next if value.nil?
-
-      if value.is_a?(Color) || value.is_a?(Tone)
-        parts << color_for_command(value)
-      else
-        parts << kw.to_s + ": " + value.inspect
-      end
-    }
-    return command_spaced_simple(command, parts, level)
-  end
-
   def command_simple(function, count, command, level)
     raise "unexpected command parameters" if command.parameters.count != count
     value = indent(level) + function
@@ -310,18 +296,6 @@ class RPGImperativeDumper < RPGDumper
     end
     value += "\n"
     return value
-  end
-
-  def color_for_command(color)
-    text = "red: " + color.red.to_i.inspect + ", "
-    text += "green: " + color.green.to_i.inspect + ", "
-    text += "blue: " + color.blue.to_i.inspect
-    if color.is_a?(Tone)
-      text += ", gray: " + color.gray.to_i.inspect if color.gray != 0.0
-    elsif color.is_a?(Color)
-      text += ", alpha: " + color.alpha.to_i.inspect if color.alpha != 0.0
-    end
-    return text
   end
 
   def command_text(commands, level)
@@ -355,105 +329,6 @@ class RPGImperativeDumper < RPGDumper
       },
       level,
     )
-  end
-
-  def command_scroll_map(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 3
-    return command_parameterized_simple(
-      "scroll_map",
-      level,
-      direction: RPGFactory::DIRECTION[command.parameters[0]],
-      distance: command.parameters[1],
-      speed: command.parameters[2],
-    )
-  end
-
-  def command_change_picture_tone(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 3
-    return command_parameterized_simple(
-      "change_picture_tone",
-      level,
-      number: command.parameters[0],
-      color: command.parameters[1],
-      frames: command.parameters[2],
-    )
-  end
-
-  def command_change_fog_tone(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    return command_parameterized_simple(
-      "change_fog_tone",
-      level,
-      color: command.parameters[0],
-      frames: command.parameters[1],
-    )
-  end
-
-  def command_change_fog_opacity(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    return command_parameterized_simple(
-      "change_fog_opacity",
-      level,
-      opacity: command.parameters[0],
-      frames: command.parameters[1],
-    )
-  end
-
-  def command_change_tone(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    return command_parameterized_simple(
-      "change_tone",
-      level,
-      color: command.parameters[0],
-      frames: command.parameters[1],
-    )
-  end
-
-  def command_screen_flash(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    return command_parameterized_simple(
-      "screen_flash",
-      level,
-      color: command.parameters[0],
-      frames: command.parameters[1],
-    )
-  end
-
-  def command_screen_shake(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 3
-    return command_parameterized_simple(
-      "screen_shake",
-      level,
-      power: command.parameters[0],
-      speed: command.parameters[1],
-      frames: command.parameters[2],
-    )
-  end
-
-  def command_show_animation(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + character(command.parameters[0]) + ".animation "
-    value += "anim(" + command.parameters[1].inspect + ")"
-    value += "\n"
-    return value
-  end
-
-  def command_audio(function, command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + function + " "
-    value += audio(command.parameters[0])
-    value += "\n"
-    return value
-  end
-
-  def command_fade_out_bgm(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    return command_parameterized_simple("fade_out_bgm", level, seconds: command.parameters[0])
-  end
-
-  def command_fade_out_bgs(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    return command_parameterized_simple("fade_out_bgs", level, seconds: command.parameters[0])
   end
 
   def command_transfer_player(command, level)
@@ -842,35 +717,6 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
-  # will get to this one
-  def command_change_map_settings(command, level)
-    if command.parameters[0] == 0
-      raise "unexpected command parameters" if command.parameters.count != 3
-      return command_parameterized_simple(
-        "change_panorama",
-        level,
-        graphic: command.parameters[1],
-        hue: command.parameters[2],
-      )
-    elsif command.parameters[0] == 1
-      raise "unexpected command parameters" if command.parameters.count != 8
-      return command_parameterized_simple(
-        "change_fog",
-        level,
-        graphic: command.parameters[1],
-        hue: command.parameters[2],
-        opacity: command.parameters[3],
-        blending: RPGFactory::BLENDING[command.parameters[4]] || :normal,
-        zoom: command.parameters[5],
-        sx: command.parameters[6] != 0 ? command.parameters[6] : nil,
-        sy: command.parameters[7] != 0 ? command.parameters[7] : nil,
-      )
-    else
-      raise "unexpected command parameters" if command.parameters.count != 2
-      return command_parameterized_simple("change_battleback", level, graphic: command.parameters[1])
-    end
-  end
-
   def command_show_picture(command, level)
     raise "unexpected command parameters" if command.parameters.count != 10
     parts = []
@@ -909,32 +755,6 @@ class RPGImperativeDumper < RPGDumper
     parts << "opacity: " + command.parameters[8].inspect if command.parameters[8] != 255
     parts << "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect
     return command_spaced_simple("move_picture", parts, level)
-  end
-
-  def command_rotate_picture(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    return command_parameterized_simple(
-      "rotate_picture",
-      level,
-      number: command.parameters[0],
-      speed: command.parameters[1],
-    )
-  end
-
-  def command_erase_picture(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    return command_parameterized_simple("erase_picture", level, number: command.parameters[0])
-  end
-
-  def command_weather_effect(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 3
-    return command_parameterized_simple(
-      "weather_effect",
-      level,
-      weather: RPGFactory::WEATHER[command.parameters[0]],
-      power: command.parameters[1],
-      frames: command.parameters[2],
-    )
   end
 
   def command_change_transparent_flag(command, level)
