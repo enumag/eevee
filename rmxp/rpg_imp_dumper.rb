@@ -1,6 +1,6 @@
 class RPGImperativeDumper < RPGDumper
   def command_array(commands, level)
-    value = indent(level) + "commands: event_code {\n"
+    value = indent(level) + "commands: commands {\n"
     value += command_list(commands, level + 1)
     value += indent(level) + "},\n"
     return value
@@ -12,7 +12,7 @@ class RPGImperativeDumper < RPGDumper
   end
 
   def route(route, level)
-    value = "route_code {\n"
+    value = "route {\n"
     value += format_move_route(route, level)
     return value
   end
@@ -400,7 +400,7 @@ class RPGImperativeDumper < RPGDumper
 
   def command_show_animation(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + character(command.parameters[0]) + ".show_animation "
+    value = indent(level) + character(command.parameters[0]) + ".animation "
     value += "anim(" + command.parameters[1].inspect + ")"
     value += "\n"
     return value
@@ -788,7 +788,7 @@ class RPGImperativeDumper < RPGDumper
   def command_move_route(command, next_wait, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     route = command.parameters[1]
-    value = indent(level) + character(command.parameters[0]) + ".set_move_route {"
+    value = indent(level) + character(command.parameters[0]) + ".route {"
     if route.list.empty? && !route.repeat && !route.skippable
       value += "}"
       value += ".wait" if next_wait

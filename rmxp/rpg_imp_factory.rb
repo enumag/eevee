@@ -30,11 +30,12 @@ class RPGImperativeFactory < RPGFactory
     return list
   end
 
-  def event_code(&block)
+  def commands(&block)
     return compile_context(Contexts::ExecutionContext, &block)
   end
 
-  def route_code(&block)
+  def route(*list, repeat: true, skippable: false, &block)
+    return super if block.nil?
     route, repeat, skippable = compile_context(Contexts::MoveRouteContext, &block)
     return self.route(*route, repeat: repeat, skippable: skippable)
   end
@@ -631,8 +632,8 @@ class RPGImperativeFactory < RPGFactory
 
       def event_location(x:, y:, direction:) = @context.event_location(self, x: x, y: y, direction: direction)
       def event_location_swap(target:, direction:) = @context.event_location_swap(self, target: target, direction: direction)
-      def set_move_route(&block) = @context.set_move_route(self, &block)
-      def show_animation(animation) = @context.show_animation(self, animation)
+      def route(&block) = @context.set_move_route(self, &block)
+      def animation(animation) = @context.show_animation(self, animation)
     end
 
     class OwnEventProxy < EventProxy
