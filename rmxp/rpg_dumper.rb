@@ -627,10 +627,7 @@ class RPGDumper
     raise "unexpected command parameters" if command.parameters.count != 3
     value = indent(level) + "change_picture_tone("
     value += "number: " + command.parameters[0].inspect + ", "
-    value += "red: " + command.parameters[1].red.to_i.inspect + ", "
-    value += "green: " + command.parameters[1].green.to_i.inspect + ", "
-    value += "blue: " + command.parameters[1].blue.to_i.inspect + ", "
-    value += "gray: " + command.parameters[1].gray.to_i.inspect + ", " if command.parameters[1].gray != 0.0
+    value += "tone: " + tone(command.parameters[1]) + ", "
     value += "frames: " + command.parameters[2].inspect
     value += "),\n"
     return value
@@ -639,10 +636,7 @@ class RPGDumper
   def command_change_fog_tone(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "change_fog_tone("
-    value += "red: " + command.parameters[0].red.to_i.inspect + ", "
-    value += "green: " + command.parameters[0].green.to_i.inspect + ", "
-    value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
-    value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
+    value += tone(command.parameters[0]) + ", "
     value += "frames: " + command.parameters[1].inspect
     value += "),\n"
     return value
@@ -660,10 +654,7 @@ class RPGDumper
   def command_change_tone(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "change_tone("
-    value += "red: " + command.parameters[0].red.to_i.inspect + ", "
-    value += "green: " + command.parameters[0].green.to_i.inspect + ", "
-    value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
-    value += "gray: " + command.parameters[0].gray.to_i.inspect + ", " if command.parameters[0].gray != 0.0
+    value += tone(command.parameters[0]) + ", "
     value += "frames: " + command.parameters[1].inspect
     value += "),\n"
     return value
@@ -672,10 +663,7 @@ class RPGDumper
   def command_screen_flash(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
     value = indent(level) + "screen_flash("
-    value += "red: " + command.parameters[0].red.to_i.inspect + ", "
-    value += "green: " + command.parameters[0].green.to_i.inspect + ", "
-    value += "blue: " + command.parameters[0].blue.to_i.inspect + ", "
-    value += "alpha: " + command.parameters[0].alpha.to_i.inspect + ", " if command.parameters[0].alpha != 0.0
+    value += color(command.parameters[0]) + ", "
     value += "frames: " + command.parameters[1].inspect
     value += "),\n"
     return value
@@ -1380,12 +1368,21 @@ class RPGDumper
     value += "condition: " + RPGFactory::TIMING_CONDITION[timing.condition].inspect + ", " if timing.condition != 0
     value += "scope: " + RPGFactory::TIMING_FLASH_SCOPE[timing.flash_scope].inspect + ", " if timing.flash_scope != 0
     value += "duration: " + timing.flash_duration.inspect + ", "
-    value += "red: " + timing.flash_color.red.to_i.inspect + ", "
-    value += "green: " + timing.flash_color.green.to_i.inspect + ", "
-    value += "blue: " + timing.flash_color.blue.to_i.inspect + ", "
-    value += "alpha: " + timing.flash_color.alpha.to_i.inspect
+    value += "color: " + color(timing.flash_color)
     value += "),"
     return value
+  end
+
+  def color(color)
+    values = [color.red.to_i, color.green.to_i, color.blue.to_i]
+    values.push(color.alpha.to_i) if color.alpha != 0.0
+    return "color(" + values.join(", ") + ")"
+  end
+
+  def tone(tone)
+    values = [tone.red.to_i, tone.green.to_i, tone.blue.to_i]
+    values.push(tone.gray.to_i) if tone.gray != 0.0
+    return "tone(" + values.join(", ") + ")"
   end
 
   def system(system, level)

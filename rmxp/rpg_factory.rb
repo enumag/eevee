@@ -135,6 +135,14 @@ class RPGFactory
     return id
   end
 
+  def color(red, green, blue, alpha = 0.0)
+    return Color.new(red, green, blue, alpha)
+  end
+
+  def tone(red, green, blue, gray = 0.0)
+    return Tone.new(red, green, blue, gray)
+  end
+
   def audio(
     name: "",
     volume: 100,
@@ -414,24 +422,40 @@ class RPGFactory
     return command(246, seconds)
   end
 
-  def change_tone(red:, green:, blue:, gray: 0, frames:)
-    return command(223, Tone.new(red, green, blue, gray), frames)
+  def change_tone(tone = nil, frames:, red: 0, green: 0, blue: 0, gray: 0)
+    # Backwards compatibility
+    if tone.nil?
+      tone = Tone.new(red, green, blue, gray)
+    end
+    return command(223, tone, frames)
   end
 
-  def change_fog_tone(red:, green:, blue:, gray: 0, frames:)
-    return command(205, Tone.new(red, green, blue, gray), frames)
+  def change_fog_tone(tone = nil, frames:, red: 0, green: 0, blue: 0, gray: 0)
+    # Backwards compatibility
+    if tone.nil?
+      tone = Tone.new(red, green, blue, gray)
+    end
+    return command(205, tone, frames)
   end
 
   def change_fog_opacity(opacity:, frames:)
     return command(206, opacity, frames)
   end
 
-  def change_picture_tone(number:, red:, green:, blue:, gray: 0, frames:)
-    return command(234, number, Tone.new(red, green, blue, gray), frames)
+  def change_picture_tone(number:, tone: nil, frames:, red: 0, green: 0, blue: 0, gray: 0)
+    # Backwards compatibility
+    if tone.nil?
+      tone = Tone.new(red, green, blue, gray)
+    end
+    return command(234, number, tone, frames)
   end
 
-  def screen_flash(red:, green:, blue:, alpha: 0, frames:)
-    return command(224, Color.new(red, green, blue, alpha), frames)
+  def screen_flash(color = nil, frames:, red: 0, green: 0, blue: 0, alpha: 0)
+    # Backwards compatibility
+    if color.nil?
+      color = Color.new(red, green, blue, alpha)
+    end
+    return command(224, color, frames)
   end
 
   def screen_shake(power:, speed:, frames:)
@@ -1391,11 +1415,16 @@ class RPGFactory
     condition: :none,
     scope: :none,
     duration:,
-    red:,
-    green:,
-    blue:,
-    alpha:
+    color: nil,
+    red: 0,
+    green: 0,
+    blue: 0,
+    alpha: 0
   )
+    # Backwards compatibility
+    if color.nil?
+      color = Color.new(red, green, blue, alpha)
+    end
     verify_audio(:SE, se.name)
     object = RPG::Animation::Timing.new
     object.frame = frame
@@ -1407,7 +1436,7 @@ class RPGFactory
     scope = TIMING_FLASH_SCOPE_INVERSE[scope] unless scope.is_a?(Integer)
     object.flash_scope = scope
     object.flash_duration = duration
-    object.flash_color = Color.new(red, green, blue, alpha)
+    object.flash_color = color
     return object
   end
 
