@@ -260,7 +260,7 @@ class RPGImperativeFactory < RPGFactory
       def change_transparent_flag(flag) = @insns.push(@factory.change_transparent_flag(flag))
       def change_save_access(flag) = @insns.push(@factory.change_save_access(flag))
       def change_menu_access(flag) = @insns.push(@factory.change_menu_access(flag))
-      def change_encounters(flag) = @insns.push(@factory.change_encounter(flag))
+      def change_encounter(flag) = @insns.push(@factory.change_encounter(flag))
       def prepare_transition() = @insns.push(@factory.prepare_transition)
       def execute_transition(graphic) = @insns.push(@factory.execute_transition(graphic))
       def call_menu_screen() = @insns.push(@factory.call_menu_screen)
