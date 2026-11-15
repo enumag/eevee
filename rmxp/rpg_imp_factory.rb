@@ -59,7 +59,7 @@ class RPGImperativeFactory < RPGFactory
       def character(id) = @factory.character(id)
       def color(red, green, blue, alpha = 0.0) = @factory.color(red, green, blue, alpha)
       def tone(red, green, blue, gray = 0.0) = @factory.tone(red, green, blue, gray)
-      def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
+      def audio(name: "", volume: 100, pitch: 100) = @factory.audio(name: name, volume: volume, pitch: pitch)
 
       def v() = Wrappers::Variables.new(self)
       def s() = Wrappers::Switches.new(self)
