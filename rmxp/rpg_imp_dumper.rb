@@ -276,7 +276,7 @@ class RPGImperativeDumper < RPGDumper
     return value
   end
 
-  def command_spaced_simple(command, parts, level)
+  def command_spaced_simple(command, level, *parts)
     value = indent(level) + command
     value += " " unless parts.empty?
     value += parts.join(", ")
@@ -361,7 +361,7 @@ class RPGImperativeDumper < RPGDumper
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
     parts << "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
-    return command_spaced_simple("transfer_player", parts, level)
+    return command_spaced_simple("transfer_player", level, *parts)
   end
 
   def command_event_location(command, level)
@@ -380,7 +380,7 @@ class RPGImperativeDumper < RPGDumper
       parts << "target: " + character(command.parameters[2])
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
-    return command_spaced_simple(char + "." + command_name, parts, level)
+    return command_spaced_simple(char + "." + command_name, level, *parts)
   end
 
   def command_input_number(command, level)
@@ -778,7 +778,7 @@ class RPGImperativeDumper < RPGDumper
     parts << "zoom_y: " + command.parameters[7].inspect if command.parameters[7] != 100
     parts << "opacity: " + command.parameters[8].inspect if command.parameters[8] != 255
     parts << "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect
-    return command_spaced_simple("show_picture", parts, level)
+    return command_spaced_simple("show_picture", level, *parts)
   end
 
   def command_move_picture(command, level)
@@ -798,7 +798,7 @@ class RPGImperativeDumper < RPGDumper
     parts << "zoom_y: " + command.parameters[7].inspect if command.parameters[7] != 100
     parts << "opacity: " + command.parameters[8].inspect if command.parameters[8] != 255
     parts << "blending: " + RPGFactory::BLENDING[command.parameters[9]].inspect
-    return command_spaced_simple("move_picture", parts, level)
+    return command_spaced_simple("move_picture", level, *parts)
   end
 
   def command_change_transparent_flag(command, level)

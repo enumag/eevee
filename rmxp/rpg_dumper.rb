@@ -787,7 +787,7 @@ class RPGDumper
     return value
   end
 
-  def command_spaced_simple(command, parts, level)
+  def command_spaced_simple(command, level, *parts)
     value = indent(level) + command
     value += "(" unless parts.empty?
     value += parts.join(", ")
@@ -820,7 +820,7 @@ class RPGDumper
         parts << key.to_s + ": " + value.inspect
       end
     end
-    return command_spaced_simple(command, parts, level)
+    return command_spaced_simple(command, level, *parts)
   end
 
   def command_simple(function, count, command, level)
