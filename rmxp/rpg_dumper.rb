@@ -693,19 +693,17 @@ class RPGDumper
 
   def command_show_animation(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + "show_animation("
-    value += character(command.parameters[0]) + ", "
-    value += "anim(" + command.parameters[1].inspect + ")"
-    value += "),\n"
-    return value
+    return command_spaced_simple(
+      "show_animation",
+      level,
+      character(command.parameters[0]),
+      "anim(" + command.parameters[1].inspect + ")",
+    )
   end
 
   def command_audio(function, command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + function + "("
-    value += audio(command.parameters[0])
-    value += "),\n"
-    return value
+    return command_spaced_simple(function, level, audio(command.parameters[0]))
   end
 
   def command_fade_out_bgm(command, level)
@@ -720,71 +718,70 @@ class RPGDumper
 
   def command_transfer_player(command, level)
     raise "unexpected command parameters" if command.parameters.count != 6
-    value = indent(level)
+    parts = []
     if command.parameters[0] == 0
-      value += "transfer_player("
-      value += "map: " + command.parameters[1].inspect + ", "
-      value += "x: " + command.parameters[2].inspect + ", "
-      value += "y: " + command.parameters[3].inspect + ", "
+      function = "transfer_player"
+      parts << "map: " + command.parameters[1].inspect
+      parts << "x: " + command.parameters[2].inspect
+      parts << "y: " + command.parameters[3].inspect
     else
-      value += "transfer_player_variables("
-      value += "map: " + variable(command.parameters[1]) + ", "
-      value += "x: " + variable(command.parameters[2]) + ", "
-      value += "y: " + variable(command.parameters[3]) + ", "
+      function = "transfer_player_variables"
+      parts << "map: " + variable(command.parameters[1])
+      parts << "x: " + variable(command.parameters[2])
+      parts << "y: " + variable(command.parameters[3])
     end
-    value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect + ", "
-    value += "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
-    value += "),\n"
-    return value
+    parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
+    parts << "fading: " + (command.parameters[5] == 0 ? 'true' : 'false')
+    return command_spaced_simple(function, level, *parts)
   end
 
   def command_event_location(command, level)
     raise "unexpected command parameters" if command.parameters.count != 5
-    value = indent(level)
+    function = "event_location"
+    parts = []
+    parts << character(command.parameters[0])
     if command.parameters[1] == 0
-      value += "event_location("
-      value += character(command.parameters[0]) + ", "
-      value += "x: " + command.parameters[2].inspect + ", "
-      value += "y: " + command.parameters[3].inspect + ", "
+      parts << "x: " + command.parameters[2].inspect
+      parts << "y: " + command.parameters[3].inspect
     elsif command.parameters[1] == 1
-      value += "event_location_variables("
-      value += character(command.parameters[0]) + ", "
-      value += "x: " + variable(command.parameters[2]) + ", "
-      value += "y: " + variable(command.parameters[3]) + ", "
+      function = "event_location_variables"
+      parts << "x: " + variable(command.parameters[2])
+      parts << "y: " + variable(command.parameters[3])
     else
-      value += "event_location_swap("
-      value += character(command.parameters[0]) + ", "
-      value += "target: " + character(command.parameters[2]) + ", "
+      function = "event_location_swap"
+      parts << "target: " + character(command.parameters[2])
     end
-    value += "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
-    value += "),\n"
-    return value
+    parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
+    return command_spaced_simple(function, level, *parts)
   end
 
   def command_input_number(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + "input_number("
-    value += variable(command.parameters[0]) + ", "
-    value += "digits: " + command.parameters[1].inspect
-    value += "),\n"
-    return value
+    return command_spaced_simple(
+      "input_number",
+      level,
+      variable(command.parameters[0]),
+      "digits: " + command.parameters[1].inspect,
+    )
   end
 
   def command_change_text_options(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + "change_text_options("
-    value += RPGFactory::TEXT_POSITION[command.parameters[0]].inspect + ", "
-    value += RPGFactory::TEXT_WINDOW[command.parameters[1]].inspect
-    value += "),\n"
-    return value
+    return command_spaced_simple(
+      "change_text_options",
+      level,
+      RPGFactory::TEXT_POSITION[command.parameters[0]].inspect,
+      RPGFactory::TEXT_WINDOW[command.parameters[1]].inspect
+    )
   end
 
   def command_button_input_processing(command, level)
     raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "button_input_processing("
-    value += variable(command.parameters[0])
-    value += "),\n"
-    return value
+    return command_spaced_simple(
+      "button_input_processing",
+      level,
+      variable(command.parameters[0])
+    )
   end
 
   def command_spaced_simple(command, level, *parts)
@@ -894,33 +891,32 @@ class RPGDumper
   end
 
   def command_timer(command, level)
-    value = indent(level)
     if command.parameters[0] == 0
       raise "unexpected command parameters" if command.parameters.count != 2
-      value += "start_timer("
-      value += command.parameters[1].inspect
-      value += "),\n"
+      return command_spaced_simple(
+        "start_timer",
+        level,
+        command.parameters[1].inspect
+      )
     else
       raise "unexpected command parameters" if command.parameters.count != 1
-      value += "stop_timer,\n"
+      return command_spaced_simple("stop_timer", level)
     end
-    return value
   end
 
   def command_change_gold(command, level)
     raise "unexpected command parameters" if command.parameters.count != 3
-    value = indent(level) + "change_gold("
-    value += RPGFactory::GOLD_OPERATION[command.parameters[0]].inspect + ", "
+    parts = []
+    parts << RPGFactory::GOLD_OPERATION[command.parameters[0]].inspect
 
     case command.parameters[1]
     when 0
-      value += "constant: " + command.parameters[2].inspect
+      parts << "constant: " + command.parameters[2].inspect
     when 1
-      value += "variable: " + variable(command.parameters[2])
+      parts << "variable: " + variable(command.parameters[2])
     end
 
-    value += "),\n"
-    return value
+    return command_spaced_simple("change_gold", level, *parts)
   end
 
   def command(command, level)
@@ -1017,13 +1013,7 @@ class RPGDumper
     when 43 then return "change_blending(" + RPGFactory::BLENDING[move.parameters[0]].inspect + ")"
     when 44 then return "route_play_se(" + audio(move.parameters[0]) + ")"
     when 45 then return "route_script(" + move.parameters[0].inspect + ")"
-    else
-      value = "move(" + move.code.inspect
-      move.parameters.each do |parameter|
-        value += ", " + parameter.inspect
-      end
-      value += ")"
-      return value
+    else raise "unexpected move code " + move.code.to_s
     end
   end
 

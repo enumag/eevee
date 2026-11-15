@@ -333,18 +333,11 @@ class RPGImperativeDumper < RPGDumper
 
   def command_show_animation(command, level)
     raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + character(command.parameters[0]) + ".animation "
-    value += "anim(" + command.parameters[1].inspect + ")"
-    value += "\n"
-    return value
-  end
-
-  def command_audio(function, command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + function + " "
-    value += audio(command.parameters[0])
-    value += "\n"
-    return value
+    return command_spaced_simple(
+      character(command.parameters[0]) + ".animation",
+      level,
+      "anim(" + command.parameters[1].inspect + ")",
+    )
   end
 
   def command_transfer_player(command, level)
@@ -367,7 +360,7 @@ class RPGImperativeDumper < RPGDumper
   def command_event_location(command, level)
     raise "unexpected command parameters" if command.parameters.count != 5
     char = character(command.parameters[0])
-    command_name = "event_location"
+    function = "event_location"
     parts = []
     if command.parameters[1] == 0
       parts << "x: " + command.parameters[2].inspect
@@ -376,37 +369,11 @@ class RPGImperativeDumper < RPGDumper
       parts << "x: " + variable(command.parameters[2])
       parts << "y: " + variable(command.parameters[3])
     else
-      command_name = "event_location_swap"
+      function = "event_location_swap"
       parts << "target: " + character(command.parameters[2])
     end
     parts << "direction: " + RPGFactory::DIRECTION[command.parameters[4]].inspect
-    return command_spaced_simple(char + "." + command_name, level, *parts)
-  end
-
-  def command_input_number(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + "input_number "
-    value += variable(command.parameters[0]) + ", "
-    value += "digits: " + command.parameters[1].inspect
-    value += "\n"
-    return value
-  end
-
-  def command_change_text_options(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 2
-    value = indent(level) + "change_text_options "
-    value += RPGFactory::TEXT_POSITION[command.parameters[0]].inspect + ", "
-    value += RPGFactory::TEXT_WINDOW[command.parameters[1]].inspect
-    value += "\n"
-    return value
-  end
-
-  def command_button_input_processing(command, level)
-    raise "unexpected command parameters" if command.parameters.count != 1
-    value = indent(level) + "button_input_processing "
-    value += variable(command.parameters[0])
-    value += "\n"
-    return value
+    return command_spaced_simple(char + "." + function, level, *parts)
   end
 
   def command_switch(command, level)
@@ -449,6 +416,7 @@ class RPGImperativeDumper < RPGDumper
       value += variable(command.parameters[0]..command.parameters[1])
     end
     value += " " + RPGFactory::OPERATION[command.parameters[2]] + " "
+
     case command.parameters[3]
     when 0
       value += command.parameters[4].inspect
@@ -467,6 +435,7 @@ class RPGImperativeDumper < RPGDumper
     when 7
       value += PROPERTY_NAMES_GLOBAL[command.parameters[4]]
     end
+
     value += "\n"
     return value
   end
@@ -476,20 +445,6 @@ class RPGImperativeDumper < RPGDumper
     value = indent(level) + "self_switch[" + command.parameters[0].inspect + "] "
     value += "= " + RPGFactory::SWITCH_VALUE[command.parameters[1]].inspect
     value += "\n"
-    return value
-  end
-
-  def command_timer(command, level)
-    value = indent(level)
-    if command.parameters[0] == 0
-      raise "unexpected command parameters" if command.parameters.count != 2
-      value += "start_timer "
-      value += command.parameters[1].inspect
-      value += "\n"
-    else
-      raise "unexpected command parameters" if command.parameters.count != 1
-      value += "stop_timer\n"
-    end
     return value
   end
 
@@ -520,32 +475,8 @@ class RPGImperativeDumper < RPGDumper
 
   def move_imp(move, level)
     case move.code
-    when 1 then return "move_down"
-    when 2 then return "move_left"
-    when 3 then return "move_right"
-    when 4 then return "move_up"
-    when 5 then return "move_lower_left"
-    when 6 then return "move_lower_right"
-    when 7 then return "move_upper_left"
-    when 8 then return "move_upper_right"
-    when 9 then return "move_random"
-    when 10 then return "move_toward_player"
-    when 11 then return "move_away_from_player"
-    when 12 then return "move_forward"
-    when 13 then return "move_backward"
     when 14 then return "jump x: " + move.parameters[0].inspect + ", y: " + move.parameters[1].inspect
     when 15 then return "wait " + move.parameters[0].inspect
-    when 16 then return "turn_down"
-    when 17 then return "turn_left"
-    when 18 then return "turn_right"
-    when 19 then return "turn_up"
-    when 20 then return "turn_right_90"
-    when 21 then return "turn_left_90"
-    when 22 then return "turn_180"
-    when 23 then return "turn_right_or_left_90"
-    when 24 then return "turn_random"
-    when 25 then return "turn_toward_player"
-    when 26 then return "turn_away_from_player"
     when 27 then return switch(move.parameters[0]) + " = :ON"
     when 28 then return switch(move.parameters[0]) + " = :OFF"
     when 29 then return "change_speed " + move.parameters[0].inspect
@@ -572,13 +503,7 @@ class RPGImperativeDumper < RPGDumper
     when 43 then return "change_blending " + RPGFactory::BLENDING[move.parameters[0]].inspect
     when 44 then return "play_se " + audio(move.parameters[0])
     when 45 then return "script " + move.parameters[0].inspect
-    else
-      value = "command(" + move.code.inspect
-      move.parameters.each do |parameter|
-        value += ", " + parameter.inspect
-      end
-      value += ")"
-      return value
+    else self.move(move, level)
     end
   end
 
