@@ -207,17 +207,8 @@ class RPGFactory
     through: false,
     always_on_top: false,
     trigger: :action,
-    commands: [],
-    **args # Backwards compatibility
+    commands: []
   )
-    # Backwards compatibility
-    if args[:walk_anime] != nil
-      walk_anim = args[:walk_anime]
-    end
-    if args[:step_anime] != nil
-      stop_anim = args[:step_anime]
-    end
-
     condition = RPG::Event::Page::Condition.new
     condition.switch1_valid = switch1 != nil
     condition.switch2_valid = switch2 != nil
@@ -427,19 +418,11 @@ class RPGFactory
     return command(246, seconds)
   end
 
-  def change_tone(tone = nil, frames:, red: 0, green: 0, blue: 0, gray: 0)
-    # Backwards compatibility
-    if tone.nil?
-      tone = Tone.new(red, green, blue, gray)
-    end
+  def change_tone(tone, frames:)
     return command(223, tone, frames)
   end
 
-  def change_fog_tone(tone = nil, frames:, red: 0, green: 0, blue: 0, gray: 0)
-    # Backwards compatibility
-    if tone.nil?
-      tone = Tone.new(red, green, blue, gray)
-    end
+  def change_fog_tone(tone, frames:)
     return command(205, tone, frames)
   end
 
@@ -447,19 +430,11 @@ class RPGFactory
     return command(206, opacity, frames)
   end
 
-  def change_picture_tone(number:, tone: nil, frames:, red: 0, green: 0, blue: 0, gray: 0)
-    # Backwards compatibility
-    if tone.nil?
-      tone = Tone.new(red, green, blue, gray)
-    end
+  def change_picture_tone(number:, tone:, frames:)
     return command(234, number, tone, frames)
   end
 
-  def screen_flash(color = nil, frames:, red: 0, green: 0, blue: 0, alpha: 0)
-    # Backwards compatibility
-    if color.nil?
-      color = Color.new(red, green, blue, alpha)
-    end
+  def screen_flash(color, frames:)
     return command(224, color, frames)
   end
 
@@ -1409,16 +1384,8 @@ class RPGFactory
     condition: :none,
     scope: :none,
     duration:,
-    color: nil,
-    red: 0,
-    green: 0,
-    blue: 0,
-    alpha: 0
+    color:
   )
-    # Backwards compatibility
-    if color.nil?
-      color = Color.new(red, green, blue, alpha)
-    end
     verify_audio(:SE, se.name)
     object = RPG::Animation::Timing.new
     object.frame = frame
