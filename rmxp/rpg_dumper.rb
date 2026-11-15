@@ -262,8 +262,8 @@ class RPGDumper
     value += indent(level + 1) + "move_speed: " + page.move_speed.inspect + ",\n" if page.move_speed != 3
     value += indent(level + 1) + "move_frequency: " + page.move_frequency.inspect + ",\n" if page.move_frequency != 3
     value += indent(level + 1) + "move_route: " + route(page.move_route, level + 1) + ",\n" if !objects_equal?(page.move_route, DEFAULT_ROUTE) && page.move_type == RPGFactory::EVENT_MOVE_TYPE_INVERSE[:custom]
-    value += indent(level + 1) + "walk_anime: " + page.walk_anime.inspect + ",\n" if page.walk_anime != true
-    value += indent(level + 1) + "step_anime: " + page.step_anime.inspect + ",\n" if page.step_anime != false
+    value += indent(level + 1) + "walk_anim: " + page.walk_anime.inspect + ",\n" if page.walk_anime != true
+    value += indent(level + 1) + "stop_anim: " + page.step_anime.inspect + ",\n" if page.step_anime != false
     value += indent(level + 1) + "direction_fix: " + page.direction_fix.inspect + ",\n" if page.direction_fix != false
     value += indent(level + 1) + "through: " + page.through.inspect + ",\n" if page.through != false
     value += indent(level + 1) + "always_on_top: " + page.always_on_top.inspect + ",\n" if page.always_on_top != false
@@ -953,10 +953,10 @@ class RPGDumper
     when 28 then return "switch_off(" + switch(move.parameters[0]) + ")"
     when 29 then return "change_speed(" + move.parameters[0].inspect + ")"
     when 30 then return "change_frequency(" + move.parameters[0].inspect + ")"
-    when 31 then return "walk_anime_on"
-    when 32 then return "walk_anime_off"
-    when 33 then return "step_anime_on"
-    when 34 then return "step_anime_off"
+    when 31 then return "walk_anim_on"
+    when 32 then return "walk_anim_off"
+    when 33 then return "stop_anim_on"
+    when 34 then return "stop_anim_off"
     when 35 then return "direction_fix_on"
     when 36 then return "direction_fix_off"
     when 37 then return "through_on"

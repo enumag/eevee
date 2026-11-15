@@ -201,15 +201,23 @@ class RPGFactory
     move_speed: 3,
     move_frequency: 3,
     move_route: RPG::MoveRoute.new,
-    walk_anime: true,
-    step_anime: false,
+    walk_anim: true,
+    stop_anim: false,
     direction_fix: false,
     through: false,
     always_on_top: false,
     trigger: :action,
     commands: [],
-    **args # backwards compatibility
+    **args # Backwards compatibility
   )
+    # Backwards compatibility
+    if args[:walk_anime] != nil
+      walk_anim = args[:walk_anime]
+    end
+    if args[:step_anime] != nil
+      stop_anim = args[:step_anime]
+    end
+
     condition = RPG::Event::Page::Condition.new
     condition.switch1_valid = switch1 != nil && args[:switch1_valid] != false
     condition.switch2_valid = switch2 != nil && args[:switch2_valid] != false
@@ -228,8 +236,8 @@ class RPGFactory
     page.move_speed = move_speed
     page.move_frequency = move_frequency
     page.move_route = move_route
-    page.walk_anime = walk_anime
-    page.step_anime = step_anime
+    page.walk_anime = walk_anim
+    page.step_anime = stop_anim
     page.direction_fix = direction_fix
     page.through = through
     page.always_on_top = always_on_top
@@ -1100,21 +1108,27 @@ class RPGFactory
     return move(30, frequency)
   end
 
-  def walk_anime_on
+  def walk_anim_on
     return move(31)
   end
 
-  def walk_anime_off
+  def walk_anim_off
     return move(32)
   end
 
-  def step_anime_on
+  def stop_anim_on
     return move(33)
   end
 
-  def step_anime_off
+  def stop_anim_off
     return move(34)
   end
+
+  # Backward compatibility
+  def walk_anime_on; return walk_anim_on; end
+  def walk_anime_off; return walk_anim_off; end
+  def step_anime_on; return stop_anim_on; end
+  def step_anime_off; return stop_anim_off; end
 
   def direction_fix_on
     return move(35)
