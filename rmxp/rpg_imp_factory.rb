@@ -57,6 +57,8 @@ class RPGImperativeFactory < RPGFactory
 
       def anim(id) = @factory.anim(id)
       def character(id) = @factory.character(id)
+      def color(red, green, blue, alpha = 0.0) = @factory.color(red, green, blue, alpha)
+      def tone(red, green, blue, gray = 0.0) = @factory.tone(red, green, blue, gray)
       def audio(name: "", volume: 100, pitch: 100) = RPG::AudioFile.new(name, volume, pitch)
 
       def v() = Wrappers::Variables.new(self)
@@ -118,11 +120,11 @@ class RPGImperativeFactory < RPGFactory
       def stop_se() = @insns.push(@factory.stop_se)
       def fade_out_bgm(seconds:) = @insns.push(@factory.fade_out_bgm(seconds: seconds))
       def fade_out_bgs(seconds:) = @insns.push(@factory.fade_out_bgs(seconds: seconds))
-      def change_tone(red:, green:, blue:, gray: 0, frames:) = @insns.push(@factory.change_tone(red: red, green: green, blue: blue, gray: gray, frames: frames))
-      def change_fog_tone(red:, green:, blue:, gray: 0, frames:) = @insns.push(@factory.change_fog_tone(red: red, green: green, blue: blue, gray: gray, frames: frames))
+      def change_tone(tone, frames:) = @insns.push(@factory.change_tone(tone, frames: frames))
+      def change_fog_tone(tone, frames:) = @insns.push(@factory.change_fog_tone(tone, frames: frames))
       def change_fog_opacity(opacity:, frames:) = @insns.push(@factory.change_fog_opacity(opacity: opacity, frames: frames))
-      def change_picture_tone(number:, red:, green:, blue:, gray: 0, frames:) = @insns.push(@factory.change_picture_tone(number: number, red: red, green: green, blue: blue, gray: gray, frames: frames))
-      def screen_flash(red:, green:, blue:, alpha: 0, frames:) = @insns.push(@factory.screen_flash(red: red, green: green, blue: blue, alpha: alpha, frames: frames))
+      def change_picture_tone(number:, tone:, frames:) = @insns.push(@factory.change_picture_tone(number: number, tone: tone, frames: frames))
+      def screen_flash(color, frames:) = @insns.push(@factory.screen_flash(color, frames: frames))
       def screen_shake(power:, speed:, frames:) = @insns.push(@factory.screen_shake(power: power, speed: speed, frames: frames))
 
       def transfer_player(map:, x:, y:, direction:, fading:)

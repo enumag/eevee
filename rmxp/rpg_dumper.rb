@@ -645,7 +645,7 @@ class RPGDumper
     return command_parameterized_simple(
       "change_fog_tone",
       level,
-      tone: command.parameters[0],
+      command.parameters[0],
       frames: command.parameters[1],
     )
   end
@@ -665,7 +665,7 @@ class RPGDumper
     return command_parameterized_simple(
       "change_tone",
       level,
-      tone: command.parameters[0],
+      command.parameters[0],
       frames: command.parameters[1],
     )
   end
@@ -675,7 +675,7 @@ class RPGDumper
     return command_parameterized_simple(
       "screen_flash",
       level,
-      color: command.parameters[0],
+      command.parameters[0],
       frames: command.parameters[1],
     )
   end
@@ -796,30 +796,31 @@ class RPGDumper
     return value
   end
 
-  def command_parameterized_simple(command, level, **kwargs)
+  def command_parameterized_simple(command, level, *args, **kwargs)
     parts = []
-    kwargs.each { |kw, value|
+    args.each do |value|
       next if value.nil?
 
-      if value.is_a?(Color) || value.is_a?(Tone)
-        parts << color_for_command(value)
+      if value.is_a?(Color)
+        parts << color(value)
+      elsif value.is_a?(Tone)
+        parts << tone(value)
       else
-        parts << kw.to_s + ": " + value.inspect
+        parts << value.inspect
       end
-    }
-    return command_spaced_simple(command, parts, level)
-  end
-
-  def color_for_command(color)
-    text = "red: " + color.red.to_i.inspect + ", "
-    text += "green: " + color.green.to_i.inspect + ", "
-    text += "blue: " + color.blue.to_i.inspect
-    if color.is_a?(Tone)
-      text += ", gray: " + color.gray.to_i.inspect if color.gray != 0.0
-    elsif color.is_a?(Color)
-      text += ", alpha: " + color.alpha.to_i.inspect if color.alpha != 0.0
     end
-    return text
+    kwargs.each do |key, value|
+      next if value.nil?
+
+      if value.is_a?(Color)
+        parts << key.to_s + ": " + color(value)
+      elsif value.is_a?(Tone)
+        parts << key.to_s + ": " + tone(value)
+      else
+        parts << key.to_s + ": " + value.inspect
+      end
+    end
+    return command_spaced_simple(command, parts, level)
   end
 
   def command_simple(function, count, command, level)
